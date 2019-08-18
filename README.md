@@ -1,5 +1,9 @@
 # boteline
 
+[![Build Status](https://travis-ci.com/thefoxbot/boteline.svg?branch=master)](https://travis-ci.com/thefoxbot/boteline)
+
+[![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
+
 ## how to launch
 
 1. clone repo
