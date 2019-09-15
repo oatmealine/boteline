@@ -13,6 +13,7 @@
     "discord-bot",
     "bot"
   ],
+  "repository": "https://github.com/thefoxbot/boteline",
   "author": "thefox",
   "license": "MIT",
   "dependencies": {

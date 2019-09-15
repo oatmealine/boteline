@@ -64,6 +64,17 @@ function makeDrinkEmbed(drink) {
 	return embed;
 }
 
+String.prototype.hashCode = function() {
+  var hash = 0, i, chr;
+  if (this.length === 0) return hash;
+  for (i = 0; i < this.length; i++) {
+    chr   = this.charCodeAt(i);
+    hash  = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+};
+
 console.log(`boteline v${version}`.bold.red);
 if (process.env.DEBUG) console.debug('debug printing on'.grey);
 
@@ -167,6 +178,7 @@ x | y - use in either x or y
 - achievement [stuff to put] - make a minecraft achievement popup
 - nwordpass [toggle] - enable/disable the n word pass system and check how many you have
 - eat - eat
+- rate (thing) - rate a thing
 			`);
 			if (msg.channel.type === 'text') {
 				msg.channel.send(':mailbox_with_mail: check your DMs!');
@@ -389,6 +401,13 @@ Websocket ping: ${bot.ping}ms`);
 
 		// fun
 		switch(cmd) {
+		case 'rate':
+			if (!params[0]) {
+				msg.channel.send('command doesn\'t match syntax: `rate (string)`');
+			} else {
+				msg.channel.send(`I'd rate ${params[0]} a ${params[0].toLowerCase().hashCode()*12%10}/10`);
+			}
+			break;
 		case 'eat':
 			const eat = bot.emojis.get('612360473928663040').toString();
 			const hamger1 = bot.emojis.get('612360474293567500').toString();
