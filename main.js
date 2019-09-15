@@ -150,8 +150,8 @@ bot.on('message', msg => {
 
 		// core
 		switch (cmd) {
-			case 'help':
-				author.send(`
+		case 'help':
+			author.send(`
 x | y - use in either x or y
 [] - unnecessary parameter
 () - necessary parameter
@@ -188,446 +188,446 @@ x | y - use in either x or y
 - eat - eat
 - rate (thing) - rate a thing
 			`);
-				if (msg.channel.type === 'text') {
-					msg.channel.send(':mailbox_with_mail: check your DMs!');
-				}
-				break;
-			case 'invite':
-				msg.channel.send(`Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`);
-				break;
+			if (msg.channel.type === 'text') {
+				msg.channel.send(':mailbox_with_mail: check your DMs!');
+			}
+			break;
+		case 'invite':
+			msg.channel.send(`Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`);
+			break;
 
-			case 'ping':
-				let datestart = Date.now();
-				msg.channel.send('hol up').then(m => {
-					m.edit(`Message latency: ${Date.now() - datestart}ms
+		case 'ping':
+			let datestart = Date.now();
+			msg.channel.send('hol up').then(m => {
+				m.edit(`Message latency: ${Date.now() - datestart}ms
 Websocket ping: ${bot.ping}ms`);
-				});
-				break;
+			});
+			break;
 		}
 
 		// moderating
 		switch (cmd) {
-			case 'ban':
-				if (params.length !== 1) { msg.reply('command doesn\'t match syntax: `ban (id)`'); break; }
-				if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
-				if (msg.member.hasPermission('BAN_MEMBERS')) {
-					if (msg.guild.me.hasPermission('BAN_MEMBERS')) {
-						if (String(Number(params[0])) === params[0])
-							msg.reply('ID isn\'t resolvable!');
-						else {
-							if (msg.guild.members.get(params[0]) !== undefined) {
-								let banmember = msg.guild.members.get(params[0]);
+		case 'ban':
+			if (params.length !== 1) { msg.reply('command doesn\'t match syntax: `ban (id)`'); break; }
+			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
+			if (msg.member.hasPermission('BAN_MEMBERS')) {
+				if (msg.guild.me.hasPermission('BAN_MEMBERS')) {
+					if (String(Number(params[0])) === params[0])
+						msg.reply('ID isn\'t resolvable!');
+					else {
+						if (msg.guild.members.get(params[0]) !== undefined) {
+							let banmember = msg.guild.members.get(params[0]);
 
-								if (banmember.bannable) {
-									banmember.ban();
-									msg.channel.send('✓ Banned ' + banmember.username);
-								} else
-									msg.reply('member ' + banmember.username + ' isn\'t bannable');
+							if (banmember.bannable) {
+								banmember.ban();
+								msg.channel.send('✓ Banned ' + banmember.username);
 							} else
-								msg.reply('i don\'t know that person!');
-						}
-					} else
-						msg.reply('i don\'t have ban permissions!');
+								msg.reply('member ' + banmember.username + ' isn\'t bannable');
+						} else
+							msg.reply('i don\'t know that person!');
+					}
 				} else
-					msg.reply('you don\'t have ban permissions!');
-				break;
-			case 'kick':
-				if (params.length !== 1) { msg.reply('command doesn\'t match syntax: `kick (id)`'); break; }
-				if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
-				if (msg.member.hasPermission('KICK_MEMBERS')) {
-					if (msg.guild.me.hasPermission('KICK_MEMBERS')) {
-						if (String(Number(params[0])) !== params[0])
-							msg.reply('ID isn\'t resolvable!');
-						else {
-							if (msg.guild.members.get(params[0]) !== undefined) {
-								let kickmember = msg.guild.members.get(params[0]);
+					msg.reply('i don\'t have ban permissions!');
+			} else
+				msg.reply('you don\'t have ban permissions!');
+			break;
+		case 'kick':
+			if (params.length !== 1) { msg.reply('command doesn\'t match syntax: `kick (id)`'); break; }
+			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
+			if (msg.member.hasPermission('KICK_MEMBERS')) {
+				if (msg.guild.me.hasPermission('KICK_MEMBERS')) {
+					if (String(Number(params[0])) !== params[0])
+						msg.reply('ID isn\'t resolvable!');
+					else {
+						if (msg.guild.members.get(params[0]) !== undefined) {
+							let kickmember = msg.guild.members.get(params[0]);
 
-								if (kickmember.kickable) {
-									kickmember.kick();
-									msg.channel.send('✓ Kicked ' + kickmember.username);
-								} else
-									msg.reply('member ' + kickmember.username + ' isn\'t kickable');
+							if (kickmember.kickable) {
+								kickmember.kick();
+								msg.channel.send('✓ Kicked ' + kickmember.username);
 							} else
-								msg.reply('i don\'t know that person!');
-						}
-					} else
-						msg.reply('i don\'t have kick permissions!');
+								msg.reply('member ' + kickmember.username + ' isn\'t kickable');
+						} else
+							msg.reply('i don\'t know that person!');
+					}
 				} else
-					msg.reply('you don\'t have kick permissions!');
-				break;
+					msg.reply('i don\'t have kick permissions!');
+			} else
+				msg.reply('you don\'t have kick permissions!');
+			break;
 		}
 
 		// utilities
 		switch (cmd) {
-			case 'fahrenheit':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `fahrenheit (celcius temp)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
-
-				msg.channel.send(`${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`);
+		case 'fahrenheit':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `fahrenheit (celcius temp)`');
 				break;
-			case 'celsius':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `celsius (fahrenheit temp)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
-
-				msg.channel.send(`${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`);
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
 				break;
-			case 'kelvin':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `kelvin (celsius temp)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
+			}
 
-				msg.channel.send(`${params[0]}°C is ${params[0] < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`);
+			msg.channel.send(`${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`);
+			break;
+		case 'celsius':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `celsius (fahrenheit temp)`');
 				break;
-
-			case 'mbs':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `mbs (mbps speed)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
-
-				msg.channel.send(`${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`);
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
 				break;
-			case 'mbps':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `mbps (mbs speed)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
+			}
 
-				msg.channel.send(`${params[0]}MB/s is **${Math.round((Number(params[0])) * 800) / 100}Mbps**`);
+			msg.channel.send(`${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`);
+			break;
+		case 'kelvin':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `kelvin (celsius temp)`');
 				break;
-
-			case 'liters':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `liters (gallons)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
-
-				msg.channel.send(`${params[0]} imperial gallons is **${Math.round((Number(params[0])) * 4.546 * 100) / 100}L**`);
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
 				break;
-			case 'gallons':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `gallons (liters)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
+			}
 
-				msg.channel.send(`${params[0]}L is **${Math.round((Number(params[0])) / 4.546 * 100) / 100} imperial gallons**`);
+			msg.channel.send(`${params[0]}°C is ${params[0] < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`);
+			break;
+
+		case 'mbs':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `mbs (mbps speed)`');
 				break;
-
-			case 'kg':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `kg (pounds)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
-
-				msg.channel.send(`${params[0]} pounds is **${Math.round((Number(params[0])) / 2.205 * 100) / 100}KG**`);
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
 				break;
-			case 'pound':
-			case 'pounds':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `pound (kilograms)`');
+			}
+
+			msg.channel.send(`${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`);
+			break;
+		case 'mbps':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `mbps (mbs speed)`');
+				break;
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
+				break;
+			}
+
+			msg.channel.send(`${params[0]}MB/s is **${Math.round((Number(params[0])) * 800) / 100}Mbps**`);
+			break;
+
+		case 'liters':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `liters (gallons)`');
+				break;
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
+				break;
+			}
+
+			msg.channel.send(`${params[0]} imperial gallons is **${Math.round((Number(params[0])) * 4.546 * 100) / 100}L**`);
+			break;
+		case 'gallons':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `gallons (liters)`');
+				break;
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
+				break;
+			}
+
+			msg.channel.send(`${params[0]}L is **${Math.round((Number(params[0])) / 4.546 * 100) / 100} imperial gallons**`);
+			break;
+
+		case 'kg':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `kg (pounds)`');
+				break;
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
+				break;
+			}
+
+			msg.channel.send(`${params[0]} pounds is **${Math.round((Number(params[0])) / 2.205 * 100) / 100}KG**`);
+			break;
+		case 'pound':
+		case 'pounds':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `pound (kilograms)`');
+				break;
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
+				break;
+			}
+
+			msg.channel.send(`${params[0]}KG is **${Math.round((Number(params[0])) * 2.205 * 100) / 100} pounds**`);
+			break;
+		case 'ounce':
+		case 'ounces':
+			if (params.length !== 1) {
+				msg.reply('command doesn\'t match syntax: `ounce (pound)`');
+				break;
+			}
+			if (isNaN(parseFloat(params[0]))) {
+				msg.reply('number is unresolvable!');
+				break;
+			}
+
+			msg.channel.send(`${params[0]} pounds is **${Math.round((Number(params[0])) * 16 * 100) / 100} ounces**`);
+			break;
+
+		case 'servericon':
+		case 'icon':
+			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
+			msg.channel.send('', { files: [{ attachment: msg.guild.iconURL, name: 'icon.png' }] });
+			break;
+
+		case 'pfp':
+		case 'avatar':
+			let user;
+			if (params[0] !== undefined) {
+				user = bot.users.get(params[0]);
+				if (user === undefined) {
+					msg.reply('not a valid ID!');
 					break;
 				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
-
-				msg.channel.send(`${params[0]}KG is **${Math.round((Number(params[0])) * 2.205 * 100) / 100} pounds**`);
-				break;
-			case 'ounce':
-			case 'ounces':
-				if (params.length !== 1) {
-					msg.reply('command doesn\'t match syntax: `ounce (pound)`');
-					break;
-				}
-				if (isNaN(parseFloat(params[0]))) {
-					msg.reply('number is unresolvable!');
-					break;
-				}
-
-				msg.channel.send(`${params[0]} pounds is **${Math.round((Number(params[0])) * 16 * 100) / 100} ounces**`);
-				break;
-
-			case 'servericon':
-			case 'icon':
-				if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
-				msg.channel.send('', { files: [{ attachment: msg.guild.iconURL, name: 'icon.png' }] });
-				break;
-
-			case 'pfp':
-			case 'avatar':
-				let user;
-				if (params[0] !== undefined) {
-					user = bot.users.get(params[0]);
-					if (user === undefined) {
-						msg.reply('not a valid ID!');
-						break;
-					}
-				} else {
-					user = msg.author;
-				}
-				msg.channel.send('', { files: [{ attachment: msg.author.avatarURL, name: 'avatar.png' }] });
-				break;
+			} else {
+				user = msg.author;
+			}
+			msg.channel.send('', { files: [{ attachment: msg.author.avatarURL, name: 'avatar.png' }] });
+			break;
 		}
 
 		// fun
 		switch (cmd) {
-			case 'rate':
-				if (!params[0]) {
-					msg.channel.send('command doesn\'t match syntax: `rate (string)`');
-				} else {
-					msg.channel.send(`I'd rate ${params[0]} a ${params[0].toLowerCase().hashCode() * 12 % 10}/10`);
-				}
-				break;
-			case 'eat':
-				const eat = bot.emojis.get('612360473928663040').toString();
-				const hamger1 = bot.emojis.get('612360474293567500').toString();
-				const hamger2 = bot.emojis.get('612360473987252278').toString();
-				const hamger3 = bot.emojis.get('612360473974931458').toString();
+		case 'rate':
+			if (!params[0]) {
+				msg.channel.send('command doesn\'t match syntax: `rate (string)`');
+			} else {
+				msg.channel.send(`I'd rate ${params[0]} a ${params[0].toLowerCase().hashCode() * 12 % 10}/10`);
+			}
+			break;
+		case 'eat':
+			const eat = bot.emojis.get('612360473928663040').toString();
+			const hamger1 = bot.emojis.get('612360474293567500').toString();
+			const hamger2 = bot.emojis.get('612360473987252278').toString();
+			const hamger3 = bot.emojis.get('612360473974931458').toString();
 
-				msg.channel.send(eat + hamger1 + hamger2 + hamger3).then(m => {
-					setTimeout(() => {
-						m.edit(eat + hamger2 + hamger3).then(m => {
-							setTimeout(() => {
-								m.edit(eat + hamger3).then(m => {
-									setTimeout(() => {
-										m.edit(eat).then(m => {
-											setTimeout(() => {
-												m.delete();
-											}, 2000);
-										});
-									}, 1000);
-								});
-							}, 1000);
-						});
-					}, 1000);
-				});
-				break;
-			case 'nwordpass':
-				if (params[0] === 'toggle') {
-					userdata[author.id].nworddisable = !userdata[author.id].nworddisable;
-					msg.reply(`the system is now **${userdata[author.id].nworddisable ? 'OFF' : 'ON'}**`);
-				} else {
-					msg.channel.send(`You have:
+			msg.channel.send(eat + hamger1 + hamger2 + hamger3).then(m => {
+				setTimeout(() => {
+					m.edit(eat + hamger2 + hamger3).then(m => {
+						setTimeout(() => {
+							m.edit(eat + hamger3).then(m => {
+								setTimeout(() => {
+									m.edit(eat).then(m => {
+										setTimeout(() => {
+											m.delete();
+										}, 2000);
+									});
+								}, 1000);
+							});
+						}, 1000);
+					});
+				}, 1000);
+			});
+			break;
+		case 'nwordpass':
+			if (params[0] === 'toggle') {
+				userdata[author.id].nworddisable = !userdata[author.id].nworddisable;
+				msg.reply(`the system is now **${userdata[author.id].nworddisable ? 'OFF' : 'ON'}**`);
+			} else {
+				msg.channel.send(`You have:
 **${userdata[author.id].nwordpasses}** N-Word passes [**${userdata[author.id].nworddisable ? 'OFF' : 'ON'}**] (Use m=nwordpass toggle to disable/enable)
 You are: **\`[${'█'.repeat(Math.floor((userdata[author.id].nwordpassxp / userdata[author.id].nwordpassxpneeded)*10))}${'_'.repeat(10 - (userdata[author.id].nwordpassxp / userdata[author.id].nwordpassxpneeded)*10)}]\`** this close to getting another N-Word pass`);
-				}
+			}
+			break;
+		case 'valhalla':
+			if (params.length < 2) {
+				msg.reply('command doesn\'t match syntax: `valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [blended] [ice] [aged])`');
 				break;
-			case 'valhalla':
-				if (params.length < 2) {
-					msg.reply('command doesn\'t match syntax: `valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [blended] [ice] [aged])`');
-					break;
-				}
+			}
 
-				if (params[0] === 'search') {
-					let founddrinks = [];
-					let search = params.slice(1, params.length).join(' ');
+			if (params[0] === 'search') {
+				let founddrinks = [];
+				let search = params.slice(1, params.length).join(' ');
 
-					valhalladrinks.forEach(d => {
-						if (d.name.toLowerCase().includes(search.toLowerCase()) || d.flavour.toLowerCase() === search.toLowerCase()) {
-							founddrinks.push(d);
-						} else {
-							d.type.forEach(f => {
-								if (search.toLowerCase() === f.toLowerCase()) {
-									founddrinks.push(d);
-								}
-							});
-						}
-					});
-					if (founddrinks.length < 1) {
-						msg.channel.send(`Found no matches for \`${params[1]}\``);
-					} else if (founddrinks.length === 1) {
-						msg.channel.send('', makeDrinkEmbed(founddrinks[0]));
+				valhalladrinks.forEach(d => {
+					if (d.name.toLowerCase().includes(search.toLowerCase()) || d.flavour.toLowerCase() === search.toLowerCase()) {
+						founddrinks.push(d);
 					} else {
-						let founddrinksstr = '\n';
-						founddrinks.slice(0, 5).forEach(d => {
-							founddrinksstr = founddrinksstr + '**' + d.name + '**\n';
+						d.type.forEach(f => {
+							if (search.toLowerCase() === f.toLowerCase()) {
+								founddrinks.push(d);
+							}
 						});
-						if (founddrinks.length > 5) {
-							founddrinksstr = founddrinksstr + `..and ${founddrinks.length - 5} more drinks`;
-						}
-
-						msg.channel.send(`Found ${founddrinks.length} drinks:\n${founddrinksstr}`);
 					}
-				} else if (params[0] === 'make') {
-					let adelhyde = 0;
-					let bronson_extract = 0;
-					let powdered_delta = 0;
-					let flangerine = 0;
-					let karmotrine = 0;
-
-					let blended = false;
-					let aged = false;
-					let iced = false;
-
-					params[1].split('').forEach(i => {
-						switch (i) {
-							case 'a':
-								adelhyde += 1;
-								break;
-							case 'b':
-								bronson_extract += 1;
-								break;
-							case 'p':
-								powdered_delta += 1;
-								break;
-							case 'f':
-								flangerine += 1;
-								break;
-							case 'k':
-								karmotrine += 1;
-						}
+				});
+				if (founddrinks.length < 1) {
+					msg.channel.send(`Found no matches for \`${params[1]}\``);
+				} else if (founddrinks.length === 1) {
+					msg.channel.send('', makeDrinkEmbed(founddrinks[0]));
+				} else {
+					let founddrinksstr = '\n';
+					founddrinks.slice(0, 5).forEach(d => {
+						founddrinksstr = founddrinksstr + '**' + d.name + '**\n';
 					});
+					if (founddrinks.length > 5) {
+						founddrinksstr = founddrinksstr + `..and ${founddrinks.length - 5} more drinks`;
+					}
 
-					blended = params.includes('blended');
-					iced = params.includes('ice');
-					aged = params.includes('aged');
+					msg.channel.send(`Found ${founddrinks.length} drinks:\n${founddrinksstr}`);
+				}
+			} else if (params[0] === 'make') {
+				let adelhyde = 0;
+				let bronson_extract = 0;
+				let powdered_delta = 0;
+				let flangerine = 0;
+				let karmotrine = 0;
 
-					foxconsole.debug(`${adelhyde}, ${bronson_extract}, ${powdered_delta}, ${flangerine}, ${karmotrine}`);
-					foxconsole.debug(`${blended}, ${aged}, ${iced}`);
+				let blended = false;
+				let aged = false;
+				let iced = false;
 
-					let drink;
-					let drinkbig;
-					valhalladrinks.forEach(d => {
-						if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) return;
+				params[1].split('').forEach(i => {
+					switch (i) {
+					case 'a':
+						adelhyde += 1;
+						break;
+					case 'b':
+						bronson_extract += 1;
+						break;
+					case 'p':
+						powdered_delta += 1;
+						break;
+					case 'f':
+						flangerine += 1;
+						break;
+					case 'k':
+						karmotrine += 1;
+					}
+				});
 
-						drinkbig = adelhyde / 2 === d.ingredients.adelhyde
+				blended = params.includes('blended');
+				iced = params.includes('ice');
+				aged = params.includes('aged');
+
+				foxconsole.debug(`${adelhyde}, ${bronson_extract}, ${powdered_delta}, ${flangerine}, ${karmotrine}`);
+				foxconsole.debug(`${blended}, ${aged}, ${iced}`);
+
+				let drink;
+				let drinkbig;
+				valhalladrinks.forEach(d => {
+					if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) return;
+
+					drinkbig = adelhyde / 2 === d.ingredients.adelhyde
 							&& bronson_extract / 2 === d.ingredients.bronson_extract
 							&& powdered_delta / 2 === d.ingredients.powdered_delta
 							&& flangerine / 2 === d.ingredients.flangerine
 							&& (karmotrine / 2 === d.ingredients.karmotrine || d.ingredients.karmotrine === 'optional');
 
-						if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkbig)) return;
-						if (bronson_extract !== d.ingredients.bronson_extract && (bronson_extract / 2 !== d.ingredients.bronson_extract || !drinkbig)) return;
-						if (powdered_delta !== d.ingredients.powdered_delta && (powdered_delta / 2 !== d.ingredients.powdered_delta || !drinkbig)) return;
-						if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkbig)) return;
-						if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkbig)) && d.ingredients.karmotrine !== 'optional') return;
+					if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkbig)) return;
+					if (bronson_extract !== d.ingredients.bronson_extract && (bronson_extract / 2 !== d.ingredients.bronson_extract || !drinkbig)) return;
+					if (powdered_delta !== d.ingredients.powdered_delta && (powdered_delta / 2 !== d.ingredients.powdered_delta || !drinkbig)) return;
+					if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkbig)) return;
+					if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkbig)) && d.ingredients.karmotrine !== 'optional') return;
 
-						if (blended !== d.blended) return;
-						if (aged !== d.aged) return;
-						if (iced !== d.iced) return;
+					if (blended !== d.blended) return;
+					if (aged !== d.aged) return;
+					if (iced !== d.iced) return;
 
-						drink = d;
-					});
+					drink = d;
+				});
 
-					msg.channel.send(':timer: **Making drink...**').then((editmsg) => {
-						setTimeout(() => {
-							if (drink === undefined) {
-								editmsg.edit('Failed to make drink!');
-							} else {
-								editmsg.edit('Successfully made drink!' + (drinkbig ? ' (its big too, woah)' : ''), makeDrinkEmbed(drink));
-							}
-						}, blended ? 7000 : 3000);
-					});
-				}
+				msg.channel.send(':timer: **Making drink...**').then((editmsg) => {
+					setTimeout(() => {
+						if (drink === undefined) {
+							editmsg.edit('Failed to make drink!');
+						} else {
+							editmsg.edit('Successfully made drink!' + (drinkbig ? ' (its big too, woah)' : ''), makeDrinkEmbed(drink));
+						}
+					}, blended ? 7000 : 3000);
+				});
+			}
 
+			break;
+		case 'foxquote':
+			let randommsg = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
+			if (randommsg === undefined) { break; }
+
+			msg.channel.send('', new Discord.RichEmbed({
+				author: { name: randommsg.author.username, icon: randommsg.author.avatarURL },
+				timestamp: randommsg.createdTimestamp,
+				description: randommsg.content
+			}));
+			break;
+		case 'achievement':
+			if (params.length < 1) {
+				msg.reply('command doesn\'t match syntax: `achievement (text)`');
 				break;
-			case 'foxquote':
-				let randommsg = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
-				if (randommsg === undefined) { break; }
+			}
 
-				msg.channel.send('', new Discord.RichEmbed({
-					author: { name: randommsg.author.username, icon: randommsg.author.avatarURL },
-					timestamp: randommsg.createdTimestamp,
-					description: randommsg.content
-				}));
-				break;
-			case 'achievement':
-				if (params.length < 1) {
-					msg.reply('command doesn\'t match syntax: `achievement (text)`');
-					break;
-				}
-
-				msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + params.join('+'), name: 'achievement.png' }] });
-				break;
+			msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + params.join('+'), name: 'achievement.png' }] });
+			break;
 		}
 
 		// debug and owneronly commands
 		if (author.id === process.env.OWNER) {
 			switch (cmd) {
-				case 'debug':
-					let clean = function (text) {
-						if (typeof (text) === 'string') {
-							text = text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
-							return text;
-						} else
-							return text;
+			case 'debug':
+				let clean = function (text) {
+					if (typeof (text) === 'string') {
+						text = text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
+						return text;
+					} else
+						return text;
+				};
+
+				try {
+					var code = content.replace(cmd + ' ', '');
+					var evaled = eval(code);
+
+					if (typeof evaled !== 'string')
+						evaled = require('util').inspect(evaled);
+
+					let embed = {
+						title: 'Eval',
+						color: '990000',
+						fields: [{
+							name: 'Input',
+							value: '```xl\n' + code + '\n```',
+							inline: true
+						},
+						{
+							name: 'Output',
+							value: '```xl\n' + clean(evaled) + '\n```',
+							inline: true
+						}
+						]
 					};
 
-					try {
-						var code = content.replace(cmd + ' ', '');
-						var evaled = eval(code);
-
-						if (typeof evaled !== 'string')
-							evaled = require('util').inspect(evaled);
-
-						let embed = {
-							title: 'Eval',
-							color: '990000',
-							fields: [{
-								name: 'Input',
-								value: '```xl\n' + code + '\n```',
-								inline: true
-							},
-							{
-								name: 'Output',
-								value: '```xl\n' + clean(evaled) + '\n```',
-								inline: true
-							}
-							]
-						};
-
-						msg.channel.send('', { embed });
-						msg.react('☑');
-					} catch (err) {
-						msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+					msg.channel.send('', { embed });
+					msg.react('☑');
+				} catch (err) {
+					msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+				}
+				break;
+			case 'exec':
+				exec(content.replace(cmd + ' ', ''), (err, stdout) => {
+					if (err) {
+						msg.channel.send('```' + err + '```');
+					} else {
+						msg.channel.send('```' + stdout + '```');
 					}
-					break;
-				case 'exec':
-					exec(content.replace(cmd + ' ', ''), (err, stdout) => {
-						if (err) {
-							msg.channel.send('```' + err + '```');
-						} else {
-							msg.channel.send('```' + stdout + '```');
-						}
-					});
+				});
 			}
 		}
 	}
