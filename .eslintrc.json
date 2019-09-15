@@ -17,10 +17,6 @@
             "error",
             "tab"
         ],
-        "linebreak-style": [
-            "warning",
-            "windows"
-        ],
         "quotes": [
             "error",
             "single"
