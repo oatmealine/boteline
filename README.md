@@ -12,11 +12,7 @@
 
 3. create a .env file based on the example below
 
-4. create a userdata.json file, and in it put: `{}`
-
-5. create a foxquotes.json file, and in it put: `[]`
-
-6. `node main.js`
+4. `node main.js`
 
 ## example .env
 

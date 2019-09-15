@@ -11,10 +11,17 @@ const { exec } = require('child_process');
 const fs = require('fs');
 
 // files
+if (!fs.existsSync('./foxquotes.json')) {
+	fs.writeFileSync('./foxquotes.json', '[]');
+}
 let foxquotes = require('./foxquotes.json');
-let foxquotessaveneeded = false;
 
+if (!fs.existsSync('./userdata.json')) {
+	fs.writeFileSync('./userdata.json', '{}');
+}
 let userdata = require('./userdata.json');
+
+let foxquotessaveneeded = false;
 
 // .env stuff
 require('dotenv').config();
