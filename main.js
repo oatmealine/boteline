@@ -87,7 +87,7 @@ function normalDistribution(x) {
 }
 
 function seedAndRate(str) {
-	const exclusions = {'boteline': 0, 'mankind': 0, 'fox': 10, 'thefox': 10]};
+	const exclusions = {'boteline': 0, 'mankind': 0, 'fox': 10, 'thefox': 10};
 	
 	if (Object.keys(str).includes('str')) {
 		return exclusions[str];
