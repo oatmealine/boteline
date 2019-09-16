@@ -87,10 +87,14 @@ function normalDistribution(x) {
 }
 
 function seedAndRate(str) {
-	const exclusions = [['boteline',0],['mankind',0],['fox',10],['thefox',10]]
+	const exclusions = {'boteline': 0, 'mankind': 0, 'fox': 10, 'thefox': 10]];
 	
-	let hashCode = Math.abs(str.hashCode());
-	return Math.round((normalDistribution(hashCode%0.85)+1)*10)
+	if (Object.keys(str).includes('str')) {
+		return exclusions[str];
+	} else {
+		let hashCode = Math.abs(str.hashCode());
+		return Math.round(normalDistribution(hashCode%0.85)*10);
+	}
 }
 
 console.log(`boteline v${version}`.bold.red);
