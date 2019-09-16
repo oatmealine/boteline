@@ -90,7 +90,7 @@ function seedAndRate(str) {
 	const exclusions = [['boteline',0],['mankind',0],['fox',10],['thefox',10]]
 	
 	let hashCode = Math.abs(str.hashCode());
-	Math.round((normalDistribution(hashCode%0.85)+1)*10)
+	return Math.round((normalDistribution(hashCode%0.85)+1)*10)
 }
 
 console.log(`boteline v${version}`.bold.red);
