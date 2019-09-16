@@ -82,6 +82,17 @@ String.prototype.hashCode = function () {
 	return hash;
 };
 
+function normalDistribution(x) {
+	return Math.pow(Math.e, (-Math.PI * x * x));
+}
+
+function seedAndRate(str) {
+	const exclusions = [['boteline',0],['mankind',0],['fox',10],['thefox',10]]
+	
+	let hashCode = Math.abs(str.hashCode());
+	Math.round((normalDistribution(hashCode%0.85)+1)*10)
+}
+
 console.log(`boteline v${version}`.bold.red);
 if (process.env.DEBUG) console.debug('debug printing on'.grey);
 
@@ -194,6 +205,8 @@ x | y - use in either x or y
 - nwordpass [toggle] - enable/disable the n word pass system and check how many you have
 - eat - eat
 - rate (thing) - rate a thing
+- ask (yes/no question) - ask a question
+- pick (option 1) (option 2) - ask to pick an option
 			`);
 			if (msg.channel.type === 'text') {
 				msg.channel.send(':mailbox_with_mail: check your DMs!');
@@ -421,7 +434,27 @@ Websocket ping: ${bot.ping}ms`);
 				msg.channel.send('command doesn\'t match syntax: `rate (string)`');
 			} else {
 				let thingToRate = params.join(' ');
-				msg.channel.send(`I'd rate ${thingToRate} a ${thingToRate.toLowerCase().replace(' ','').hashCode() * 12 % 11}/10`);
+				let rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
+				msg.channel.send(`I'd rate ${thingToRate} a **${rating}/10**`);
+			}
+			break;
+		case 'pick':
+			if (!params[0]) {
+				msg.channel.send('command doesn\'t match syntax: `pick (option 1) (option 2)`');
+			} else {
+				let thingToRate1 = params[0];
+				let thingToRate2 = params[1];
+				let rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
+				let rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
+				msg.channel.send(`Out of ${thingToRate1} and ${thingToRate2}, I'd pick ${rating1 > rating2 ? thingToRate1 : thingToRate2}`);
+			}
+			break;
+		case 'ask':
+			if (!params[0]) {
+				msg.channel.send('command doesn\'t match syntax: `ask (yes/no question)`');
+			} else {
+				let thingToRate = params.join(' ');
+				msg.channel.send(`> ${thingToRate}\n${Math.random() > 0.5 ? 'I\'d say' : 'Most likely'}, ${['Yes','Probably','Maybe','No'][thingToRate.hashCode()*23%4]}`);
 			}
 			break;
 		case 'eat':
