@@ -458,7 +458,7 @@ Websocket ping: ${bot.ping}ms`);
 				msg.channel.send('command doesn\'t match syntax: `ask (yes/no question)`');
 			} else {
 				let thingToRate = params.join(' ');
-				msg.channel.send(`> ${thingToRate}\nI'd say, **${['yes','probably','maybe','no'][thingToRate.hashCode()*23%4]}**`);
+				msg.channel.send(`> ${thingToRate}\nI'd say, **${['yes','probably','maybe','no'][Math.abs(thingToRate.hashCode())*23%4]}**`);
 			}
 			break;
 		case 'eat':
