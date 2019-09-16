@@ -420,7 +420,8 @@ Websocket ping: ${bot.ping}ms`);
 			if (!params[0]) {
 				msg.channel.send('command doesn\'t match syntax: `rate (string)`');
 			} else {
-				msg.channel.send(`I'd rate ${params[0]} a ${params[0].toLowerCase().hashCode() * 12 % 10}/10`);
+				let thingToRate = params.join(' ');
+				msg.channel.send(`I'd rate ${thingToRate} a ${thingToRate.toLowerCase().replace(' ','').hashCode() * 12 % 11}/10`);
 			}
 			break;
 		case 'eat':
