@@ -83,7 +83,7 @@ String.prototype.hashCode = function () {
 };
 
 function normalDistribution(x) {
-	return Math.pow(Math.e, (-Math.PI * x * x));
+	return Math.pow(Math.E, (-Math.PI * x * x));
 }
 
 function seedAndRate(str) {
