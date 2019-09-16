@@ -446,7 +446,7 @@ Websocket ping: ${bot.ping}ms`);
 				let thingToRate2 = params[1];
 				let rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
 				let rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
-				msg.channel.send(`Out of ${thingToRate1} and ${thingToRate2}, I'd pick ${rating1 > rating2 ? thingToRate1 : thingToRate2}`);
+				msg.channel.send(`Out of ${thingToRate1} and ${thingToRate2}, I'd pick **${rating1 > rating2 ? thingToRate1 : thingToRate2}**`);
 			}
 			break;
 		case 'ask':
@@ -454,7 +454,7 @@ Websocket ping: ${bot.ping}ms`);
 				msg.channel.send('command doesn\'t match syntax: `ask (yes/no question)`');
 			} else {
 				let thingToRate = params.join(' ');
-				msg.channel.send(`> ${thingToRate}\n${Math.random() > 0.5 ? 'I\'d say' : 'Most likely'}, ${['Yes','Probably','Maybe','No'][thingToRate.hashCode()*23%4]}`);
+				msg.channel.send(`> ${thingToRate}\nI'd say, **${['yes','probably','maybe','no'][thingToRate.hashCode()*23%4]}**`);
 			}
 			break;
 		case 'eat':
