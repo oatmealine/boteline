@@ -236,11 +236,15 @@ Websocket ping: ${bot.ping}ms`);
 			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
 			if (msg.member.hasPermission('BAN_MEMBERS')) {
 				if (msg.guild.me.hasPermission('BAN_MEMBERS')) {
-					if (String(Number(params[0])) === params[0])
+					if (isNaN(params[0]))
 						msg.reply('ID isn\'t resolvable!');
 					else {
 						if (msg.guild.members.get(params[0]) !== undefined) {
 							let banmember = msg.guild.members.get(params[0]);
+
+							if (banmember.id === msg.member.id) {
+								return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
+							}
 
 							if (banmember.bannable) {
 								banmember.ban();
@@ -260,11 +264,15 @@ Websocket ping: ${bot.ping}ms`);
 			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
 			if (msg.member.hasPermission('KICK_MEMBERS')) {
 				if (msg.guild.me.hasPermission('KICK_MEMBERS')) {
-					if (String(Number(params[0])) !== params[0])
+					if (isNaN(params[0]))
 						msg.reply('ID isn\'t resolvable!');
 					else {
 						if (msg.guild.members.get(params[0]) !== undefined) {
 							let kickmember = msg.guild.members.get(params[0]);
+
+							if (kickmember.id === msg.member.id) {
+								return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
+							}
 
 							if (kickmember.kickable) {
 								kickmember.kick();
