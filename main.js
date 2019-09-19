@@ -242,9 +242,9 @@ Websocket ping: ${bot.ping}ms`);
 						if (msg.guild.members.get(params[0]) !== undefined) {
 							let banmember = msg.guild.members.get(params[0]);
 
-                                                        if (banmember.id === msg.member.id) {
-                                                            return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
-                                                        }
+							if (banmember.id === msg.member.id) {
+								return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
+							}
 
 							if (banmember.bannable) {
 								banmember.ban();
@@ -270,9 +270,9 @@ Websocket ping: ${bot.ping}ms`);
 						if (msg.guild.members.get(params[0]) !== undefined) {
 							let kickmember = msg.guild.members.get(params[0]);
 
-                                                        if (kickmember.id === msg.member.id) {
-                                                            return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
-                                                        });
+							if (kickmember.id === msg.member.id) {
+								return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
+							}
 
 							if (kickmember.kickable) {
 								kickmember.kick();
