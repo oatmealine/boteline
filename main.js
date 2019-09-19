@@ -438,8 +438,16 @@ Websocket ping: ${bot.ping}ms`);
 				msg.channel.send('command doesn\'t match syntax: `rate (string)`');
 			} else {
 				let thingToRate = params.join(' ');
+
+				if (thingToRate.toLowerCase().startsWith('me') || thingToRate.toLowerCase().startsWith('my')) {
+					// rate the user, not the string
+					thingToRate += author.id.toString().hashCode();
+				} else if (thingToRate.toLowerCase().startsWith('this server') || thingToRate.toLowerCase().startsWith('this discord')) {
+					// rate the server, not the string
+					thingToRate = thingToRate+msg.guild.id.toString().hashCode();
+				}
 				let rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
-				msg.channel.send(`I'd rate ${thingToRate} a **${rating}/10**`);
+				msg.channel.send(`I'd give ${params.join(' ')} a **${rating}/10**`);
 			}
 			break;
 		case 'pick':
@@ -448,9 +456,22 @@ Websocket ping: ${bot.ping}ms`);
 			} else {
 				let thingToRate1 = params[0];
 				let thingToRate2 = params[1];
+
+				if (thingToRate1.toLowerCase().startsWith('me') || thingToRate1.toLowerCase().startsWith('my')) {
+					thingToRate1 = thingToRate1+author.id.toString().hashCode();
+				} else if (thingToRate1.toLowerCase().startsWith('this server') || thingToRate1.toLowerCase().startsWith('this discord')) {
+					thingToRate1 = thingToRate1+msg.guilds.id.toString().hashCode();
+				}
+
+				if (thingToRate2.toLowerCase().startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
+					thingToRate2 = thingToRate2+author.id.toString().hashCode();
+				} else if (thingToRate2.toLowerCase().startsWith('this server') || thingToRate2.toLowerCase().startsWith('this discord')) {
+					thingToRate2 = thingToRate2+msg.guilds.id.toString().hashCode();
+				}
+
 				let rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
 				let rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
-				msg.channel.send(`Out of ${thingToRate1} and ${thingToRate2}, I'd pick **${rating1 > rating2 ? thingToRate1 : thingToRate2}**`);
+				msg.channel.send(`Out of ${params[0]} and ${params[1]}, I'd pick **${rating1 === rating2 ? 'neither' : (rating1 > rating2 ? thingToRate1 : thingToRate2)}**`);
 			}
 			break;
 		case 'ask':
