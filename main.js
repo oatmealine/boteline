@@ -211,6 +211,7 @@ x | y - use in either x or y
 - rate (thing) - rate a thing
 - ask (yes/no question) - ask a question
 - pick (option 1) (option 2) - ask to pick an option
+- kva - kva
 			`);
 			if (msg.channel.type === 'text') {
 				msg.channel.send(':mailbox_with_mail: check your DMs!');
@@ -441,6 +442,9 @@ Websocket ping: ${bot.ping}ms`);
 
 		// fun
 		switch (cmd) {
+		case 'kva':
+			msg.channel.send('ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку');
+			break;
 		case 'rate':
 			if (!params[0]) {
 				msg.channel.send('command doesn\'t match syntax: `rate (string)`');
