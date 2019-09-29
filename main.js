@@ -10,6 +10,7 @@ const foxconsole = require('./foxconsole.js');
 const { exec } = require('child_process');
 const fs = require('fs');
 
+const ffmpeg = require('fluent-ffmpeg');
 // files
 if (!fs.existsSync('./foxquotes.json')) {
 	fs.writeFileSync('./foxquotes.json', '[]');
@@ -442,6 +443,75 @@ Websocket ping: ${bot.ping}ms`);
 
 		// fun
 		switch (cmd) {
+		case 'compress':
+			if (msg.attachments.size === 1) {
+				let attachment = msg.attachments.first();
+				let filetype = attachment.filename.split('.').pop();
+				const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv'];
+
+				if (acceptedFiletypes.includes(filetype.toLowerCase())) {
+					let progmessage;
+					let lastedit = 0; // to avoid ratelimiting
+
+					msg.channel.send('ok, downloading...').then(m=>{
+						progmessage = m;
+					});
+					msg.channel.startTyping();
+
+					//let stream = Buffer.alloc(0);
+
+					ffmpeg(attachment.url).outputOptions([
+						'-b:v 20k',
+						'-b:a 17k',
+						'-c:a aac'
+					])
+						.format('mp4')
+						.on('start', commandLine => {
+							foxconsole.info('started ffmpeg with command: '+commandLine);
+							if (progmessage) {
+								progmessage.edit('processing: 0% (0s) done');
+							}
+						})
+						.on('stderr', stderrLine => {
+							foxconsole.debug('ffmpeg: ' + stderrLine);
+						})
+						.on('progress', progress => {
+							if (lastedit+2000 < Date.now() && progmessage) {
+								lastedit = Date.now();
+								progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent*100)/100 : '0.00'}%** \`(${progress.timemark})\``);
+							}
+						})
+						.on('error', err => {
+							msg.channel.stopTyping();
+							foxconsole.warning('ffmpeg failed!');
+							foxconsole.warning(err);
+							if (progmessage) {
+								progmessage.edit(`processing: error! \`${err}\``);
+							} else {
+								msg.channel.send(`An error has occured!: \`${err}\``);
+							}
+						})
+						.on('end', () => {
+							msg.channel.stopTyping();
+							if (progmessage) {
+								progmessage.edit('processing: done! uploading');
+							}
+							msg.channel.send('ok, done', {files: ['./temp.mp4']}).then(() => {
+								if (progmessage) {
+									progmessage.delete();
+								}
+							});
+						})
+						//.pipe(stream);
+						.save('./temp.mp4');
+				} else {
+					msg.channel.send('Found a non-video attachment, aborting');
+				}
+			} else {
+				msg.channel.send('Found less/more attachments than 1, aborting');
+			}
+			
+			break;
 		case 'kva':
 			msg.channel.send('ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку');
 			break;
