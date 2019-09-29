@@ -4,6 +4,8 @@
 const Discord = require('discord.js');
 const bot = new Discord.Client();
 
+const cs = require('./commandsystem.js');
+
 require('colors');
 const foxconsole = require('./foxconsole.js');
 
@@ -83,6 +85,10 @@ String.prototype.hashCode = function () {
 	return hash;
 };
 
+function getParams(message) { 
+	return message.content.split(' ').slice(1, message.content.length);
+}
+
 function normalDistribution(x) {
 	return Math.pow(Math.E, (-Math.PI * x * x));
 }
@@ -95,6 +101,82 @@ function seedAndRate(str) {
 	} else {
 		let hashCode = Math.abs(str.hashCode());
 		return Math.round(normalDistribution(hashCode%0.85)*10);
+	}
+}
+
+class FFMpegCommand extends cs.Command {
+	constructor(name, inputOptions, outputOptions) {
+		super(name, null);
+
+		this.inputOptions = inputOptions;
+		this.outputOptions = outputOptions;
+		return this;
+	}
+
+	runCommand(msg) {
+		if (msg.attachments.size === 1) {
+			let attachment = msg.attachments.first();
+			let filetype = attachment.filename.split('.').pop();
+			const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv'];
+
+			if (acceptedFiletypes.includes(filetype.toLowerCase())) {
+				let progmessage;
+				let lastedit = 0; // to avoid ratelimiting
+
+				msg.channel.send('ok, downloading...').then(m=>{
+					progmessage = m;
+				});
+				msg.channel.startTyping();
+
+				//let stream = Buffer.alloc(0);
+
+				ffmpeg(attachment.url)
+					.inputOptions(this.inputOptions)
+					.outputOptions(this.outputOptions)
+					.on('start', commandLine => {
+						foxconsole.info('started ffmpeg with command: '+commandLine);
+						if (progmessage) {
+							progmessage.edit('processing: 0% (0s) done');
+						}
+					})
+					.on('stderr', stderrLine => {
+						foxconsole.debug('ffmpeg: ' + stderrLine);
+					})
+					.on('progress', progress => {
+						if (lastedit+2000 < Date.now() && progmessage) {
+							lastedit = Date.now();
+							progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent*100)/100 : '0.00'}%** \`(${progress.timemark})\``);
+						}
+					})
+					.on('error', err => {
+						msg.channel.stopTyping();
+						foxconsole.warning('ffmpeg failed!');
+						foxconsole.warning(err);
+						if (progmessage) {
+							progmessage.edit(`processing: error! \`${err}\``);
+						} else {
+							msg.channel.send(`An error has occured!: \`${err}\``);
+						}
+					})
+					.on('end', () => {
+						msg.channel.stopTyping();
+						if (progmessage) {
+							progmessage.edit('processing: done! uploading');
+						}
+						msg.channel.send('ok, done', {files: ['./temp.mp4']}).then(() => {
+							if (progmessage) {
+								progmessage.delete();
+							}
+						});
+					})
+					//.pipe(stream);
+					.save('./temp.mp4');
+			} else {
+				msg.channel.send('Found a non-video attachment, aborting');
+			}
+		} else {
+			msg.channel.send('Found less/more attachments than 1, aborting');
+		}
 	}
 }
 
@@ -113,6 +195,370 @@ ${'      '.bgRed}${'  ██    ██'.white.bgYellow}${'  '.bgRed}
       ${'  '.bgWhite}    ${'  '.bgWhite}
 
 `.bold);
+foxconsole.info('adding commands...');
+
+cs.addCommand('core', new cs.SimpleCommand('invite', () => {
+	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
+})
+	.setDescription('get the bot\'s invite')
+	.setUsage('invite'));
+
+cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
+	let params = message.content.split(' ').slice(1, message.content.length);
+
+	if (message.channel.type !== 'text') { return 'you\'re in a DM!'; }
+	if (message.member.hasPermission('BAN_MEMBERS')) {
+		if (message.guild.me.hasPermission('BAN_MEMBERS')) {
+			if (message.guild.members.get(params[0]) !== undefined) {
+				let banmember = message.guild.members.get(params[0]);
+
+				if (banmember.id === message.member.id) {
+					return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
+				}
+
+				if (banmember.bannable) {
+					banmember.ban();
+					return '✓ Banned ' + banmember.username;
+				} else
+					return 'member ' + banmember.username + ' isn\'t bannable';
+			} else
+				return 'i don\'t know that person!';
+		} else
+			return 'i don\'t have ban permissions!';
+	} else
+		return'you don\'t have ban permissions!';
+})
+	.setUsage('ban (id)')
+	.setDescription('ban a user')
+	.addExample('ban 360111651602825216'));
+
+cs.addCommand('moderating', new cs.SimpleCommand('kick', message => {
+	let params = message.content.split(' ').slice(1, message.content.length);
+	
+	if (message.channel.type !== 'text') { return 'you\'re in a DM!'; }
+	if (message.member.hasPermission('KICK_MEMBERS')) {
+		if (message.guild.me.hasPermission('KICK_MEMBERS')) {
+			if (message.guild.members.get(params[0]) !== undefined) {
+				let banmember = message.guild.members.get(params[0]);
+	
+				if (banmember.id === message.member.id) {
+					return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
+				}
+	
+				if (banmember.kickable) {
+					banmember.ban();
+					return '✓ Kicked ' + banmember.username;
+				} else
+					return 'member ' + banmember.username + ' isn\'t kickable';
+			} else
+				return 'i don\'t know that person!';
+		} else
+			return 'i don\'t have kick permissions!';
+	} else
+		return'you don\'t have kick permissions!';
+})
+	.setUsage('kick (id)')
+	.setDescription('kick a user')
+	.addExample('kick 360111651602825216'));
+
+cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
+	let params = getParams(message);
+	return `${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`;
+})
+	.setUsage('fahrenheit (number)')
+	.setDescription('convert celsius to fahrenheit')
+	.addExample('fahrenheit 15'));
+
+cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
+	let params = getParams(message);
+	return `${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`;
+})
+	.setUsage('celcius (number)')
+	.setDescription('convert fahrenheit to celsius')
+	.addExample('celcius 59'));
+
+cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
+	let params = getParams(message);
+	return `${params[0]}°C is ${params[0] < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
+})
+	.setUsage('kelvin (number)')
+	.setDescription('convert celsius to kelvin')
+	.addExample('kelvin 15'));
+
+cs.addCommand('utilities', new cs.SimpleCommand('mbs', (message) => {
+	let params = getParams(message);
+	return `${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`;
+})
+	.setUsage('mbs (number)')
+	.setDescription('convert mbps to mb/s')
+	.addExample('mbs 8'));
+
+cs.addCommand('utilities', new cs.SimpleCommand('mbps', (message) => {
+	let params = getParams(message);
+	return `${params[0]}MB/s is **${Math.round((Number(params[0])) * 800) / 100}Mbps**`;
+})
+	.setUsage('mbps (number)')
+	.setDescription('convert mb/s to mbps')
+	.addExample('mbps 1'));
+
+cs.addCommand('utilities', new cs.Command('icon', (message) => {
+	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
+})
+	.setUsage('icon')
+	.setDescription('get the server\'s icon'));
+
+cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
+	let params = getParams(msg);
+	let user;
+
+	if (params[0] !== undefined) {
+		user = bot.users.get(params[0]);
+	} else {
+		user = msg.author;
+	}
+	msg.channel.send('', { files: [{ attachment: user.avatarURL, name: 'avatar.png' }] });
+})
+	.setUsage('pfp [id]')
+	.setDescription('get a user\'s pfp'));
+
+cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
+	return 'ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку';
+})
+	.setHidden()
+	.setDescription('ква'));
+
+cs.addCommand('fun', new FFMpegCommand('compress', [], ['-b:v 20k', '-b:a 17k', '-c:a aac'])
+	.setDescription('compresses a video')
+	.setUsage('compress [url]'));
+
+cs.addCommand('fun', new cs.Command('eat', (msg) => {
+	const eat = bot.emojis.get('612360473928663040').toString();
+	const hamger1 = bot.emojis.get('612360474293567500').toString();
+	const hamger2 = bot.emojis.get('612360473987252278').toString();
+	const hamger3 = bot.emojis.get('612360473974931458').toString();
+
+	msg.channel.send(eat + hamger1 + hamger2 + hamger3).then(m => {
+		setTimeout(() => {
+			m.edit(eat + hamger2 + hamger3).then(m => {
+				setTimeout(() => {
+					m.edit(eat + hamger3).then(m => {
+						setTimeout(() => {
+							m.edit(eat).then(m => {
+								setTimeout(() => {
+									m.delete();
+								}, 2000);
+							});
+						}, 1000);
+					});
+				}, 1000);
+			});
+		}, 1000);
+	});
+})
+	.setDescription('eat the Burger')
+	.setUsage('eat'));
+
+cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
+	let params = getParams(msg);
+
+	if (params[0] === 'search') {
+		let founddrinks = [];
+		let search = params.slice(1, params.length).join(' ');
+
+		valhalladrinks.forEach(d => {
+			if (d.name.toLowerCase().includes(search.toLowerCase()) || d.flavour.toLowerCase() === search.toLowerCase()) {
+				founddrinks.push(d);
+			} else {
+				d.type.forEach(f => {
+					if (search.toLowerCase() === f.toLowerCase()) {
+						founddrinks.push(d);
+					}
+				});
+			}
+		});
+		if (founddrinks.length < 1) {
+			msg.channel.send(`Found no matches for \`${params[1]}\``);
+		} else if (founddrinks.length === 1) {
+			msg.channel.send('', makeDrinkEmbed(founddrinks[0]));
+		} else {
+			let founddrinksstr = '\n';
+			founddrinks.slice(0, 5).forEach(d => {
+				founddrinksstr = founddrinksstr + '**' + d.name + '**\n';
+			});
+			if (founddrinks.length > 5) {
+				founddrinksstr = founddrinksstr + `..and ${founddrinks.length - 5} more drinks`;
+			}
+
+			msg.channel.send(`Found ${founddrinks.length} drinks:\n${founddrinksstr}`);
+		}
+	} else if (params[0] === 'make') {
+		let adelhyde = 0;
+		let bronson_extract = 0;
+		let powdered_delta = 0;
+		let flangerine = 0;
+		let karmotrine = 0;
+
+		let blended = false;
+		let aged = false;
+		let iced = false;
+
+		params[1].split('').forEach(i => {
+			switch (i) {
+			case 'a':
+				adelhyde += 1;
+				break;
+			case 'b':
+				bronson_extract += 1;
+				break;
+			case 'p':
+				powdered_delta += 1;
+				break;
+			case 'f':
+				flangerine += 1;
+				break;
+			case 'k':
+				karmotrine += 1;
+			}
+		});
+
+		blended = params.includes('blended');
+		iced = params.includes('ice');
+		aged = params.includes('aged');
+
+		foxconsole.debug(`${adelhyde}, ${bronson_extract}, ${powdered_delta}, ${flangerine}, ${karmotrine}`);
+		foxconsole.debug(`${blended}, ${aged}, ${iced}`);
+
+		let drink;
+		let drinkbig;
+		valhalladrinks.forEach(d => {
+			if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) return;
+
+			drinkbig = adelhyde / 2 === d.ingredients.adelhyde
+					&& bronson_extract / 2 === d.ingredients.bronson_extract
+					&& powdered_delta / 2 === d.ingredients.powdered_delta
+					&& flangerine / 2 === d.ingredients.flangerine
+					&& (karmotrine / 2 === d.ingredients.karmotrine || d.ingredients.karmotrine === 'optional');
+
+			if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkbig)) return;
+			if (bronson_extract !== d.ingredients.bronson_extract && (bronson_extract / 2 !== d.ingredients.bronson_extract || !drinkbig)) return;
+			if (powdered_delta !== d.ingredients.powdered_delta && (powdered_delta / 2 !== d.ingredients.powdered_delta || !drinkbig)) return;
+			if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkbig)) return;
+			if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkbig)) && d.ingredients.karmotrine !== 'optional') return;
+
+			if (blended !== d.blended) return;
+			if (aged !== d.aged) return;
+			if (iced !== d.iced) return;
+
+			drink = d;
+		});
+
+		msg.channel.send(':timer: **Making drink...**').then((editmsg) => {
+			setTimeout(() => {
+				if (drink === undefined) {
+					editmsg.edit('Failed to make drink!');
+				} else {
+					editmsg.edit('Successfully made drink!' + (drinkbig ? ' (its big too, woah)' : ''), makeDrinkEmbed(drink));
+				}
+			}, blended ? 7000 : 3000);
+		});
+	}
+})
+	.setUsage('valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [mixed?] [on the rocks?] [aged?])')
+	.addExample('valhalla search Frothy Water')
+	.addExample('valhalla make abpf aged')
+	.addExample('valhalla aabbbbppffffkkkkkkkk')
+	.setDescription('search up drinks, and make some drinks, va11halla style!\nbasically a text-based replica of the drink making part of va11halla'));
+
+cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
+	let params = getParams(msg);
+	
+	if (params[0] === 'toggle') {
+		userdata[msg.author.id].nworddisable = !userdata[msg.author.id].nworddisable;
+		return `the system is now **${userdata[msg.author.id].nworddisable ? 'OFF' : 'ON'}**`;
+	} else {
+		return `You have:
+	**${userdata[msg.author.id].nwordpasses}** N-Word passes [**${userdata[msg.author.id].nworddisable ? 'OFF' : 'ON'}**] (Use m=nwordpass toggle to disable/enable)
+	You are: **\`[${'█'.repeat(Math.floor((userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded)*10))}${'_'.repeat(10 - (userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded)*10)}]\`** this close to getting another N-Word pass`;
+	}
+})
+	.setDescription('see your amount of nwordpasses, or toggle the system')
+	.setUsage('nwordpass [toggle]')
+	.addExample('nwordpass toggle')
+	.addExample('nwordpass'));
+
+cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
+	let params = getParams(msg);
+	let thingToRate = params.join(' ');
+
+	if (thingToRate.toLowerCase().startsWith('me') || thingToRate.toLowerCase().startsWith('my')) {
+		// rate the user, not the string
+		thingToRate += msg.author.id.toString().hashCode();
+	} else if (thingToRate.toLowerCase().startsWith('this server') || thingToRate.toLowerCase().startsWith('this discord')) {
+		// rate the server, not the string
+		thingToRate = thingToRate+msg.guild.id.toString().hashCode();
+	}
+	let rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
+	return `I'd give ${params.join(' ')} a **${rating}/10**`;
+})
+	.setDescription('rates something')
+	.setUsage('rate (string)')
+	.addExample('rate me'));
+
+cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
+	let params = getParams(msg);
+
+	let thingToRate1 = params[0];
+	let thingToRate2 = params[1];
+
+	if (thingToRate1.toLowerCase().startsWith('me') || thingToRate1.toLowerCase().startsWith('my')) {
+		thingToRate1 = thingToRate1+msg.author.id.toString().hashCode();
+	} else if (thingToRate1.toLowerCase().startsWith('this server') || thingToRate1.toLowerCase().startsWith('this discord')) {
+		thingToRate1 = thingToRate1+msg.guild.id.toString().hashCode();
+	}
+
+	if (thingToRate2.toLowerCase().startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
+		thingToRate2 = thingToRate2+msg.author.id.toString().hashCode();
+	} else if (thingToRate2.toLowerCase().startsWith('this server') || thingToRate2.toLowerCase().startsWith('this discord')) {
+		thingToRate2 = thingToRate2+msg.guild.id.toString().hashCode();
+	}
+
+	let rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
+	let rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
+	return `Out of ${params[0]} and ${params[1]}, I'd pick **${rating1 === rating2 ? 'neither' : (rating1 > rating2 ? thingToRate1 : thingToRate2)}**`;
+})
+	.setDescription('rates 2 objects, and picks one of them')
+	.setUsage('pick (string) (string)')
+	.addExample('pick njs python'));
+
+cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
+	let thingToRate = getParams(msg).join(' ');
+	return `> ${thingToRate}\nI'd say, **${['yes','probably','maybe','no'][Math.abs(thingToRate.hashCode())*23%4]}**`;
+})
+	.setDescription('ask the bot a question')
+	.setUsage('ask (string)')
+	.addExample('ask is this a good example'));
+
+cs.addCommand('fun', new cs.Command('achievement', (msg) => {
+	let params = getParams(msg);
+	msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + params.join('+'), name: 'achievement.png' }] });
+})
+	.setDescription('make a minecraft achievement')
+	.setUsage('achievement (string)')
+	.addExample('achievement Made an example!'));
+
+cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
+	let randommsg = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
+	if (randommsg === undefined) { return; }
+
+	msg.channel.send('', new Discord.RichEmbed({
+		author: { name: randommsg.author.username, icon: randommsg.author.avatarURL },
+		timestamp: randommsg.createdTimestamp,
+		description: randommsg.content
+	}));
+})
+	.setHidden()
+	.setUsage('foxquote')
+	.setDescription('fetches a random quote said by fox'));
 
 foxconsole.info('starting...');
 
@@ -167,567 +613,17 @@ bot.on('message', msg => {
 	if (content.startsWith(prefix)) {
 		content = content.slice(prefix.length, content.length);
 		let cmd = content.split(' ')[0];
-		let params = content.split(' ').slice(1, content.length);
 
 		foxconsole.debug('got command ' + cmd);
 
-		// core
-		switch (cmd) {
-		case 'help':
-			author.send(`
-x | y - use in either x or y
-[] - unnecessary parameter
-() - necessary parameter
-
-**Core**:
-- help - recieve some help
-- ping - ping the bot
-- invite - get an invite to the bot
-
-**Moderating**:
-- ban - ban a user
-- kick - kick a user
-			
-**Utilities**:
-- fahrenheit (celsius temp) - convert celsius temp to fahrenheit
-- celsius (fahrenheit temp) - convert fahrenheit temp to celsius
-- kelvin (celsius temp) - convert celsius to kelvin
-- mbs (mbps speed) - convert mbps speed to mb/s
-- mbps (mb/s speed) - convert mb/s speed to mbps
-- liters (gallons) - convert gallons to liters
-- gallons (liters) - convert liters to gallons
-- kg (pounds) - convert pounds to kilograms
-- pounds (kilograms) - convert kilograms to pounds
-- ounce (pounds) - convert pounds to ounces
-
-- pfp [id] - get the profile picture of a user
-- servericon - get the icon of a server
-
-**Fun**:
-- valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [mixed?] [on the rocks?] [aged?]) - search a va-11 hall-a drinks by either recipe or name/flavour/type
-- foxquote - get a random quote of fox
-- achievement [stuff to put] - make a minecraft achievement popup
-- nwordpass [toggle] - enable/disable the n word pass system and check how many you have
-- eat - eat
-- rate (thing) - rate a thing
-- ask (yes/no question) - ask a question
-- pick (option 1) (option 2) - ask to pick an option
-- kva - kva
-			`);
-			if (msg.channel.type === 'text') {
-				msg.channel.send(':mailbox_with_mail: check your DMs!');
+		Object.values(cs.commands).forEach(c => {
+			if (c[cmd]) {
+				c[cmd].runCommand(msg, bot);
 			}
-			break;
-		case 'invite':
-			msg.channel.send(`Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`);
-			break;
-
-		case 'ping':
-			let datestart = Date.now();
-			msg.channel.send('hol up').then(m => {
-				m.edit(`Message latency: ${Date.now() - datestart}ms
-Websocket ping: ${bot.ping}ms`);
-			});
-			break;
-		}
-
-		// moderating
-		switch (cmd) {
-		case 'ban':
-			if (params.length !== 1) { msg.reply('command doesn\'t match syntax: `ban (id)`'); break; }
-			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
-			if (msg.member.hasPermission('BAN_MEMBERS')) {
-				if (msg.guild.me.hasPermission('BAN_MEMBERS')) {
-					if (isNaN(params[0]))
-						msg.reply('ID isn\'t resolvable!');
-					else {
-						if (msg.guild.members.get(params[0]) !== undefined) {
-							let banmember = msg.guild.members.get(params[0]);
-
-							if (banmember.id === msg.member.id) {
-								return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
-							}
-
-							if (banmember.bannable) {
-								banmember.ban();
-								msg.channel.send('✓ Banned ' + banmember.username);
-							} else
-								msg.reply('member ' + banmember.username + ' isn\'t bannable');
-						} else
-							msg.reply('i don\'t know that person!');
-					}
-				} else
-					msg.reply('i don\'t have ban permissions!');
-			} else
-				msg.reply('you don\'t have ban permissions!');
-			break;
-		case 'kick':
-			if (params.length !== 1) { msg.reply('command doesn\'t match syntax: `kick (id)`'); break; }
-			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
-			if (msg.member.hasPermission('KICK_MEMBERS')) {
-				if (msg.guild.me.hasPermission('KICK_MEMBERS')) {
-					if (isNaN(params[0]))
-						msg.reply('ID isn\'t resolvable!');
-					else {
-						if (msg.guild.members.get(params[0]) !== undefined) {
-							let kickmember = msg.guild.members.get(params[0]);
-
-							if (kickmember.id === msg.member.id) {
-								return msg.reply('hedgeberg#7337 is now b&. :thumbsup:'); // https://hedgeproofing.tech
-							}
-
-							if (kickmember.kickable) {
-								kickmember.kick();
-								msg.channel.send('✓ Kicked ' + kickmember.username);
-							} else
-								msg.reply('member ' + kickmember.username + ' isn\'t kickable');
-						} else
-							msg.reply('i don\'t know that person!');
-					}
-				} else
-					msg.reply('i don\'t have kick permissions!');
-			} else
-				msg.reply('you don\'t have kick permissions!');
-			break;
-		}
-
-		// utilities
-		switch (cmd) {
-		case 'fahrenheit':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `fahrenheit (celcius temp)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`);
-			break;
-		case 'celsius':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `celsius (fahrenheit temp)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`);
-			break;
-		case 'kelvin':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `kelvin (celsius temp)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]}°C is ${params[0] < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`);
-			break;
-
-		case 'mbs':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `mbs (mbps speed)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`);
-			break;
-		case 'mbps':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `mbps (mbs speed)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]}MB/s is **${Math.round((Number(params[0])) * 800) / 100}Mbps**`);
-			break;
-
-		case 'liters':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `liters (gallons)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]} imperial gallons is **${Math.round((Number(params[0])) * 4.546 * 100) / 100}L**`);
-			break;
-		case 'gallons':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `gallons (liters)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]}L is **${Math.round((Number(params[0])) / 4.546 * 100) / 100} imperial gallons**`);
-			break;
-
-		case 'kg':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `kg (pounds)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]} pounds is **${Math.round((Number(params[0])) / 2.205 * 100) / 100}KG**`);
-			break;
-		case 'pound':
-		case 'pounds':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `pound (kilograms)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]}KG is **${Math.round((Number(params[0])) * 2.205 * 100) / 100} pounds**`);
-			break;
-		case 'ounce':
-		case 'ounces':
-			if (params.length !== 1) {
-				msg.reply('command doesn\'t match syntax: `ounce (pound)`');
-				break;
-			}
-			if (isNaN(parseFloat(params[0]))) {
-				msg.reply('number is unresolvable!');
-				break;
-			}
-
-			msg.channel.send(`${params[0]} pounds is **${Math.round((Number(params[0])) * 16 * 100) / 100} ounces**`);
-			break;
-
-		case 'servericon':
-		case 'icon':
-			if (msg.channel.type !== 'text') { msg.reply('you\'re in a DM!'); break; }
-			msg.channel.send('', { files: [{ attachment: msg.guild.iconURL, name: 'icon.png' }] });
-			break;
-
-		case 'pfp':
-		case 'avatar':
-			let user;
-			if (params[0] !== undefined) {
-				user = bot.users.get(params[0]);
-				if (user === undefined) {
-					msg.reply('not a valid ID!');
-					break;
-				}
-			} else {
-				user = msg.author;
-			}
-			msg.channel.send('', { files: [{ attachment: msg.author.avatarURL, name: 'avatar.png' }] });
-			break;
-		}
-
-		// fun
-		switch (cmd) {
-		case 'compress':
-			if (msg.attachments.size === 1) {
-				let attachment = msg.attachments.first();
-				let filetype = attachment.filename.split('.').pop();
-				const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv'];
-
-				if (acceptedFiletypes.includes(filetype.toLowerCase())) {
-					let progmessage;
-					let lastedit = 0; // to avoid ratelimiting
-
-					msg.channel.send('ok, downloading...').then(m=>{
-						progmessage = m;
-					});
-					msg.channel.startTyping();
-
-					//let stream = Buffer.alloc(0);
-
-					ffmpeg(attachment.url).outputOptions([
-						'-b:v 20k',
-						'-b:a 17k',
-						'-c:a aac'
-					])
-						.format('mp4')
-						.on('start', commandLine => {
-							foxconsole.info('started ffmpeg with command: '+commandLine);
-							if (progmessage) {
-								progmessage.edit('processing: 0% (0s) done');
-							}
-						})
-						.on('stderr', stderrLine => {
-							foxconsole.debug('ffmpeg: ' + stderrLine);
-						})
-						.on('progress', progress => {
-							if (lastedit+2000 < Date.now() && progmessage) {
-								lastedit = Date.now();
-								progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent*100)/100 : '0.00'}%** \`(${progress.timemark})\``);
-							}
-						})
-						.on('error', err => {
-							msg.channel.stopTyping();
-							foxconsole.warning('ffmpeg failed!');
-							foxconsole.warning(err);
-							if (progmessage) {
-								progmessage.edit(`processing: error! \`${err}\``);
-							} else {
-								msg.channel.send(`An error has occured!: \`${err}\``);
-							}
-						})
-						.on('end', () => {
-							msg.channel.stopTyping();
-							if (progmessage) {
-								progmessage.edit('processing: done! uploading');
-							}
-							msg.channel.send('ok, done', {files: ['./temp.mp4']}).then(() => {
-								if (progmessage) {
-									progmessage.delete();
-								}
-							});
-						})
-						//.pipe(stream);
-						.save('./temp.mp4');
-				} else {
-					msg.channel.send('Found a non-video attachment, aborting');
-				}
-			} else {
-				msg.channel.send('Found less/more attachments than 1, aborting');
-			}
-			
-			break;
-		case 'kva':
-			msg.channel.send('ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку');
-			break;
-		case 'rate':
-			if (!params[0]) {
-				msg.channel.send('command doesn\'t match syntax: `rate (string)`');
-			} else {
-				let thingToRate = params.join(' ');
-
-				if (thingToRate.toLowerCase().startsWith('me') || thingToRate.toLowerCase().startsWith('my')) {
-					// rate the user, not the string
-					thingToRate += author.id.toString().hashCode();
-				} else if (thingToRate.toLowerCase().startsWith('this server') || thingToRate.toLowerCase().startsWith('this discord')) {
-					// rate the server, not the string
-					thingToRate = thingToRate+msg.guild.id.toString().hashCode();
-				}
-				let rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
-				msg.channel.send(`I'd give ${params.join(' ')} a **${rating}/10**`);
-			}
-			break;
-		case 'pick':
-			if (!params[0]) {
-				msg.channel.send('command doesn\'t match syntax: `pick (option 1) (option 2)`');
-			} else {
-				let thingToRate1 = params[0];
-				let thingToRate2 = params[1];
-
-				if (thingToRate1.toLowerCase().startsWith('me') || thingToRate1.toLowerCase().startsWith('my')) {
-					thingToRate1 = thingToRate1+author.id.toString().hashCode();
-				} else if (thingToRate1.toLowerCase().startsWith('this server') || thingToRate1.toLowerCase().startsWith('this discord')) {
-					thingToRate1 = thingToRate1+msg.guilds.id.toString().hashCode();
-				}
-
-				if (thingToRate2.toLowerCase().startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
-					thingToRate2 = thingToRate2+author.id.toString().hashCode();
-				} else if (thingToRate2.toLowerCase().startsWith('this server') || thingToRate2.toLowerCase().startsWith('this discord')) {
-					thingToRate2 = thingToRate2+msg.guilds.id.toString().hashCode();
-				}
-
-				let rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
-				let rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
-				msg.channel.send(`Out of ${params[0]} and ${params[1]}, I'd pick **${rating1 === rating2 ? 'neither' : (rating1 > rating2 ? thingToRate1 : thingToRate2)}**`);
-			}
-			break;
-		case 'ask':
-			if (!params[0]) {
-				msg.channel.send('command doesn\'t match syntax: `ask (yes/no question)`');
-			} else {
-				let thingToRate = params.join(' ');
-				msg.channel.send(`> ${thingToRate}\nI'd say, **${['yes','probably','maybe','no'][Math.abs(thingToRate.hashCode())*23%4]}**`);
-			}
-			break;
-		case 'eat':
-			const eat = bot.emojis.get('612360473928663040').toString();
-			const hamger1 = bot.emojis.get('612360474293567500').toString();
-			const hamger2 = bot.emojis.get('612360473987252278').toString();
-			const hamger3 = bot.emojis.get('612360473974931458').toString();
-
-			msg.channel.send(eat + hamger1 + hamger2 + hamger3).then(m => {
-				setTimeout(() => {
-					m.edit(eat + hamger2 + hamger3).then(m => {
-						setTimeout(() => {
-							m.edit(eat + hamger3).then(m => {
-								setTimeout(() => {
-									m.edit(eat).then(m => {
-										setTimeout(() => {
-											m.delete();
-										}, 2000);
-									});
-								}, 1000);
-							});
-						}, 1000);
-					});
-				}, 1000);
-			});
-			break;
-		case 'nwordpass':
-			if (params[0] === 'toggle') {
-				userdata[author.id].nworddisable = !userdata[author.id].nworddisable;
-				msg.reply(`the system is now **${userdata[author.id].nworddisable ? 'OFF' : 'ON'}**`);
-			} else {
-				msg.channel.send(`You have:
-**${userdata[author.id].nwordpasses}** N-Word passes [**${userdata[author.id].nworddisable ? 'OFF' : 'ON'}**] (Use m=nwordpass toggle to disable/enable)
-You are: **\`[${'█'.repeat(Math.floor((userdata[author.id].nwordpassxp / userdata[author.id].nwordpassxpneeded)*10))}${'_'.repeat(10 - (userdata[author.id].nwordpassxp / userdata[author.id].nwordpassxpneeded)*10)}]\`** this close to getting another N-Word pass`);
-			}
-			break;
-		case 'valhalla':
-			if (params.length < 2) {
-				msg.reply('command doesn\'t match syntax: `valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [blended] [ice] [aged])`');
-				break;
-			}
-
-			if (params[0] === 'search') {
-				let founddrinks = [];
-				let search = params.slice(1, params.length).join(' ');
-
-				valhalladrinks.forEach(d => {
-					if (d.name.toLowerCase().includes(search.toLowerCase()) || d.flavour.toLowerCase() === search.toLowerCase()) {
-						founddrinks.push(d);
-					} else {
-						d.type.forEach(f => {
-							if (search.toLowerCase() === f.toLowerCase()) {
-								founddrinks.push(d);
-							}
-						});
-					}
-				});
-				if (founddrinks.length < 1) {
-					msg.channel.send(`Found no matches for \`${params[1]}\``);
-				} else if (founddrinks.length === 1) {
-					msg.channel.send('', makeDrinkEmbed(founddrinks[0]));
-				} else {
-					let founddrinksstr = '\n';
-					founddrinks.slice(0, 5).forEach(d => {
-						founddrinksstr = founddrinksstr + '**' + d.name + '**\n';
-					});
-					if (founddrinks.length > 5) {
-						founddrinksstr = founddrinksstr + `..and ${founddrinks.length - 5} more drinks`;
-					}
-
-					msg.channel.send(`Found ${founddrinks.length} drinks:\n${founddrinksstr}`);
-				}
-			} else if (params[0] === 'make') {
-				let adelhyde = 0;
-				let bronson_extract = 0;
-				let powdered_delta = 0;
-				let flangerine = 0;
-				let karmotrine = 0;
-
-				let blended = false;
-				let aged = false;
-				let iced = false;
-
-				params[1].split('').forEach(i => {
-					switch (i) {
-					case 'a':
-						adelhyde += 1;
-						break;
-					case 'b':
-						bronson_extract += 1;
-						break;
-					case 'p':
-						powdered_delta += 1;
-						break;
-					case 'f':
-						flangerine += 1;
-						break;
-					case 'k':
-						karmotrine += 1;
-					}
-				});
-
-				blended = params.includes('blended');
-				iced = params.includes('ice');
-				aged = params.includes('aged');
-
-				foxconsole.debug(`${adelhyde}, ${bronson_extract}, ${powdered_delta}, ${flangerine}, ${karmotrine}`);
-				foxconsole.debug(`${blended}, ${aged}, ${iced}`);
-
-				let drink;
-				let drinkbig;
-				valhalladrinks.forEach(d => {
-					if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) return;
-
-					drinkbig = adelhyde / 2 === d.ingredients.adelhyde
-							&& bronson_extract / 2 === d.ingredients.bronson_extract
-							&& powdered_delta / 2 === d.ingredients.powdered_delta
-							&& flangerine / 2 === d.ingredients.flangerine
-							&& (karmotrine / 2 === d.ingredients.karmotrine || d.ingredients.karmotrine === 'optional');
-
-					if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkbig)) return;
-					if (bronson_extract !== d.ingredients.bronson_extract && (bronson_extract / 2 !== d.ingredients.bronson_extract || !drinkbig)) return;
-					if (powdered_delta !== d.ingredients.powdered_delta && (powdered_delta / 2 !== d.ingredients.powdered_delta || !drinkbig)) return;
-					if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkbig)) return;
-					if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkbig)) && d.ingredients.karmotrine !== 'optional') return;
-
-					if (blended !== d.blended) return;
-					if (aged !== d.aged) return;
-					if (iced !== d.iced) return;
-
-					drink = d;
-				});
-
-				msg.channel.send(':timer: **Making drink...**').then((editmsg) => {
-					setTimeout(() => {
-						if (drink === undefined) {
-							editmsg.edit('Failed to make drink!');
-						} else {
-							editmsg.edit('Successfully made drink!' + (drinkbig ? ' (its big too, woah)' : ''), makeDrinkEmbed(drink));
-						}
-					}, blended ? 7000 : 3000);
-				});
-			}
-
-			break;
-		case 'foxquote':
-			let randommsg = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
-			if (randommsg === undefined) { break; }
-
-			msg.channel.send('', new Discord.RichEmbed({
-				author: { name: randommsg.author.username, icon: randommsg.author.avatarURL },
-				timestamp: randommsg.createdTimestamp,
-				description: randommsg.content
-			}));
-			break;
-		case 'achievement':
-			if (params.length < 1) {
-				msg.reply('command doesn\'t match syntax: `achievement (text)`');
-				break;
-			}
-
-			msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + params.join('+'), name: 'achievement.png' }] });
-			break;
-		}
+		});
 
 		// debug and owneronly commands
+		// not put into commandsystem for debugging if the system dies or something like that
 		if (author.id === process.env.OWNER) {
 			switch (cmd) {
 			case 'debug':
@@ -827,7 +723,7 @@ bot.on('ready', () => {
 });
 
 foxconsole.info('logging in...');
-bot.login(process.env.TOKEN);
-
-foxconsole.info('patching out token...');
-process.env.TOKEN = '[TOKEN]';
+bot.login(process.env.TOKEN).then(() => {
+	foxconsole.info('patching out token...');
+	process.env.TOKEN = '[TOKEN]';
+});
