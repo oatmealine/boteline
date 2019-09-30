@@ -224,8 +224,8 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
 	.setUsage('ban (id)')
 	.setDescription('ban a user')
 	.addExample('ban 360111651602825216')
-	.addClientPermission('BAN_MEMBER')
-	.addUserPermission('BAN_MEMBER')
+	.addClientPermission('BAN_MEMBERS')
+	.addUserPermission('BAN_MEMBERS')
 	.setGuildOnly());
 
 cs.addCommand('moderating', new cs.SimpleCommand('kick', message => {
@@ -249,8 +249,8 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', message => {
 	.setUsage('kick (id)')
 	.setDescription('kick a user')
 	.addExample('kick 360111651602825216')
-	.addClientPermission('KICK_MEMBER')
-	.addUserPermission('KICK_MEMBER')
+	.addClientPermission('KICK_MEMBERS')
+	.addUserPermission('KICK_MEMBERS')
 	.setGuildOnly());
 
 cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
@@ -565,7 +565,8 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 	.setHidden()
 	.setGuildOnly()
 	.addUserPermission('MANAGE_MESSAGES')
-	.addClientPermissions(['MANAGE_MESSAGES','BAN_MEMBERS']));
+	.addClientPermissions(['MANAGE_MESSAGES','BAN_MEMBERS'])
+	.addAlias('permtestingalias'));
 
 foxconsole.info('starting...');
 
@@ -624,9 +625,11 @@ bot.on('message', msg => {
 		foxconsole.debug('got command ' + cmd);
 
 		Object.values(cs.commands).forEach(c => {
-			if (c[cmd]) {
-				c[cmd].runCommand(msg, bot);
-			}
+			Object.values(c).forEach(command => {
+				if (command.name === cmd || command.aliases.includes(cmd)) {
+					command.runCommand(msg, bot);
+				}
+			});
 		});
 
 		// debug and owneronly commands

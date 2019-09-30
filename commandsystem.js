@@ -21,6 +21,9 @@ class Command {
 		this.owneronly = false;
 		this.description = 'No description provided';
 
+		this.aliases = [];
+		this.examples = [];
+
 		return this;
 	}
 
@@ -35,11 +38,20 @@ class Command {
 	}
 
 	addExample(examplestring) {
-		if (this.examples) {
-			this.examples.push(examplestring);
-		} else {
-			this.examples = [examplestring];
-		}
+		examplestring = this.name + ' ' + examplestring;
+		this.examples.push(examplestring);
+		return this;
+	}
+
+	addAlias(aliasstring) {
+		this.aliases.push(aliasstring);
+		return this;
+	}
+
+	addAliases(aliasarr) {
+		aliasarr.forEach(alias => {
+			this.addAlias(alias);
+		});
 		return this;
 	}
 
@@ -180,18 +192,24 @@ let commands = {
 
 					categoryname = Object.keys(module.exports.commands)[i];
           
-					if (category[params[1]]) {
-						command = category[params[1]];
-					}
+					Object.values(category).forEach(cmd => {
+						if (cmd.name === params[1] || cmd.aliases.includes(params[1])) {
+							command = cmd;
+						}
+					});
 				});
 
 				if (command) {
-					return new Discord.RichEmbed()
+					let embed = new Discord.RichEmbed()
 						.setTitle(`**${grammar(command.name)}** (${grammar(categoryname)})`)
 						.addField('Usage', command.usage)
-						.addField('Examples', command.examples ? '`'+command.examples.join('`.\n`')+'`' : 'No examples...')
 						.setDescription(command.description)
 						.setColor(Math.floor(Math.random()*16777215));
+
+					if (command.examples.length !== 0) embed = embed.addField('Examples', '`'+command.examples.join('`.\n`')+'`');
+					if (command.aliases.length !== 0) embed = embed.addField('Aliases', command.aliases.join(', '));
+
+					return embed;
 				} else {
 					return `Command \`${params[1]}\` not found!`;
 				}
