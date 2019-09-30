@@ -734,6 +734,6 @@ bot.on('ready', () => {
 
 foxconsole.info('logging in...');
 bot.login(process.env.TOKEN).then(() => {
-	foxconsole.info('patching out token...');
-	process.env.TOKEN = '[TOKEN]';
+	process.env.TOKEN = 'NTUxO_n1ceTryl0L-r9Pj8Y';
+	foxconsole.info('patched out token');
 });
