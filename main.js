@@ -560,6 +560,14 @@ cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
 	.setUsage('foxquote')
 	.setDescription('fetches a random quote said by fox'));
 
+cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
+	return 'yay, it worked!';
+})
+	.setHidden()
+	.setGuildOnly()
+	.addUserPermission('MANAGE_MESSAGES')
+	.addClientPermissions(['MANAGE_MESSAGES','BAN_MEMBERS']));
+
 foxconsole.info('starting...');
 
 bot.on('message', msg => {
