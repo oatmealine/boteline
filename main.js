@@ -206,60 +206,52 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
 	let params = message.content.split(' ').slice(1, message.content.length);
 
-	if (message.channel.type !== 'text') { return 'you\'re in a DM!'; }
-	if (message.member.hasPermission('BAN_MEMBERS')) {
-		if (message.guild.me.hasPermission('BAN_MEMBERS')) {
-			if (message.guild.members.get(params[0]) !== undefined) {
-				let banmember = message.guild.members.get(params[0]);
+	if (message.guild.members.get(params[0]) !== undefined) {
+		let banmember = message.guild.members.get(params[0]);
 
-				if (banmember.id === message.member.id) {
-					return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
-				}
+		if (banmember.id === message.member.id) {
+			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
+		}
 
-				if (banmember.bannable) {
-					banmember.ban();
-					return '✓ Banned ' + banmember.username;
-				} else
-					return 'member ' + banmember.username + ' isn\'t bannable';
-			} else
-				return 'i don\'t know that person!';
+		if (banmember.bannable) {
+			banmember.ban();
+			return '✓ Banned ' + banmember.username;
 		} else
-			return 'i don\'t have ban permissions!';
+			return 'member ' + banmember.username + ' isn\'t bannable';
 	} else
-		return'you don\'t have ban permissions!';
+		return 'i don\'t know that person!';
 })
 	.setUsage('ban (id)')
 	.setDescription('ban a user')
-	.addExample('ban 360111651602825216'));
+	.addExample('ban 360111651602825216')
+	.addClientPermission('BAN_MEMBER')
+	.addUserPermission('BAN_MEMBER')
+	.setGuildOnly());
 
 cs.addCommand('moderating', new cs.SimpleCommand('kick', message => {
 	let params = message.content.split(' ').slice(1, message.content.length);
 	
-	if (message.channel.type !== 'text') { return 'you\'re in a DM!'; }
-	if (message.member.hasPermission('KICK_MEMBERS')) {
-		if (message.guild.me.hasPermission('KICK_MEMBERS')) {
-			if (message.guild.members.get(params[0]) !== undefined) {
-				let banmember = message.guild.members.get(params[0]);
+	if (message.guild.members.get(params[0]) !== undefined) {
+		let banmember = message.guild.members.get(params[0]);
 	
-				if (banmember.id === message.member.id) {
-					return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
-				}
+		if (banmember.id === message.member.id) {
+			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
+		}
 	
-				if (banmember.kickable) {
-					banmember.ban();
-					return '✓ Kicked ' + banmember.username;
-				} else
-					return 'member ' + banmember.username + ' isn\'t kickable';
-			} else
-				return 'i don\'t know that person!';
+		if (banmember.kickable) {
+			banmember.ban();
+			return '✓ Kicked ' + banmember.username;
 		} else
-			return 'i don\'t have kick permissions!';
+			return 'member ' + banmember.username + ' isn\'t kickable';
 	} else
-		return'you don\'t have kick permissions!';
+		return 'i don\'t know that person!';
 })
 	.setUsage('kick (id)')
 	.setDescription('kick a user')
-	.addExample('kick 360111651602825216'));
+	.addExample('kick 360111651602825216')
+	.addClientPermission('KICK_MEMBER')
+	.addUserPermission('KICK_MEMBER')
+	.setGuildOnly());
 
 cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
 	let params = getParams(message);
@@ -305,7 +297,9 @@ cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
 })
 	.setUsage('icon')
-	.setDescription('get the server\'s icon'));
+	.setDescription('get the server\'s icon')
+	.addClientPermission('ATTACH_FILES')
+	.setGuildOnly());
 
 cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
 	let params = getParams(msg);
@@ -319,7 +313,8 @@ cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
 	msg.channel.send('', { files: [{ attachment: user.avatarURL, name: 'avatar.png' }] });
 })
 	.setUsage('pfp [id]')
-	.setDescription('get a user\'s pfp'));
+	.setDescription('get a user\'s pfp')
+	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 	return 'ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку';
@@ -329,7 +324,8 @@ cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 
 cs.addCommand('fun', new FFMpegCommand('compress', [], ['-b:v 20k', '-b:a 17k', '-c:a aac'])
 	.setDescription('compresses a video')
-	.setUsage('compress [url]'));
+	.setUsage('compress [url]')
+	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	const eat = bot.emojis.get('612360473928663040').toString();
@@ -356,7 +352,8 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	});
 })
 	.setDescription('eat the Burger')
-	.setUsage('eat'));
+	.setUsage('eat')
+	.addClientPermission('USE_EXTERNAL_EMOJIS'));
 
 cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 	let params = getParams(msg);
@@ -544,7 +541,8 @@ cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 })
 	.setDescription('make a minecraft achievement')
 	.setUsage('achievement (string)')
-	.addExample('achievement Made an example!'));
+	.addExample('achievement Made an example!')
+	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
 	let randommsg = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
@@ -558,7 +556,8 @@ cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
 })
 	.setHidden()
 	.setUsage('foxquote')
-	.setDescription('fetches a random quote said by fox'));
+	.setDescription('fetches a random quote said by fox')
+	.addClientPermission('EMBED_LINKS'));
 
 cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 	return 'yay, it worked!';
