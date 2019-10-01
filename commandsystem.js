@@ -211,21 +211,51 @@ let commands = {
 
 					return embed;
 				} else {
-					return `Command \`${params[1]}\` not found!`;
+					let category;
+					let categoryname;
+					
+					Object.values(module.exports.commands).forEach((cat, i) => {
+						if (cat) return;
+	
+						categoryname = Object.keys(module.exports.commands)[i];
+						if (categoryname === params[1].toLowerCase()) category = cat;
+					});
+
+					if (category) {
+						let embed = new Discord.RichEmbed()
+							.setTitle(`**${grammar(categoryname)}** [${category.length}]`)
+							.setColor(Math.floor(Math.random()*16777215));
+
+						let commands = [];
+
+						Object(category).values.forEach(cmd => {
+							if (!cmd.hidden) commands.push('`' + cmd.name + '` - ' + cmd.description);
+						});
+
+						if (commands.length !== 0) embed.addField('Commands', commands.join('\n'));
+
+						return embed;
+					} else
+						return `Command or category\`${params[1]}\` not found!`;
 				}
 			} else {
-				let endstring = '';
+				let embed = new Discord.RichEmbed()
+					.setTitle('**All Boteline Commands**')
+					.setColor(Math.floor(Math.random()*16777215))
+					.setFooter('Do help (category) to get all commands for a category!');
 
 				Object.values(module.exports.commands).forEach((category, i) => {
 					let categoryname = Object.keys(module.exports.commands)[i];
-					endstring += `\n> **${grammar(categoryname)}**`;
+					let commands = [];
 
 					Object.values(category).forEach(cmd => {
-						if (!cmd.hidden) endstring += `\n${cmd.usage} - ${cmd.description === undefined ? 'no description' : cmd.description}`;
+						if (!cmd.hidden) commands.push(cmd.name);
 					});
+
+					if (commands.length !== 0) embed.addField(`${grammar(categoryname)} __[${commands.length}]__`, '`'+commands.join('`, `')+'`');
 				});
         
-				return endstring;
+				return embed;
 			}
 		})
 			.setUsage('help [string]')
