@@ -236,7 +236,7 @@ let commands = {
 
 						return embed;
 					} else
-						return `Command or category\`${params[1]}\` not found!`;
+						return `Command or category \`${params[1]}\` not found!`;
 				}
 			} else {
 				let embed = new Discord.RichEmbed()

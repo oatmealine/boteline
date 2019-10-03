@@ -14,6 +14,10 @@ const fs = require('fs');
 
 const ffmpeg = require('fluent-ffmpeg');
 // files
+
+const package = require('./package.json');
+const packagelock = require('./package-lock.json');
+
 if (!fs.existsSync('./foxquotes.json')) {
 	fs.writeFileSync('./foxquotes.json', '[]');
 }
@@ -32,11 +36,38 @@ foxconsole.showDebug(process.env.DEBUG);
 
 // constants & variables
 const prefix = process.env.PREFIX;
-const version = require('./package.json').version + ' alpha';
+
+const version = package.version + ' alpha';
 
 const valhalladrinks = require('./valhalla.json');
 
 let application;
+
+// statistics
+
+let cpuusagemin = 'not enough data';
+let cpuusage30sec = 'not enough data';
+let cpuusage1sec = 'not enough data';
+
+let cpuusageminold = process.cpuUsage();
+let cpuusage30secold = process.cpuUsage();
+let cpuusage1secold = process.cpuUsage();
+
+setInterval(() => {
+	let usage = process.cpuUsage(cpuusage1secold);
+	cpuusage1sec = 100 * (usage.user + usage.system) / 1000000;
+	cpuusage1secold = process.cpuUsage();
+}, 1000);
+setInterval(() => {
+	let usage = process.cpuUsage(cpuusage30secold);
+	cpuusage30sec = 100 * (usage.user + usage.system) / 30000000;
+	cpuusage30secold = process.cpuUsage();
+}, 30000);
+setInterval(() => {
+	let usage = process.cpuUsage(cpuusageminold);
+	cpuusagemin = 100 * (usage.user + usage.system) / 60000000;
+	cpuusageminold = process.cpuUsage();
+}, 60000);
 
 // functions
 function makeDrinkEmbed(drink) {
@@ -567,6 +598,17 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 	.addUserPermission('MANAGE_MESSAGES')
 	.addClientPermissions(['MANAGE_MESSAGES','BAN_MEMBERS'])
 	.addAlias('permtestingalias'));
+
+cs.addCommand('core', new cs.Command('info', (msg) => {
+	msg.channel.send(new Discord.RichEmbed()
+		.setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packagelock.dependencies['discord.js'].version}`, bot.user.avatarURL)
+		.setTitle(`${bot.user.username} stats`)
+		.addField('Memory Usage', Math.round(process.memoryUsage().rss/10000)/100+'MB', true)
+		.addField('CPU Usage', `Last second: **${cpuusage1sec}%**\nLast 30 seconds: **${cpuusage30sec}%**\nLast minute: **${cpuusagemin}**%\nRuntime: **${Math.round(process.cpuUsage().user/(process.uptime()*1000)*100)/100}%**`, true)
+		.addField('Uptime', `${Math.round(process.uptime()/76800)}d ${Math.round(process.uptime()/3200)}h ${Math.round(process.uptime()/60)}m ${Math.round(process.uptime())}s`, true));
+})
+	.addAlias('stats')
+	.setDescription('get some info and stats about the bot'));
 
 foxconsole.info('starting...');
 
