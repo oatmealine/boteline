@@ -28,6 +28,11 @@ if (!fs.existsSync('./userdata.json')) {
 }
 let userdata = require('./userdata.json');
 
+if (!fs.existsSync('./guildsettings.json')) {
+	fs.writeFileSync('./guildsettings.json', '{}');
+}
+let guildsettings = require('./guildsettings.json');
+
 let foxquotessaveneeded = false;
 
 // .env stuff
@@ -673,6 +678,28 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 	.addAlias('stats')
 	.setDescription('get some info and stats about the bot'));
 
+cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
+	let params = getParams(msg);
+	if (!params[0]) params[0] = prefix;
+
+	params[0] = params[0].toLowerCase();
+
+	if (guildsettings[msg.guild.id]) {
+		guildsettings[msg.guild.id] = params[0];
+	} else {
+		guildsettings[msg.guild.id] = {
+			prefix: params[0]
+		};
+	}
+
+	return `changed prefix to ${params[0]}`;
+})
+	.addAlias('setprefix')
+	.addAlias('customprefix')
+	.setDescription('set a custom prefix for boteline')
+	.setUsage('prefix [string]')
+	.addUserPermission('MANAGE_GUILD'));
+
 foxconsole.info('starting...');
 
 bot.on('message', msg => {
@@ -723,8 +750,16 @@ bot.on('message', msg => {
 		}
 	}
 
-	if (content.startsWith(prefix)) {
-		content = content.slice(prefix.length, content.length);
+	let thisprefix = prefix;
+
+	if (msg.guild) {
+		if (guildsettings[msg.guild.id]) {
+			thisprefix = guildsettings[msg.guild.id].prefix;
+		}
+	}
+
+	if (content.startsWith(thisprefix)) {
+		content = content.slice(thisprefix.length, content.length);
 		let cmd = content.split(' ')[0];
 
 		foxconsole.debug('got command ' + cmd);
@@ -819,6 +854,15 @@ bot.on('ready', () => {
 				foxconsole.error('failed saving userdata: ' + err);
 			} else {
 				foxconsole.success('saved userdata');
+			}
+		});
+
+		foxconsole.debug('saving guild settings...');
+		fs.writeFile('./guildsettings.json', JSON.stringify(guildsettings), (err) => {
+			if (err) {
+				foxconsole.error('failed saving guildsettings: ' + err);
+			} else {
+				foxconsole.success('saved guild settings');
 			}
 		});
 
