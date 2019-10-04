@@ -165,7 +165,7 @@ class FFMpegCommand extends cs.Command {
 				attachments.push(msg.attachments.first());
 			}
 
-			if (attachments.length > 0 || params.length > 0) {
+			if (attachments.length > 0) {
 				let videoattach;
 
 				attachments.forEach(attachment => {
@@ -179,7 +179,7 @@ class FFMpegCommand extends cs.Command {
 					}
 				});
 			
-				if (videoattach || params.length > 0) {
+				if (videoattach) {
 					let progmessage;
 					let lastedit = 0; // to avoid ratelimiting
 
@@ -198,9 +198,9 @@ class FFMpegCommand extends cs.Command {
 						}
 					}
 
-					ffmpeg(params.length > 0 ? params.join(' ') : videoattach.url)
-						.inputOptions(this.inputOptions)
-						.outputOptions(this.outputOptions)
+					ffmpeg(videoattach.url)
+						.inputOptions(this.inputOptions(msg))
+						.outputOptions(this.outputOptions(msg))
 						.on('start', commandLine => {
 							foxconsole.info('started ffmpeg with command: '+commandLine);
 							if (progmessage) {
@@ -404,10 +404,14 @@ cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 	.addAlias('ква')
 	.setDescription('ква'));
 
-cs.addCommand('fun', new FFMpegCommand('compress', [], ['-b:v 20k', '-b:a 17k', '-c:a aac'])
+cs.addCommand('fun', new FFMpegCommand('compress', ()=>{return [];}, (msg) => {
+	let params = getParams(msg);
+	if (!params[0]) params[0] = '20';
+	return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(params[0]-3)}k`, '-c:a aac'];
+})
 	.setDescription('compresses a video')
 	.addAlias('compression')
-	.setUsage('compress [url]')
+	.setUsage('compress [number]')
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
