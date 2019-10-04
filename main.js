@@ -141,107 +141,107 @@ class FFMpegCommand extends cs.Command {
 
 		this.inputOptions = inputOptions;
 		this.outputOptions = outputOptions;
-		return this;
-	}
 
-	async runCommand(msg) {
-		let params = getParams(msg);
-		let attachments = [];
+		this.function = async (msg) => {
+			let params = getParams(msg);
+			let attachments = [];
 
-		if (msg.attachments.size === 0) {
-			await msg.channel.fetchMessages({limit: 20}).then(msges => {
-				msges.array().forEach(m => {
-					if (m.attachments.size > 0) {
-						m.attachments.array().forEach(att => {
-							attachments.push(att);
-						});
-					}
+			if (msg.attachments.size === 0) {
+				await msg.channel.fetchMessages({limit: 20}).then(msges => {
+					msges.array().forEach(m => {
+						if (m.attachments.size > 0) {
+							m.attachments.array().forEach(att => {
+								attachments.push(att);
+							});
+						}
+					});
 				});
-			});
-		} else {
-			attachments.push(msg.attachments.first());
-		}
-
-		if (attachments.length > 0 || params.length > 0) {
-			let videoattach;
-
-			attachments.forEach(attachment => {
-				if (videoattach || !attachment) return;
-
-				let filetype = attachment.filename.split('.').pop();
-				const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
-
-				if (acceptedFiletypes.includes(filetype.toLowerCase())) {
-					videoattach = attachment;
-				}
-			});
-			
-			if (videoattach || params.length > 0) {
-				let progmessage;
-				let lastedit = 0; // to avoid ratelimiting
-
-				msg.channel.send('ok, downloading...').then(m=>{
-					progmessage = m;
-				});
-				msg.channel.startTyping();
-
-				if(params[0]) {
-					if (params[0].startsWith('.') || params[0].startsWith('/') || params[0].startsWith('~')) {
-						if (progmessage) {
-							progmessage.edit('i know exactly what you\'re doing there bud');
-						} else {
-							msg.channel.send('i know exactly what you\'re doing there bud');
-						}
-					}
-				}
-
-				ffmpeg(params.length > 0 ? params.join(' ') : videoattach.url)
-					.inputOptions(this.inputOptions)
-					.outputOptions(this.outputOptions)
-					.on('start', commandLine => {
-						foxconsole.info('started ffmpeg with command: '+commandLine);
-						if (progmessage) {
-							progmessage.edit('processing: 0% (0s) done');
-						}
-					})
-					.on('stderr', stderrLine => {
-						foxconsole.debug('ffmpeg: ' + stderrLine);
-					})
-					.on('progress', progress => {
-						if (lastedit+2000 < Date.now() && progmessage) {
-							lastedit = Date.now();
-							progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent*100)/100 : '0.00'}%** \`(${progress.timemark})\``);
-						}
-					})
-					.on('error', err => {
-						msg.channel.stopTyping();
-						foxconsole.warning('ffmpeg failed!');
-						foxconsole.warning(err);
-						if (progmessage) {
-							progmessage.edit(`processing: error! \`${err}\``);
-						} else {
-							msg.channel.send(`An error has occured!: \`${err}\``);
-						}
-					})
-					.on('end', () => {
-						msg.channel.stopTyping();
-						if (progmessage) {
-							progmessage.edit('processing: done! uploading');
-						}
-						msg.channel.send('ok, done', {files: ['./temp.mp4']}).then(() => {
-							if (progmessage) {
-								progmessage.delete();
-							}
-						});
-					})
-					//.pipe(stream);
-					.save('./temp.mp4');
 			} else {
-				msg.channel.send('No video attachments found');
+				attachments.push(msg.attachments.first());
 			}
-		} else {
-			msg.channel.send('No attachments found');
-		}
+
+			if (attachments.length > 0 || params.length > 0) {
+				let videoattach;
+
+				attachments.forEach(attachment => {
+					if (videoattach || !attachment) return;
+
+					let filetype = attachment.filename.split('.').pop();
+					const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
+
+					if (acceptedFiletypes.includes(filetype.toLowerCase())) {
+						videoattach = attachment;
+					}
+				});
+			
+				if (videoattach || params.length > 0) {
+					let progmessage;
+					let lastedit = 0; // to avoid ratelimiting
+
+					msg.channel.send('ok, downloading...').then(m=>{
+						progmessage = m;
+					});
+					msg.channel.startTyping();
+
+					if(params[0]) {
+						if (params[0].startsWith('.') || params[0].startsWith('/') || params[0].startsWith('~')) {
+							if (progmessage) {
+								progmessage.edit('i know exactly what you\'re doing there bud');
+							} else {
+								msg.channel.send('i know exactly what you\'re doing there bud');
+							}
+						}
+					}
+
+					ffmpeg(params.length > 0 ? params.join(' ') : videoattach.url)
+						.inputOptions(this.inputOptions)
+						.outputOptions(this.outputOptions)
+						.on('start', commandLine => {
+							foxconsole.info('started ffmpeg with command: '+commandLine);
+							if (progmessage) {
+								progmessage.edit('processing: 0% (0s) done');
+							}
+						})
+						.on('stderr', stderrLine => {
+							foxconsole.debug('ffmpeg: ' + stderrLine);
+						})
+						.on('progress', progress => {
+							if (lastedit+2000 < Date.now() && progmessage) {
+								lastedit = Date.now();
+								progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent*100)/100 : '0.00'}%** \`(${progress.timemark})\``);
+							}
+						})
+						.on('error', err => {
+							msg.channel.stopTyping();
+							foxconsole.warning('ffmpeg failed!');
+							foxconsole.warning(err);
+							if (progmessage) {
+								progmessage.edit(`processing: error! \`${err}\``);
+							} else {
+								msg.channel.send(`An error has occured!: \`${err}\``);
+							}
+						})
+						.on('end', () => {
+							msg.channel.stopTyping();
+							if (progmessage) {
+								progmessage.edit('processing: done! uploading');
+							}
+							msg.channel.send('ok, done', {files: ['./temp.mp4']}).then(() => {
+								if (progmessage) {
+									progmessage.delete();
+								}
+							});
+						})
+					//.pipe(stream);
+						.save('./temp.mp4');
+				} else {
+					msg.channel.send('No video attachments found');
+				}
+			} else {
+				msg.channel.send('No attachments found');
+			}
+		};
+		return this;
 	}
 }
 
@@ -833,6 +833,8 @@ bot.on('ready', () => {
 			}
 		});
 	}, 120000);
+
+	cs.bot = bot;
 
 	foxconsole.success('ready!');
 });

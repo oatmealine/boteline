@@ -1,9 +1,15 @@
 const Discord = require('discord.js');
 const foxconsole = require('./foxconsole.js');
 
+let client;
+
 function grammar(string) {
 	let newstring = string.slice(1,string.length);
 	return string[0].toUpperCase()+newstring;
+}
+
+function getParams(message) { 
+	return message.content.split(' ').slice(1, message.content.length);
 }
 
 class Command {
@@ -11,6 +17,7 @@ class Command {
 		this.name = name;
 		this.function = cfunction;
 		this.usage = name;
+		this.displayUsage = name;
 		this.clientPermissions = [];
 		this.userPermissions = [];
 
@@ -34,6 +41,12 @@ class Command {
 
 	setUsage(usgstring) {
 		this.usage = usgstring;
+		this.displayUsage = usgstring;
+		return this;
+	}
+
+	setDisplayUsage(usgstring) {
+		this.displayUsage = usgstring;
 		return this;
 	}
 
@@ -114,12 +127,49 @@ class Command {
 	}
 
 	runCommand(message, client) {
+		let params = getParams(message);
+
 		if (this.needsGuild && !message.guild) {
 			return message.channel.send('This command needs to be ran in a server!');
 		}
 
 		if (this.needsDM && message.guild) {
 			return message.channel.send('This command needs to be ran in a DM!');
+		}
+
+		let argumentsvalid = [];
+
+		if (this.usage && !this.usageCheck) {
+			let argument = this.usage.split(' ');
+			argument.shift();
+
+			argument.forEach((arg,i) => {
+				if (params[i] !== undefined) {
+					switch (arg.slice(1,arg.length-1)) {
+					case 'any':
+					case 'string':
+						argumentsvalid[i] = true;
+						break;
+					case 'url':
+						argumentsvalid[i] = params[i].startsWith('http://') || params[i].startsWith('https://');
+						break;
+					case 'number':
+						argumentsvalid[i] = !isNaN(params[i]);
+						break;
+					case 'id':
+						argumentsvalid[i] = client ? (client.guilds.get(params[i]) || client.users.get(params[i]) || client.channels.get(params[i])) : true;
+					}
+				} else {
+					argumentsvalid[i] = arg.startsWith('[') && arg.endsWith(']');
+				}
+			});
+		} else {
+			argumentsvalid = this.usageCheck ? this.usageCheck(message) : null;
+		}
+
+		if (argumentsvalid !== null) {
+			if (argumentsvalid.includes(false))
+				return message.channel.send(`Invalid syntax! \`${this.displayUsage}\``);
 		}
 
 		if (this.userPermissions.length > 0 && message.guild) {
@@ -201,7 +251,7 @@ let commands = {
 				if (command) {
 					let embed = new Discord.RichEmbed()
 						.setTitle(`**${grammar(command.name)}** (${grammar(categoryname)})`)
-						.addField('Usage', command.usage)
+						.addField('Usage', command.displayUsage)
 						.setDescription(command.description)
 						.setColor(Math.floor(Math.random()*16777215));
 
@@ -281,6 +331,7 @@ function addCommand(category, command) {
 }
 
 module.exports = {
+	bot: client,
 	SimpleCommand: SimpleCommand,
 	Command: Command,
 	commands: commands,
