@@ -214,7 +214,7 @@ let commands = {
 					let categoryname;
 					
 					Object.values(module.exports.commands).forEach((cat, i) => {
-						if (cat) return;
+						if (category) return;
 	
 						categoryname = Object.keys(module.exports.commands)[i];
 						if (categoryname === params[1].toLowerCase()) category = cat;
@@ -222,12 +222,12 @@ let commands = {
 
 					if (category) {
 						let embed = new Discord.RichEmbed()
-							.setTitle(`**${grammar(categoryname)}** [${category.length}]`)
+							.setTitle(`**${grammar(categoryname)}** [${Object.keys(category).length}]`)
 							.setColor(Math.floor(Math.random()*16777215));
 
 						let commands = [];
 
-						Object(category).values.forEach(cmd => {
+						Object.values(category).forEach(cmd => {
 							if (!cmd.hidden) commands.push('`' + cmd.name + '` - ' + cmd.description);
 						});
 
@@ -260,7 +260,7 @@ let commands = {
 			.setUsage('help [string]')
 			.addAlias('cmds')
 			.setDescription('see commands, or check out a comnmand in detail'),
-			
+
 		ping: new Command('ping', (message, bot) => {
 			let datestart = Date.now();
 			message.channel.send('hol up').then(m => {
