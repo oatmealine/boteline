@@ -266,6 +266,7 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
 })
 	.setDescription('get the bot\'s invite')
+	.addAlias('invitelink')
 	.setUsage('invite'));
 
 cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
@@ -288,6 +289,8 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
 })
 	.setUsage('ban (id)')
 	.setDescription('ban a user')
+	.addAlias('banuser')
+	.addAlias('banmember')
 	.addExample('ban 360111651602825216')
 	.addClientPermission('BAN_MEMBERS')
 	.addUserPermission('BAN_MEMBERS')
@@ -312,6 +315,8 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', message => {
 		return 'i don\'t know that person!';
 })
 	.setUsage('kick (id)')
+	.addAlias('kickuser')
+	.addAlias('kickmember')
 	.setDescription('kick a user')
 	.addExample('kick 360111651602825216')
 	.addClientPermission('KICK_MEMBERS')
@@ -322,6 +327,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
 	let params = getParams(message);
 	return `${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`;
 })
+	.addAliases(['farenheit','farenheight','fairenheight','fairenheit','fahrenheight','americancelcius','stupidunit','notcelsius','notcelcius','weirdformulaunit','multiplyby1.8andadd32'])
 	.setUsage('fahrenheit (number)')
 	.setDescription('convert celsius to fahrenheit')
 	.addExample('fahrenheit 15'));
@@ -330,9 +336,10 @@ cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
 	let params = getParams(message);
 	return `${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`;
 })
-	.setUsage('celcius (number)')
+	.setUsage('celsius (number)')
+	.addAlias('celcius')
 	.setDescription('convert fahrenheit to celsius')
-	.addExample('celcius 59'));
+	.addExample('celsius 59'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
 	let params = getParams(message);
@@ -347,6 +354,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('mbs', (message) => {
 	return `${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`;
 })
 	.setUsage('mbs (number)')
+	.addAlias('mb/s')
 	.setDescription('convert mbps to mb/s')
 	.addExample('mbs 8'));
 
@@ -362,6 +370,8 @@ cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
 })
 	.setUsage('icon')
+	.addAlias('servericon')
+	.addAlias('serverpic')
 	.setDescription('get the server\'s icon')
 	.addClientPermission('ATTACH_FILES')
 	.setGuildOnly());
@@ -378,6 +388,7 @@ cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
 	msg.channel.send('', { files: [{ attachment: user.avatarURL, name: 'avatar.png' }] });
 })
 	.setUsage('pfp [id]')
+	.addAlias('avatar')
 	.setDescription('get a user\'s pfp')
 	.addClientPermission('ATTACH_FILES'));
 
@@ -385,22 +396,28 @@ cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 	return 'ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку';
 })
 	.setHidden()
+	.addAlias('ква')
 	.setDescription('ква'));
 
 cs.addCommand('fun', new FFMpegCommand('compress', [], ['-b:v 20k', '-b:a 17k', '-c:a aac'])
 	.setDescription('compresses a video')
+	.addAlias('compression')
 	.setUsage('compress [url]')
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
+	let params = getParams(msg);
+
 	const eat = bot.emojis.get('612360473928663040').toString();
 	const hamger1 = bot.emojis.get('612360474293567500').toString();
 	const hamger2 = bot.emojis.get('612360473987252278').toString();
 	const hamger3 = bot.emojis.get('612360473974931458').toString();
 
-	msg.channel.send(eat + hamger1 + hamger2 + hamger3).then(m => {
+	let insidehamger = params[0] ? params.join(' ') : hamger2;
+
+	msg.channel.send(eat + hamger1 + insidehamger + hamger3).then(m => {
 		setTimeout(() => {
-			m.edit(eat + hamger2 + hamger3).then(m => {
+			m.edit(eat + insidehamger + hamger3).then(m => {
 				setTimeout(() => {
 					m.edit(eat + hamger3).then(m => {
 						setTimeout(() => {
@@ -417,7 +434,8 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	});
 })
 	.setDescription('eat the Burger')
-	.setUsage('eat')
+	.setUsage('eat [any]')
+	.addAlias('burger')
 	.addClientPermission('USE_EXTERNAL_EMOJIS'));
 
 cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
@@ -525,6 +543,8 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 		});
 	}
 })
+	.addAlias('va11halla')
+	.addAlias('vallhalla')
 	.setUsage('valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [mixed?] [on the rocks?] [aged?])')
 	.addExample('valhalla search Frothy Water')
 	.addExample('valhalla make abpf aged')
@@ -543,6 +563,8 @@ cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
 	You are: **\`[${'█'.repeat(Math.floor((userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded)*10))}${'_'.repeat(10 - (userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded)*10)}]\`** this close to getting another N-Word pass`;
 	}
 })
+	.addAlias('nword')
+	.addAlias('nwordpasses')
 	.setDescription('see your amount of nwordpasses, or toggle the system')
 	.setUsage('nwordpass [toggle]')
 	.addExample('nwordpass toggle')
@@ -588,6 +610,7 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 	let rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
 	return `Out of ${params[0]} and ${params[1]}, I'd pick **${rating1 === rating2 ? 'neither' : (rating1 > rating2 ? thingToRate1 : thingToRate2)}**`;
 })
+	.addAlias('choose')
 	.setDescription('rates 2 objects, and picks one of them')
 	.setUsage('pick (string) (string)')
 	.addExample('pick njs python'));
@@ -598,12 +621,15 @@ cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
 })
 	.setDescription('ask the bot a question')
 	.setUsage('ask (string)')
+	.addAlias('askquestion')
+	.addAlias('question')
 	.addExample('ask is this a good example'));
 
 cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 	let params = getParams(msg);
 	msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + params.join('+'), name: 'achievement.png' }] });
 })
+	.addAlias('advancement')
 	.setDescription('make a minecraft achievement')
 	.setUsage('achievement (string)')
 	.addExample('achievement Made an example!')
@@ -621,6 +647,7 @@ cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
 })
 	.setHidden()
 	.setUsage('foxquote')
+	.addAlias('quotefox')
 	.setDescription('fetches a random quote said by fox')
 	.addClientPermission('EMBED_LINKS'));
 
@@ -637,8 +664,10 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 	msg.channel.send(new Discord.RichEmbed()
 		.setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packagelock.dependencies['discord.js'].version}`, bot.user.avatarURL)
 		.setTitle(`${bot.user.username} stats`)
+		.setURL(package.repository)
+		.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
 		.addField('Memory Usage', Math.round(process.memoryUsage().rss/10000)/100+'MB', true)
-		.addField('CPU Usage', `Last second: **${cpuusage1sec}%**\nLast 30 seconds: **${cpuusage30sec}%**\nLast minute: **${cpuusagemin}**%\nRuntime: **${Math.round(process.cpuUsage().user/(process.uptime()*1000)*100)/100}%**`, true)
+		.addField('CPU Usage', `Last second: **${cpuusage1sec}%**\nLast 30 seconds: **${cpuusage30sec}%**\nLast minute: **${cpuusagemin}%**\nRuntime: **${Math.round(process.cpuUsage().user/(process.uptime()*1000)*100)/100}%**`, true)
 		.addField('Uptime', `${Math.round(process.uptime()/76800)}d ${Math.round(process.uptime()/3200)}h ${Math.round(process.uptime()/60)}m ${Math.round(process.uptime())}s`, true));
 })
 	.addAlias('stats')

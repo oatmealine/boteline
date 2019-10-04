@@ -38,7 +38,6 @@ class Command {
 	}
 
 	addExample(examplestring) {
-		examplestring = this.name + ' ' + examplestring;
 		this.examples.push(examplestring);
 		return this;
 	}
@@ -206,7 +205,7 @@ let commands = {
 						.setDescription(command.description)
 						.setColor(Math.floor(Math.random()*16777215));
 
-					if (command.examples.length !== 0) embed = embed.addField('Examples', '`'+command.examples.join('`.\n`')+'`');
+					if (command.examples.length !== 0) embed = embed.addField('Examples', '`'+command.examples.join('`,\n`')+'`');
 					if (command.aliases.length !== 0) embed = embed.addField('Aliases', command.aliases.join(', '));
 
 					return embed;
@@ -252,14 +251,16 @@ let commands = {
 						if (!cmd.hidden) commands.push(cmd.name);
 					});
 
-					if (commands.length !== 0) embed.addField(`${grammar(categoryname)} __[${commands.length}]__`, '`'+commands.join('`, `')+'`');
+					if (commands.length !== 0) embed.addField(`${grammar(categoryname)} [${commands.length}]`, '`'+commands.join('`, `')+'`');
 				});
         
 				return embed;
 			}
 		})
 			.setUsage('help [string]')
+			.addAlias('cmds')
 			.setDescription('see commands, or check out a comnmand in detail'),
+			
 		ping: new Command('ping', (message, bot) => {
 			let datestart = Date.now();
 			message.channel.send('hol up').then(m => {
