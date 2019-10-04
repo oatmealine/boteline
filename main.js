@@ -144,13 +144,39 @@ class FFMpegCommand extends cs.Command {
 		return this;
 	}
 
-	runCommand(msg) {
-		if (msg.attachments.size === 1) {
-			let attachment = msg.attachments.first();
-			let filetype = attachment.filename.split('.').pop();
-			const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv'];
+	async runCommand(msg) {
+		let params = getParams(msg);
+		let attachments = [];
 
-			if (acceptedFiletypes.includes(filetype.toLowerCase())) {
+		if (msg.attachments.size === 0) {
+			await msg.channel.fetchMessages({limit: 20}).then(msges => {
+				msges.array().forEach(m => {
+					if (m.attachments.size > 0) {
+						m.attachments.array().forEach(att => {
+							attachments.push(att);
+						});
+					}
+				});
+			});
+		} else {
+			attachments.push(msg.attachments.first());
+		}
+
+		if (attachments.length > 0 || params.length > 0) {
+			let videoattach;
+
+			attachments.forEach(attachment => {
+				if (videoattach || !attachment) return;
+
+				let filetype = attachment.filename.split('.').pop();
+				const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
+
+				if (acceptedFiletypes.includes(filetype.toLowerCase())) {
+					videoattach = attachment;
+				}
+			});
+			
+			if (videoattach || params.length > 0) {
 				let progmessage;
 				let lastedit = 0; // to avoid ratelimiting
 
@@ -159,9 +185,17 @@ class FFMpegCommand extends cs.Command {
 				});
 				msg.channel.startTyping();
 
-				//let stream = Buffer.alloc(0);
+				if(params[0]) {
+					if (params[0].startsWith('.') || params[0].startsWith('/') || params[0].startsWith('~')) {
+						if (progmessage) {
+							progmessage.edit('i know exactly what you\'re doing there bud');
+						} else {
+							msg.channel.send('i know exactly what you\'re doing there bud');
+						}
+					}
+				}
 
-				ffmpeg(attachment.url)
+				ffmpeg(params.length > 0 ? params.join(' ') : videoattach.url)
 					.inputOptions(this.inputOptions)
 					.outputOptions(this.outputOptions)
 					.on('start', commandLine => {
@@ -203,10 +237,10 @@ class FFMpegCommand extends cs.Command {
 					//.pipe(stream);
 					.save('./temp.mp4');
 			} else {
-				msg.channel.send('Found a non-video attachment, aborting');
+				msg.channel.send('No video attachments found');
 			}
 		} else {
-			msg.channel.send('Found less/more attachments than 1, aborting');
+			msg.channel.send('No attachments found');
 		}
 	}
 }
