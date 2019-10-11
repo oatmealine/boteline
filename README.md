@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.com/thefoxbot/boteline.svg?branch=master)](https://travis-ci.com/thefoxbot/boteline)
 
+[![BCH compliance](https://bettercodehub.com/edge/badge/thefoxbot/boteline?branch=master)](https://bettercodehub.com/)
+
 [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
 ## how to launch
