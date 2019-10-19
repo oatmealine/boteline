@@ -28,6 +28,8 @@ export class Command {
 	public aliases: string[];
 	public examples: string[];
 	public usageCheck: Function;
+	public ignorePrefix: boolean;
+	public debugOnly: boolean;
 
 	constructor(name, cfunction) {
 		this.name = name;
@@ -41,6 +43,8 @@ export class Command {
 		this.needsGuild = false;
 
 		this.hidden = false;
+		this.ignorePrefix = false;
+		this.debugOnly = false;
 		this.owneronly = false;
 		this.description = 'No description provided';
 
@@ -105,6 +109,16 @@ export class Command {
 
 	public setGuildOnly(needs?: boolean) {
 		this.needsGuild = needs === undefined ? true : needs;
+		return this;
+	}
+
+	public setDebugOnly(needs?: boolean) {
+		this.debugOnly = needs === undefined ? true : needs;
+		return this;
+	}
+
+	public setIgnorePrefix(needs?: boolean) {
+		this.ignorePrefix = needs === undefined ? true : needs;
 		return this;
 	}
 
@@ -326,6 +340,7 @@ export const commands: object = {
 			}
 		})
 			.setUsage('help [string]')
+			.setIgnorePrefix()
 			.addAlias('cmds')
 			.setDescription('see commands, or check out a comnmand in detail'),
 

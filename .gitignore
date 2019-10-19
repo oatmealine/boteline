@@ -6,7 +6,6 @@ guildsettings.json
 temp.mp4
 built/*
 built
-*.js
 built/commandsystem.js
 built/main.js
 built/foxconsole.js

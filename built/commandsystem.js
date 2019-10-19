@@ -21,6 +21,8 @@ class Command {
         this.needsDM = false;
         this.needsGuild = false;
         this.hidden = false;
+        this.ignorePrefix = false;
+        this.debugOnly = false;
         this.owneronly = false;
         this.description = 'No description provided';
         this.aliases = [];
@@ -72,6 +74,14 @@ class Command {
     }
     setGuildOnly(needs) {
         this.needsGuild = needs === undefined ? true : needs;
+        return this;
+    }
+    setDebugOnly(needs) {
+        this.debugOnly = needs === undefined ? true : needs;
+        return this;
+    }
+    setIgnorePrefix(needs) {
+        this.ignorePrefix = needs === undefined ? true : needs;
         return this;
     }
     addClientPermission(string) {
@@ -278,6 +288,7 @@ exports.commands = {
             }
         })
             .setUsage('help [string]')
+            .setIgnorePrefix()
             .addAlias('cmds')
             .setDescription('see commands, or check out a comnmand in detail'),
         ping: new Command('ping', (message, bot) => {

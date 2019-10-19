@@ -1,5 +1,4 @@
 "use strict";
-/* eslint-disable no-case-declarations */
 Object.defineProperty(exports, "__esModule", { value: true });
 if (process.cwd().endsWith('built')) {
     process.chdir('../');
@@ -12,6 +11,7 @@ const cs = require("./commandsystem.js");
 const foxconsole = require("./foxconsole.js");
 const child_process_1 = require("child_process");
 const fs = require("fs");
+const os = require("os");
 const ffmpeg = require("fluent-ffmpeg");
 const ch = require('chalk');
 // files
@@ -107,6 +107,9 @@ function hashCode(str) {
 }
 function getParams(message) {
     return message.content.split(' ').slice(1, message.content.length);
+}
+function roundNumber(num, decimals) {
+    return Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
 }
 function normalDistribution(x) {
     return Math.pow(Math.E, (-Math.PI * x * x));
@@ -250,7 +253,7 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
     .addAlias('invitelink')
     .setUsage('invite'));
 cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
-    const params = message.content.split(' ').slice(1, message.content.length);
+    const params = getParams(message);
     if (message.guild.members.get(params[0]) !== undefined) {
         const banmember = message.guild.members.get(params[0]);
         if (banmember.id === message.member.id) {
@@ -258,10 +261,10 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
         }
         if (banmember.bannable) {
             banmember.ban();
-            return '✓ Banned ' + banmember.username;
+            return '✓ Banned ' + banmember.user.username;
         }
         else {
-            return 'member ' + banmember.username + ' isn\'t bannable';
+            return 'member ' + banmember.user.username + ' isn\'t bannable';
         }
     }
     else {
@@ -285,10 +288,10 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
         }
         if (banmember.kickable) {
             banmember.ban();
-            return '✓ Kicked ' + banmember.username;
+            return '✓ Kicked ' + banmember.user.username;
         }
         else {
-            return 'member ' + banmember.username + ' isn\'t kickable';
+            return 'member ' + banmember.user.username + ' isn\'t kickable';
         }
     }
     else {
@@ -631,6 +634,7 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 })
     .setHidden()
     .setGuildOnly()
+    .setDebugOnly()
     .addUserPermission('MANAGE_MESSAGES')
     .addClientPermissions(['MANAGE_MESSAGES', 'BAN_MEMBERS'])
     .addAlias('permtestingalias'));
@@ -641,10 +645,21 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
         .setURL(packagejson.repository)
         .setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
         .addField('Memory Usage', Math.round(process.memoryUsage().rss / 10000) / 100 + 'MB', true)
-        .addField('CPU Usage', `Last second: **${cpuusage1sec}%**\nLast 30 seconds: **${cpuusage30sec}%**\nLast minute: **${cpuusagemin}%**\nRuntime: **${Math.round(process.cpuUsage().user / (process.uptime() * 1000) * 100) / 100}%**`, true)
-        .addField('Uptime', `${Math.round(process.uptime() / 76800)}d ${Math.round(process.uptime() / 3200)}h ${Math.round(process.uptime() / 60)}m ${Math.round(process.uptime())}s`, true));
+        .addField('CPU Usage', `Last second: **${roundNumber(cpuusage1sec, 3)}%**\nLast 30 seconds: **${roundNumber(cpuusage30sec, 3)}%**\nLast minute: **${roundNumber(cpuusagemin, 3)}%**\nRuntime: **${roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
+        .addField('Uptime', `${Math.round(process.uptime() / 76800)}d ${Math.round(process.uptime() / 3200) % 24}h ${Math.round(process.uptime() / 60) % 60}m ${Math.round(process.uptime()) % 60}s`, true));
 })
     .addAlias('stats')
+    .setDescription('get some info and stats about the bot'));
+cs.addCommand('core', new cs.Command('foxstats', (msg) => {
+    msg.channel.send(new Discord.RichEmbed()
+        .setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()})`)
+        .setTitle(`Host's stats - ${os.hostname()}`)
+        .setDescription(`Stats for the bot's host`)
+        .addField('Uptime', `${Math.round(os.uptime() / 76800)}d ${Math.round(os.uptime() / 3200) % 24}h ${Math.round(os.uptime() / 60) % 60}m ${Math.round(os.uptime()) % 60}s`, true)
+        .addField('Memory', `${roundNumber((os.totalmem() - os.freemem()) / 1000000, 3)}MB/${roundNumber(os.totalmem() / 1000000, 3)}MB used`, true)
+        .addField('CPU', `${os.cpus()[0].model}`, true));
+})
+    .addAliases(['matstatsfoxedition', 'hoststats', 'host', 'neofetch'])
     .setDescription('get some info and stats about the bot'));
 cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
     const params = getParams(msg);
@@ -720,13 +735,15 @@ bot.on('message', (msg) => {
             thisprefix = guildsettings[msg.guild.id].prefix;
         }
     }
-    if (content.startsWith(thisprefix)) {
-        content = content.slice(thisprefix.length, content.length);
+    if (content.startsWith(thisprefix) || content.startsWith(prefix)) {
+        content = content.slice(content.startsWith(thisprefix) ? thisprefix.length : prefix.length, content.length);
         const cmd = content.split(' ')[0];
         foxconsole.debug('got command ' + cmd);
         Object.values(cs.commands).forEach((cat) => {
             Object.values(cat).forEach((command) => {
-                if (command['name'] === cmd || command['aliases'].includes(cmd)) {
+                if ((command['name'] === cmd || command['aliases'].includes(cmd)) &&
+                    ((msg.content.startsWith(thisprefix) || (msg.content.startsWith(prefix) && command['ignorePrefix'])) || (thisprefix == prefix)) &&
+                    (!command['debugOnly'] || process.env.DEBUG == 'true')) {
                     command['runCommand'](msg, bot);
                 }
             });
