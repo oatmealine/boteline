@@ -14,7 +14,9 @@
 
 3. create a .env file based on the example below
 
-4. `node main.js`
+4. `tsc`
+
+5. `node built/main.js`
 
 ## example .env
 
