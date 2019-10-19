@@ -1,3 +1,5 @@
+import { DiscordAPIError, Message } from "discord.js";
+
 /* eslint-disable no-case-declarations */
 
 // libraries & modules
@@ -15,7 +17,7 @@ const fs = require('fs');
 const ffmpeg = require('fluent-ffmpeg');
 // files
 
-const package = require('./package.json');
+const packagejson = require('./package.json');
 const packagelock = require('./package-lock.json');
 
 if (!fs.existsSync('./foxquotes.json')) {
@@ -42,7 +44,7 @@ foxconsole.showDebug(process.env.DEBUG);
 // constants & variables
 const prefix = process.env.PREFIX;
 
-const version = package.version + ' alpha';
+const version = packagejson.version + ' alpha';
 
 const valhalladrinks = require('./valhalla.json');
 
@@ -50,9 +52,9 @@ let application;
 
 // statistics
 
-let cpuusagemin = 'not enough data';
-let cpuusage30sec = 'not enough data';
-let cpuusage1sec = 'not enough data';
+let cpuusagemin: any = 'not enough data';
+let cpuusage30sec: any = 'not enough data';
+let cpuusage1sec: any = 'not enough data';
 
 let cpuusageminold = process.cpuUsage();
 let cpuusage30secold = process.cpuUsage();
@@ -110,11 +112,11 @@ function makeDrinkEmbed(drink) {
 	return embed;
 }
 
-String.prototype.hashCode = function () {
+function hashCode(str : string) {
 	var hash = 0, i, chr;
-	if (this.length === 0) return hash;
-	for (i = 0; i < this.length; i++) {
-		chr = this.charCodeAt(i);
+	if (str.length === 0) return hash;
+	for (i = 0; i < str.length; i++) {
+		chr = str.charCodeAt(i);
 		hash = ((hash << 5) - hash) + chr;
 		hash |= 0; // Convert to 32bit integer
 	}
@@ -250,7 +252,7 @@ class FFMpegCommand extends cs.Command {
 	}
 }
 
-console.log(`boteline v${version}`.bold.red);
+console.log(`boteline v${version}`.red.bold);
 if (process.env.DEBUG) console.debug('debug printing on'.grey);
 
 // i KNOW this is messy but like ,,, how else would you do this
@@ -645,7 +647,7 @@ cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
-	let randommsg = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
+	let randommsg: any = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
 	if (randommsg === undefined) { return; }
 
 	msg.channel.send('', new Discord.RichEmbed({
@@ -673,7 +675,7 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 	msg.channel.send(new Discord.RichEmbed()
 		.setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packagelock.dependencies['discord.js'].version}`, bot.user.avatarURL)
 		.setTitle(`${bot.user.username} stats`)
-		.setURL(package.repository)
+		.setURL(packagejson.repository)
 		.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
 		.addField('Memory Usage', Math.round(process.memoryUsage().rss/10000)/100+'MB', true)
 		.addField('CPU Usage', `Last second: **${cpuusage1sec}%**\nLast 30 seconds: **${cpuusage30sec}%**\nLast minute: **${cpuusagemin}%**\nRuntime: **${Math.round(process.cpuUsage().user/(process.uptime()*1000)*100)/100}%**`, true)

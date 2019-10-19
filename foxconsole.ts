@@ -21,17 +21,17 @@ function formattedDate() {
 
 module.exports = {
 	log: console.log,
-	info: function(str)    {console.info (formattedDate() + ('ℹ ' + str).blue   );},
-	success: function(str) {console.log  (formattedDate() + ('✓ ' + str).green );},
-	warning: function(str) {console.log  (formattedDate() + ('⚠ ' + str).yellow);},
-	error: function(str)   {console.log  (formattedDate() + ('⚠ ' + str).red   );},
+	info: function(str: string)    {console.info (formattedDate() + ('ℹ ' + str).blue   );},
+	success: function(str: string) {console.log  (formattedDate() + ('✓ ' + str).green );},
+	warning: function(str: string) {console.log  (formattedDate() + ('⚠ ' + str).yellow);},
+	error: function(str: string)   {console.log  (formattedDate() + ('⚠ ' + str).red   );},
 
-	debug: function(str) {
+	debug: function(str: string) {
 		if (showDebug) {
 			console.debug(formattedDate() + ('ℹ ' + str).cyan);
 		}
 	},
-	showDebug: function(bool) {
+	showDebug: function(bool: boolean) {
 		showDebug = bool;
 	}
 };

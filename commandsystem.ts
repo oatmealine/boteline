@@ -1,18 +1,35 @@
+import { PermissionResolvable, Client, Message, RichEmbed } from "discord.js";
+
 const Discord = require('discord.js');
 const foxconsole = require('./foxconsole.js');
 
-let client;
+let client: Client;
 
-function grammar(string) {
-	let newstring = string.slice(1,string.length);
-	return string[0].toUpperCase()+newstring;
+function grammar(str: string) {
+	let newstring = str.slice(1,str.length);
+	return str[0].toUpperCase()+newstring;
 }
 
-function getParams(message) { 
-	return message.content.split(' ').slice(1, message.content.length);
+function getParams(msg: Message) { 
+	return msg.content.split(' ').slice(1, msg.content.length);
 }
 
 class Command {
+	name: string;
+	function: Function;
+	usage: string;
+	displayUsage: string;
+	clientPermissions: Array<PermissionResolvable>;
+	userPermissions: Array<PermissionResolvable>;
+	needsDM: boolean;
+	needsGuild: boolean;
+	hidden: boolean;
+	owneronly: boolean;
+	description: string;
+	aliases: Array<String>;
+	examples: Array<String>;
+	usageCheck: Function;
+
 	constructor(name, cfunction) {
 		this.name = name;
 		this.function = cfunction;
@@ -127,7 +144,7 @@ class Command {
 	}
 
 	runCommand(message, client) {
-		let params = getParams(message);
+		let params: Array<string> = getParams(message);
 
 		if (this.needsGuild && !message.guild) {
 			return message.channel.send('This command needs to be ran in a server!');
@@ -137,10 +154,10 @@ class Command {
 			return message.channel.send('This command needs to be ran in a DM!');
 		}
 
-		let argumentsvalid = [];
+		let argumentsvalid: Array<boolean> = [];
 
 		if (this.usage && !this.usageCheck) {
-			let argument = this.usage.split(' ');
+			let argument: Array<string> = this.usage.split(' ');
 			argument.shift();
 
 			argument.forEach((arg,i) => {
@@ -154,7 +171,7 @@ class Command {
 						argumentsvalid[i] = params[i].startsWith('http://') || params[i].startsWith('https://');
 						break;
 					case 'number':
-						argumentsvalid[i] = !isNaN(params[i]);
+						argumentsvalid[i] = !isNaN(Number(params[i]));
 						break;
 					case 'id':
 						argumentsvalid[i] = client ? (client.guilds.get(params[i]) || client.users.get(params[i]) || client.channels.get(params[i])) : true;
@@ -173,7 +190,7 @@ class Command {
 		}
 
 		if (this.userPermissions.length > 0 && message.guild) {
-			let missingpermissions = [];
+			let missingpermissions: Array<PermissionResolvable> = [];
 
 			this.userPermissions.forEach(perm => {
 				if (!message.member.hasPermission(perm)) {
@@ -187,7 +204,7 @@ class Command {
 		}
 
 		if (this.clientPermissions.length > 0 && message.guild) {
-			let missingpermissions = [];
+			let missingpermissions: Array<PermissionResolvable> = [];
 
 			this.clientPermissions.forEach(perm => {
 				if (!message.guild.me.hasPermission(perm)) {
@@ -209,7 +226,7 @@ class SimpleCommand extends Command {
 		super(name, cfunction);
 
 		this.function = (message, client) => {
-			let returned = cfunction(message, client);
+			let returned: any  = cfunction(message, client);
 
 			if (!returned) {
 				foxconsole.warning('SimpleCommand returned nothing, please use Command class instead');
@@ -227,14 +244,14 @@ class SimpleCommand extends Command {
 	}
 }
 
-let commands = {
+let commands: object = {
 	core: {
 		help: new SimpleCommand('help', message => {
-			let params = message.content.split(' ');
+			let params: Array<string> = message.content.split(' ');
 
 			if (params[1]) {
-				let command;
-				let categoryname;
+				let command : Command;
+				let categoryname : string;
 
 				Object.values(module.exports.commands).forEach((category, i) => {
 					if (command) return;
@@ -260,8 +277,8 @@ let commands = {
 
 					return embed;
 				} else {
-					let category;
-					let categoryname;
+					let category: unknown;
+					let categoryname: string;
 					
 					Object.values(module.exports.commands).forEach((cat, i) => {
 						if (category) return;
@@ -271,11 +288,11 @@ let commands = {
 					});
 
 					if (category) {
-						let embed = new Discord.RichEmbed()
+						let embed : RichEmbed = new Discord.RichEmbed()
 							.setTitle(`**${grammar(categoryname)}** [${Object.keys(category).length}]`)
 							.setColor(Math.floor(Math.random()*16777215));
 
-						let commands = [];
+						let commands : Array<string> = [];
 
 						Object.values(category).forEach(cmd => {
 							if (!cmd.hidden) commands.push('`' + cmd.name + '` - ' + cmd.description);
@@ -322,7 +339,7 @@ let commands = {
 	}
 };
 
-function addCommand(category, command) {
+function addCommand(category, command): void {
 	if (!module.exports.commands[category]) {
 		module.exports.commands[category] = [];
 	}
