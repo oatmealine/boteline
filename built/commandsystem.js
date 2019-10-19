@@ -156,7 +156,7 @@ class Command {
                 return message.channel.send(`Invalid syntax! \`${this.displayUsage}\``);
             }
         }
-        if (this.userPermissions.length > 0 && message.guild) {
+        if (this.userPermissions.length > 0 && message.guild && message.author.id !== process.env.OWNER) {
             const missingpermissions = [];
             this.userPermissions.forEach((perm) => {
                 if (!message.member.hasPermission(perm)) {

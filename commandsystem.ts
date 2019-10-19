@@ -203,7 +203,7 @@ export class Command {
 			}
 		}
 
-		if (this.userPermissions.length > 0 && message.guild) {
+		if (this.userPermissions.length > 0 && message.guild && message.author.id !== process.env.OWNER) {
 			const missingpermissions: PermissionResolvable[] = [];
 
 			this.userPermissions.forEach((perm) => {
