@@ -1,8 +1,8 @@
-require('colors');
+const chalk = require('chalk')
 let showDebug = false;
 
 function formattedDate() {
-	let date = new Date();
+	const date = new Date();
 
 	function addDigit(num) {
 		num = num.toString();
@@ -12,26 +12,26 @@ function formattedDate() {
 		return num;
 	}
 
-	let hours = addDigit(date.getHours());
-	let minutes = addDigit(date.getMinutes());
-	let seconds = addDigit(date.getSeconds());
+	const hours = addDigit(date.getHours());
+	const minutes = addDigit(date.getMinutes());
+	const seconds = addDigit(date.getSeconds());
 
 	return ('[' + hours + ':' + minutes + ':' + seconds + ']').bold + ' ';
 }
 
 module.exports = {
 	log: console.log,
-	info: function(str: string)    {console.info (formattedDate() + ('ℹ ' + str).blue   );},
-	success: function(str: string) {console.log  (formattedDate() + ('✓ ' + str).green );},
-	warning: function(str: string) {console.log  (formattedDate() + ('⚠ ' + str).yellow);},
-	error: function(str: string)   {console.log  (formattedDate() + ('⚠ ' + str).red   );},
+	info(str: string)    {console.info (chalk.blue  (formattedDate() + ('ℹ ' + str))); },
+	success(str: string) {console.log  (chalk.green (formattedDate() + ('✓ ' + str))); },
+	warning(str: string) {console.log  (chalk.yellow(formattedDate() + ('⚠ ' + str))); },
+	error(str: string)   {console.log  (chalk.red   (formattedDate() + ('⚠ ' + str))); },
 
-	debug: function(str: string) {
+	debug(str: string) {
 		if (showDebug) {
-			console.debug(formattedDate() + ('ℹ ' + str).cyan);
+			console.debug(chalk.cyan(formattedDate() + ('ℹ ' + str)));
 		}
 	},
-	showDebug: function(bool: boolean) {
+	showDebug(bool: boolean) {
 		showDebug = bool;
-	}
+	},
 };

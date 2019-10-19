@@ -1,34 +1,33 @@
-import { PermissionResolvable, Client, Message, RichEmbed } from "discord.js";
-
-const Discord = require('discord.js');
+import {Client, PermissionResolvable, RichEmbed} from 'discord.js';
+import * as Discord from 'discord.js';
 const foxconsole = require('./foxconsole.js');
 
 let client: Client;
 
 function grammar(str: string) {
-	let newstring = str.slice(1,str.length);
-	return str[0].toUpperCase()+newstring;
+	const newstring = str.slice(1, str.length);
+	return str[0].toUpperCase() + newstring;
 }
 
-function getParams(msg: Message) { 
-	return msg.content.split(' ').slice(1, msg.content.length);
+function getParams(message) {
+	return message.content.split(' ').slice(1, message.content.length);
 }
 
 class Command {
-	name: string;
-	function: Function;
-	usage: string;
-	displayUsage: string;
-	clientPermissions: Array<PermissionResolvable>;
-	userPermissions: Array<PermissionResolvable>;
-	needsDM: boolean;
-	needsGuild: boolean;
-	hidden: boolean;
-	owneronly: boolean;
-	description: string;
-	aliases: Array<String>;
-	examples: Array<String>;
-	usageCheck: Function;
+	public name: string;
+	public function: Function;
+	public usage: string;
+	public displayUsage: string;
+	public clientPermissions: PermissionResolvable[];
+	public userPermissions: PermissionResolvable[];
+	public needsDM: boolean;
+	public needsGuild: boolean;
+	public hidden: boolean;
+	public owneronly: boolean;
+	public description: string;
+	public aliases: string[];
+	public examples: string[];
+	public usageCheck: Function;
 
 	constructor(name, cfunction) {
 		this.name = name;
@@ -51,100 +50,100 @@ class Command {
 		return this;
 	}
 
-	setName(name) {
+	public setName(name) {
 		this.name = name;
 		return this;
 	}
 
-	setUsage(usgstring) {
+	public setUsage(usgstring) {
 		this.usage = usgstring;
 		this.displayUsage = usgstring;
 		return this;
 	}
 
-	setDisplayUsage(usgstring) {
+	public setDisplayUsage(usgstring) {
 		this.displayUsage = usgstring;
 		return this;
 	}
 
-	addExample(examplestring) {
+	public addExample(examplestring) {
 		this.examples.push(examplestring);
 		return this;
 	}
 
-	addAlias(aliasstring) {
+	public addAlias(aliasstring) {
 		this.aliases.push(aliasstring);
 		return this;
 	}
 
-	addAliases(aliasarr) {
-		aliasarr.forEach(alias => {
+	public addAliases(aliasarr) {
+		aliasarr.forEach((alias) => {
 			this.addAlias(alias);
 		});
 		return this;
 	}
 
-	setDescription(desc) {
+	public setDescription(desc) {
 		this.description = desc === undefined ? 'No description provided' : desc;
 		return this;
 	}
-  
-	setHidden(hide) {
+
+	public setHidden(hide) {
 		this.hidden = hide === undefined ? true : hide;
 		return this;
 	}
-  
-	setOwnerOnly(owner) {
+
+	public setOwnerOnly(owner) {
 		this.owneronly = owner === undefined ? true : owner;
 		return this;
 	}
 
-	setDMOnly(needs) {
+	public setDMOnly(needs) {
 		this.needsDM = needs === undefined ? true : needs;
 		return this;
 	}
 
-	setGuildOnly(needs) {
+	public setGuildOnly(needs) {
 		this.needsGuild = needs === undefined ? true : needs;
 		return this;
 	}
 
-	addClientPermission(string) {
+	public addClientPermission(string) {
 		if (Object.keys(Discord.Permissions.FLAGS).includes(string)) {
 			this.clientPermissions.push(string);
 		} else {
-			foxconsole.warning('unknown permission '+string);
+			foxconsole.warning('unknown permission ' + string);
 		}
 		return this;
 	}
 
-	addUserPermission(string) {
+	public addUserPermission(string) {
 		if (Object.keys(Discord.Permissions.FLAGS).includes(string)) {
 			this.userPermissions.push(string);
 		} else {
-			foxconsole.warning('unknown permission '+string);
+			foxconsole.warning('unknown permission ' + string);
 		}
 		return this;
 	}
 
-	addClientPermissions(stringarr) {
-		stringarr.forEach(string => {
+	public addClientPermissions(stringarr) {
+		stringarr.forEach((string) => {
 			this.addClientPermission(string);
 		});
-		
+
 		return this;
 	}
 
-	addUserPermissions(stringarr) {
-		stringarr.forEach(string => {
+	public addUserPermissions(stringarr) {
+		stringarr.forEach((string) => {
 			this.addUserPermission(string);
 		});
-		
+
 		return this;
 	}
 
-	runCommand(message, client) {
-		let params: Array<string> = getParams(message);
+	public runCommand(message, client) {
+		const params: string[] = getParams(message);
 
 		if (this.needsGuild && !message.guild) {
 			return message.channel.send('This command needs to be ran in a server!');
@@ -154,15 +153,15 @@ class Command {
 			return message.channel.send('This command needs to be ran in a DM!');
 		}
 
-		let argumentsvalid: Array<boolean> = [];
+		let argumentsvalid: boolean[] = [];
 
 		if (this.usage && !this.usageCheck) {
-			let argument: Array<string> = this.usage.split(' ');
+			const argument: string[] = this.usage.split(' ');
 			argument.shift();
 
-			argument.forEach((arg,i) => {
+			argument.forEach((arg, i) => {
 				if (params[i] !== undefined) {
-					switch (arg.slice(1,arg.length-1)) {
+					switch (arg.slice(1, arg.length - 1)) {
 					case 'any':
 					case 'string':
 						argumentsvalid[i] = true;
@@ -185,14 +184,15 @@ class Command {
 		}
 
 		if (argumentsvalid !== null) {
-			if (argumentsvalid.includes(false))
+			if (argumentsvalid.includes(false)) {
 				return message.channel.send(`Invalid syntax! \`${this.displayUsage}\``);
+			}
 		}
 
 		if (this.userPermissions.length > 0 && message.guild) {
-			let missingpermissions: Array<PermissionResolvable> = [];
+			const missingpermissions: PermissionResolvable[] = [];
 
-			this.userPermissions.forEach(perm => {
+			this.userPermissions.forEach((perm) => {
 				if (!message.member.hasPermission(perm)) {
 					missingpermissions.push(perm);
 				}
@@ -204,9 +204,9 @@ class Command {
 		}
 
 		if (this.clientPermissions.length > 0 && message.guild) {
-			let missingpermissions: Array<PermissionResolvable> = [];
+			const missingpermissions: PermissionResolvable[] = [];
 
-			this.clientPermissions.forEach(perm => {
+			this.clientPermissions.forEach((perm) => {
 				if (!message.guild.me.hasPermission(perm)) {
 					missingpermissions.push(perm);
 				}
@@ -226,13 +226,13 @@ class SimpleCommand extends Command {
 		super(name, cfunction);
 
 		this.function = (message, client) => {
-			let returned: any  = cfunction(message, client);
+			const returned: any  = cfunction(message, client);
 
 			if (!returned) {
 				foxconsole.warning('SimpleCommand returned nothing, please use Command class instead');
 				return;
 			}
-			
+
 			if (returned.then) { // check if its a promise or not
 				returned.then((messageResult) => {
 					return message.channel.send(messageResult);
@@ -244,21 +244,21 @@ class SimpleCommand extends Command {
 	}
 }
 
-let commands: object = {
+const commands: object = {
 	core: {
-		help: new SimpleCommand('help', message => {
-			let params: Array<string> = message.content.split(' ');
+		help: new SimpleCommand('help', (message) => {
+			const params: string[] = message.content.split(' ');
 
 			if (params[1]) {
-				let command : Command;
-				let categoryname : string;
+				let command: Command;
+				let categoryname: string;
 
 				Object.values(module.exports.commands).forEach((category, i) => {
-					if (command) return;
+					if (command) { return; }
 
 					categoryname = Object.keys(module.exports.commands)[i];
-          
-					Object.values(category).forEach(cmd => {
+
+					Object.values(category).forEach((cmd) => {
 						if (cmd.name === params[1] || cmd.aliases.includes(params[1])) {
 							command = cmd;
 						}
@@ -270,57 +270,58 @@ let commands: object = {
 						.setTitle(`**${grammar(command.name)}** (${grammar(categoryname)})`)
 						.addField('Usage', command.displayUsage)
 						.setDescription(command.description)
-						.setColor(Math.floor(Math.random()*16777215));
+						.setColor(Math.floor(Math.random() * 16777215));
 
-					if (command.examples.length !== 0) embed = embed.addField('Examples', '`'+command.examples.join('`,\n`')+'`');
-					if (command.aliases.length !== 0) embed = embed.addField('Aliases', command.aliases.join(', '));
+					if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + command.examples.join('`,\n`') + '`'); }
+					if (command.aliases.length !== 0) { embed = embed.addField('Aliases', command.aliases.join(', ')); }
 
 					return embed;
 				} else {
 					let category: unknown;
 					let categoryname: string;
-					
+
 					Object.values(module.exports.commands).forEach((cat, i) => {
-						if (category) return;
-	
+						if (category) { return; }
+
 						categoryname = Object.keys(module.exports.commands)[i];
-						if (categoryname === params[1].toLowerCase()) category = cat;
+						if (categoryname === params[1].toLowerCase()) { category = cat; }
 					});
 
 					if (category) {
-						let embed : RichEmbed = new Discord.RichEmbed()
+						const embed: RichEmbed = new Discord.RichEmbed()
 							.setTitle(`**${grammar(categoryname)}** [${Object.keys(category).length}]`)
-							.setColor(Math.floor(Math.random()*16777215));
+							.setColor(Math.floor(Math.random() * 16777215));
 
-						let commands : Array<string> = [];
+						const commands: string[] = [];
 
-						Object.values(category).forEach(cmd => {
-							if (!cmd.hidden) commands.push('`' + cmd.name + '` - ' + cmd.description);
+						Object.values(category).forEach((cmd) => {
+							if (!cmd.hidden) { commands.push('`' + cmd.name + '` - ' + cmd.description); }
 						});
 
-						if (commands.length !== 0) embed.addField('Commands', commands.join('\n'));
+						if (commands.length !== 0) { embed.addField('Commands', commands.join('\n')); }
 
 						return embed;
-					} else
+					} else {
 						return `Command or category \`${params[1]}\` not found!`;
+					}
 				}
 			} else {
-				let embed = new Discord.RichEmbed()
+				const embed = new Discord.RichEmbed()
 					.setTitle('**All Boteline Commands**')
-					.setColor(Math.floor(Math.random()*16777215))
+					.setColor(Math.floor(Math.random() * 16777215))
 					.setFooter('Do help (category) to get all commands for a category!');
 
 				Object.values(module.exports.commands).forEach((category, i) => {
-					let categoryname = Object.keys(module.exports.commands)[i];
-					let commands = [];
+					const categoryname = Object.keys(module.exports.commands)[i];
+					const commands = [];
 
-					Object.values(category).forEach(cmd => {
-						if (!cmd.hidden) commands.push(cmd.name);
+					Object.values(category).forEach((cmd) => {
+						if (!cmd.hidden) { commands.push(cmd.name); }
 					});
 
-					if (commands.length !== 0) embed.addField(`${grammar(categoryname)} [${commands.length}]`, '`'+commands.join('`, `')+'`');
+					if (commands.length !== 0) { embed.addField(`${grammar(categoryname)} [${commands.length}]`, '`' + commands.join('`, `') + '`'); }
 				});
-        
+
 				return embed;
 			}
 		})
@@ -329,14 +330,14 @@ let commands: object = {
 			.setDescription('see commands, or check out a comnmand in detail'),
 
 		ping: new Command('ping', (message, bot) => {
-			let datestart = Date.now();
-			message.channel.send('hol up').then(m => {
+			const datestart = Date.now();
+			message.channel.send('hol up').then((m) => {
 				m.edit(`Message latency: ${Date.now() - datestart}ms\nWebsocket ping: ${bot.ping}ms`);
 			});
 		})
 			.setUsage('ping')
-			.setDescription('ping the bot')
-	}
+			.setDescription('ping the bot'),
+	},
 };
 
 function addCommand(category, command): void {
@@ -349,8 +350,8 @@ function addCommand(category, command): void {
 
 module.exports = {
 	bot: client,
-	SimpleCommand: SimpleCommand,
-	Command: Command,
-	commands: commands,
-	addCommand: addCommand
+	SimpleCommand,
+	Command,
+	commands,
+	addCommand,
 };

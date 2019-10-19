@@ -1,20 +1,18 @@
-import { DiscordAPIError, Message } from "discord.js";
-
 /* eslint-disable no-case-declarations */
 
 // libraries & modules
-const Discord = require('discord.js');
+const Discord = require('discord.js')
 const bot = new Discord.Client();
 
 const cs = require('./commandsystem.js');
 
-require('colors');
 const foxconsole = require('./foxconsole.js');
 
 const { exec } = require('child_process');
 const fs = require('fs');
 
 const ffmpeg = require('fluent-ffmpeg');
+const ch = require('chalk');
 // files
 
 const packagejson = require('./package.json');
@@ -23,17 +21,17 @@ const packagelock = require('./package-lock.json');
 if (!fs.existsSync('./foxquotes.json')) {
 	fs.writeFileSync('./foxquotes.json', '[]');
 }
-let foxquotes = require('./foxquotes.json');
+const foxquotes = require('./foxquotes.json');
 
 if (!fs.existsSync('./userdata.json')) {
 	fs.writeFileSync('./userdata.json', '{}');
 }
-let userdata = require('./userdata.json');
+const userdata = require('./userdata.json');
 
 if (!fs.existsSync('./guildsettings.json')) {
 	fs.writeFileSync('./guildsettings.json', '{}');
 }
-let guildsettings = require('./guildsettings.json');
+const guildsettings = require('./guildsettings.json');
 
 let foxquotessaveneeded = false;
 
@@ -61,69 +59,69 @@ let cpuusage30secold = process.cpuUsage();
 let cpuusage1secold = process.cpuUsage();
 
 setInterval(() => {
-	let usage = process.cpuUsage(cpuusage1secold);
+	const usage = process.cpuUsage(cpuusage1secold);
 	cpuusage1sec = 100 * (usage.user + usage.system) / 1000000;
 	cpuusage1secold = process.cpuUsage();
 }, 1000);
 setInterval(() => {
-	let usage = process.cpuUsage(cpuusage30secold);
+	const usage = process.cpuUsage(cpuusage30secold);
 	cpuusage30sec = 100 * (usage.user + usage.system) / 30000000;
 	cpuusage30secold = process.cpuUsage();
 }, 30000);
 setInterval(() => {
-	let usage = process.cpuUsage(cpuusageminold);
+	const usage = process.cpuUsage(cpuusageminold);
 	cpuusagemin = 100 * (usage.user + usage.system) / 60000000;
 	cpuusageminold = process.cpuUsage();
 }, 60000);
 
 // functions
 function makeDrinkEmbed(drink) {
-	let embed = new Discord.RichEmbed({
+	const embed = new Discord.RichEmbed({
 		title: drink.name,
 		fields: [
 			{
 				name: 'Description',
-				value: '"' + drink.blurb + '"'
+				value: '"' + drink.blurb + '"',
 			},
 			{
 				name: 'Flavor',
 				value: drink.flavour,
-				inline: true
+				inline: true,
 			},
 			{
 				name: 'Type',
 				value: drink.type.join(', '),
-				inline: true
+				inline: true,
 			},
 			{
 				name: 'Price',
 				value: '$' + drink.price,
-				inline: true
+				inline: true,
 			},
 			{
 				name: 'Preparation',
-				value: `A **${drink.name}** is **${drink.ingredients.adelhyde}** Adelhyde, **${drink.ingredients.bronson_extract}** Bronson Extract, **${drink.ingredients.powdered_delta}** Powdered Delta, **${drink.ingredients.flangerine}** Flangerine ${drink.ingredients.karmotrine === 'optional' ? 'with *(optional)*' : `and **${drink.ingredients.karmotrine}**`} Karmotrine. All ${drink.aged ? `aged${drink.iced ? ', ' : ' and '}` : ''}${drink.iced ? 'on the rocks and ' : ''}${drink.blended ? 'blended' : 'mixed'}.`
-			}
+				value: `A **${drink.name}** is **${drink.ingredients.adelhyde}** Adelhyde, **${drink.ingredients.bronson_extract}** Bronson Extract, **${drink.ingredients.powdered_delta}** Powdered Delta, **${drink.ingredients.flangerine}** Flangerine ${drink.ingredients.karmotrine === 'optional' ? 'with *(optional)*' : `and **${drink.ingredients.karmotrine}**`} Karmotrine. All ${drink.aged ? `aged${drink.iced ? ', ' : ' and '}` : ''}${drink.iced ? 'on the rocks and ' : ''}${drink.blended ? 'blended' : 'mixed'}.`,
+			},
 		],
 		footer: { text: 'CALICOMP 1.1' },
-		color: [255, 0, 255]
+		color: [255, 0, 255],
 	});
 	embed.setColor([255, 0, 255]);
 	return embed;
 }
 
-function hashCode(str : string) {
-	var hash = 0, i, chr;
-	if (str.length === 0) return hash;
+function hashCode(str: string) {
+	let hash = 0, i, chr;
+	if (str.length === 0) { return hash; }
 	for (i = 0; i < str.length; i++) {
 		chr = str.charCodeAt(i);
 		hash = ((hash << 5) - hash) + chr;
 		hash |= 0; // Convert to 32bit integer
 	}
 	return hash;
-};
+}
 
-function getParams(message) { 
+function getParams(message) {
 	return message.content.split(' ').slice(1, message.content.length);
 }
 
@@ -132,13 +130,13 @@ function normalDistribution(x) {
 }
 
 function seedAndRate(str) {
-	const exclusions = {'boteline': 0, 'mankind': 0, 'fox': 10, 'thefox': 10};
-	
+	const exclusions = {boteline: 0, mankind: 0, fox: 10, thefox: 10};
+
 	if (Object.keys(str).includes('str')) {
 		return exclusions[str];
 	} else {
-		let hashCode = Math.abs(str.hashCode());
-		return Math.round(normalDistribution(hashCode%0.85)*10);
+		const hashCode = Math.abs(str.hashCode());
+		return Math.round(normalDistribution(hashCode % 0.85) * 10);
 	}
 }
 
@@ -150,14 +148,14 @@ class FFMpegCommand extends cs.Command {
 		this.outputOptions = outputOptions;
 
 		this.function = async (msg) => {
-			let params = getParams(msg);
-			let attachments = [];
+			const params = getParams(msg);
+			const attachments = [];
 
 			if (msg.attachments.size === 0) {
-				await msg.channel.fetchMessages({limit: 20}).then(msges => {
-					msges.array().forEach(m => {
+				await msg.channel.fetchMessages({limit: 20}).then((msges) => {
+					msges.array().forEach((m) => {
 						if (m.attachments.size > 0) {
-							m.attachments.array().forEach(att => {
+							m.attachments.array().forEach((att) => {
 								attachments.push(att);
 							});
 						}
@@ -170,27 +168,27 @@ class FFMpegCommand extends cs.Command {
 			if (attachments.length > 0) {
 				let videoattach;
 
-				attachments.forEach(attachment => {
-					if (videoattach || !attachment) return;
+				attachments.forEach((attachment) => {
+					if (videoattach || !attachment) { return; }
 
-					let filetype = attachment.filename.split('.').pop();
+					const filetype = attachment.filename.split('.').pop();
 					const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
 
 					if (acceptedFiletypes.includes(filetype.toLowerCase())) {
 						videoattach = attachment;
 					}
 				});
-			
+
 				if (videoattach) {
 					let progmessage;
 					let lastedit = 0; // to avoid ratelimiting
 
-					msg.channel.send('ok, downloading...').then(m=>{
+					msg.channel.send('ok, downloading...').then((m) => {
 						progmessage = m;
 					});
 					msg.channel.startTyping();
 
-					if(params[0]) {
+					if (params[0]) {
 						if (params[0].startsWith('.') || params[0].startsWith('/') || params[0].startsWith('~')) {
 							if (progmessage) {
 								progmessage.edit('i know exactly what you\'re doing there bud');
@@ -203,22 +201,22 @@ class FFMpegCommand extends cs.Command {
 					ffmpeg(videoattach.url)
 						.inputOptions(this.inputOptions(msg))
 						.outputOptions(this.outputOptions(msg))
-						.on('start', commandLine => {
-							foxconsole.info('started ffmpeg with command: '+commandLine);
+						.on('start', (commandLine) => {
+							foxconsole.info('started ffmpeg with command: ' + commandLine);
 							if (progmessage) {
 								progmessage.edit('processing: 0% (0s) done');
 							}
 						})
-						.on('stderr', stderrLine => {
+						.on('stderr', (stderrLine) => {
 							foxconsole.debug('ffmpeg: ' + stderrLine);
 						})
-						.on('progress', progress => {
-							if (lastedit+2000 < Date.now() && progmessage) {
+						.on('progress', (progress) => {
+							if (lastedit + 2000 < Date.now() && progmessage) {
 								lastedit = Date.now();
-								progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent*100)/100 : '0.00'}%** \`(${progress.timemark})\``);
+								progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
 							}
 						})
-						.on('error', err => {
+						.on('error', (err) => {
 							msg.channel.stopTyping();
 							foxconsole.warning('ffmpeg failed!');
 							foxconsole.warning(err);
@@ -239,7 +237,7 @@ class FFMpegCommand extends cs.Command {
 								}
 							});
 						})
-					//.pipe(stream);
+					// .pipe(stream);
 						.save('./temp.mp4');
 				} else {
 					msg.channel.send('No video attachments found');
@@ -252,21 +250,21 @@ class FFMpegCommand extends cs.Command {
 	}
 }
 
-console.log(`boteline v${version}`.red.bold);
-if (process.env.DEBUG) console.debug('debug printing on'.grey);
+console.log(ch.red.bold(`boteline v${version}`));
+if (process.env.DEBUG) { console.debug(ch.grey('debug printing on')); }
 
 // i KNOW this is messy but like ,,, how else would you do this
-console.log(`
+console.log(ch.bold(`
 
-  ${'              '.bgRed}
-${'                  '.bgRed}
-${'        '.bgRed}${'        '.bgYellow}${'  '.bgRed}
-${'      '.bgRed}${'  ██    ██'.white.bgYellow}${'  '.bgRed}
-  ${'    '.bgRed}${'          '.bgYellow}
-    ${'  '.bgRed}${'        '.bgGreen}
-      ${'  '.bgWhite}    ${'  '.bgWhite}
+  ${ch.bgRed('              ')}
+${ch.bgRed('                  ')}
+${ch.bgRed('        ')}${ch.bgYellow('        ')}${ch.bgRed('  ')}
+${ch.bgRed('      ')}${ch.white.bgRed('  ██    ██')}${ch.bgRed('  ')}
+  ${ch.bgRed('    ')}${ch.bgYellow('          ')}
+    ${ch.bgRed('  ')}${ch.bgGreen('        ')}
+      ${ch.bgWhite('  ')}    ${ch.bgWhite('  ')}
 
-`.bold);
+`));
 foxconsole.info('adding commands...');
 
 cs.addCommand('core', new cs.SimpleCommand('invite', () => {
@@ -276,11 +274,11 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	.addAlias('invitelink')
 	.setUsage('invite'));
 
-cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
-	let params = message.content.split(' ').slice(1, message.content.length);
+cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
+	const params = message.content.split(' ').slice(1, message.content.length);
 
 	if (message.guild.members.get(params[0]) !== undefined) {
-		let banmember = message.guild.members.get(params[0]);
+		const banmember = message.guild.members.get(params[0]);
 
 		if (banmember.id === message.member.id) {
 			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
@@ -289,10 +287,12 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
 		if (banmember.bannable) {
 			banmember.ban();
 			return '✓ Banned ' + banmember.username;
-		} else
+		} else {
 			return 'member ' + banmember.username + ' isn\'t bannable';
-	} else
+		}
+	} else {
 		return 'i don\'t know that person!';
+	}
 })
 	.setUsage('ban (id)')
 	.setDescription('ban a user')
@@ -303,23 +303,25 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', message => {
 	.addUserPermission('BAN_MEMBERS')
 	.setGuildOnly());
 
-cs.addCommand('moderating', new cs.SimpleCommand('kick', message => {
-	let params = message.content.split(' ').slice(1, message.content.length);
-	
+cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
+	const params = message.content.split(' ').slice(1, message.content.length);
+
 	if (message.guild.members.get(params[0]) !== undefined) {
-		let banmember = message.guild.members.get(params[0]);
-	
+		const banmember = message.guild.members.get(params[0]);
+
 		if (banmember.id === message.member.id) {
 			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
 		}
-	
+
 		if (banmember.kickable) {
 			banmember.ban();
 			return '✓ Kicked ' + banmember.username;
-		} else
+		} else {
 			return 'member ' + banmember.username + ' isn\'t kickable';
-	} else
+		}
+	} else {
 		return 'i don\'t know that person!';
+	}
 })
 	.setUsage('kick (id)')
 	.addAlias('kickuser')
@@ -331,16 +333,16 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', message => {
 	.setGuildOnly());
 
 cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
-	let params = getParams(message);
+	const params = getParams(message);
 	return `${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`;
 })
-	.addAliases(['farenheit','farenheight','fairenheight','fairenheit','fahrenheight','americancelcius','stupidunit','notcelsius','notcelcius','weirdformulaunit','multiplyby1.8andadd32'])
+	.addAliases(['farenheit', 'farenheight', 'fairenheight', 'fairenheit', 'fahrenheight', 'americancelcius', 'stupidunit', 'notcelsius', 'notcelcius', 'weirdformulaunit', 'multiplyby1.8andadd32'])
 	.setUsage('fahrenheit (number)')
 	.setDescription('convert celsius to fahrenheit')
 	.addExample('fahrenheit 15'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
-	let params = getParams(message);
+	const params = getParams(message);
 	return `${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`;
 })
 	.setUsage('celsius (number)')
@@ -349,7 +351,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
 	.addExample('celsius 59'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
-	let params = getParams(message);
+	const params = getParams(message);
 	return `${params[0]}°C is ${params[0] < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
 })
 	.setUsage('kelvin (number)')
@@ -357,7 +359,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
 	.addExample('kelvin 15'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('mbs', (message) => {
-	let params = getParams(message);
+	const params = getParams(message);
 	return `${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`;
 })
 	.setUsage('mbs (number)')
@@ -366,7 +368,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('mbs', (message) => {
 	.addExample('mbs 8'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('mbps', (message) => {
-	let params = getParams(message);
+	const params = getParams(message);
 	return `${params[0]}MB/s is **${Math.round((Number(params[0])) * 800) / 100}Mbps**`;
 })
 	.setUsage('mbps (number)')
@@ -384,7 +386,7 @@ cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	.setGuildOnly());
 
 cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
-	let params = getParams(msg);
+	const params = getParams(msg);
 	let user;
 
 	if (params[0] !== undefined) {
@@ -406,10 +408,10 @@ cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 	.addAlias('ква')
 	.setDescription('ква'));
 
-cs.addCommand('fun', new FFMpegCommand('compress', ()=>{return [];}, (msg) => {
-	let params = getParams(msg);
-	if (!params[0]) params[0] = '20';
-	return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(params[0]-3)}k`, '-c:a aac'];
+cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
+	const params = getParams(msg);
+	if (!params[0]) { params[0] = '20'; }
+	return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(params[0] - 3)}k`, '-c:a aac'];
 })
 	.setDescription('compresses a video')
 	.addAlias('compression')
@@ -417,22 +419,22 @@ cs.addCommand('fun', new FFMpegCommand('compress', ()=>{return [];}, (msg) => {
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
-	let params = getParams(msg);
+	const params = getParams(msg);
 
 	const eat = bot.emojis.get('612360473928663040').toString();
 	const hamger1 = bot.emojis.get('612360474293567500').toString();
 	const hamger2 = bot.emojis.get('612360473987252278').toString();
 	const hamger3 = bot.emojis.get('612360473974931458').toString();
 
-	let insidehamger = params[0] ? params.join(' ') : hamger2;
+	const insidehamger = params[0] ? params.join(' ') : hamger2;
 
-	msg.channel.send(eat + hamger1 + insidehamger + hamger3).then(m => {
+	msg.channel.send(eat + hamger1 + insidehamger + hamger3).then((m) => {
 		setTimeout(() => {
-			m.edit(eat + insidehamger + hamger3).then(m => {
+			m.edit(eat + insidehamger + hamger3).then((m) => {
 				setTimeout(() => {
-					m.edit(eat + hamger3).then(m => {
+					m.edit(eat + hamger3).then((m) => {
 						setTimeout(() => {
-							m.edit(eat).then(m => {
+							m.edit(eat).then((m) => {
 								setTimeout(() => {
 									m.delete();
 								}, 2000);
@@ -450,17 +452,17 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	.addClientPermission('USE_EXTERNAL_EMOJIS'));
 
 cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
-	let params = getParams(msg);
+	const params = getParams(msg);
 
 	if (params[0] === 'search') {
-		let founddrinks = [];
-		let search = params.slice(1, params.length).join(' ');
+		const founddrinks = [];
+		const search = params.slice(1, params.length).join(' ');
 
-		valhalladrinks.forEach(d => {
+		valhalladrinks.forEach((d) => {
 			if (d.name.toLowerCase().includes(search.toLowerCase()) || d.flavour.toLowerCase() === search.toLowerCase()) {
 				founddrinks.push(d);
 			} else {
-				d.type.forEach(f => {
+				d.type.forEach((f) => {
 					if (search.toLowerCase() === f.toLowerCase()) {
 						founddrinks.push(d);
 					}
@@ -473,7 +475,7 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 			msg.channel.send('', makeDrinkEmbed(founddrinks[0]));
 		} else {
 			let founddrinksstr = '\n';
-			founddrinks.slice(0, 5).forEach(d => {
+			founddrinks.slice(0, 5).forEach((d) => {
 				founddrinksstr = founddrinksstr + '**' + d.name + '**\n';
 			});
 			if (founddrinks.length > 5) {
@@ -493,7 +495,7 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 		let aged = false;
 		let iced = false;
 
-		params[1].split('').forEach(i => {
+		params[1].split('').forEach((i) => {
 			switch (i) {
 			case 'a':
 				adelhyde += 1;
@@ -521,8 +523,8 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 
 		let drink;
 		let drinkbig;
-		valhalladrinks.forEach(d => {
-			if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) return;
+		valhalladrinks.forEach((d) => {
+			if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) { return; }
 
 			drinkbig = adelhyde / 2 === d.ingredients.adelhyde
 					&& bronson_extract / 2 === d.ingredients.bronson_extract
@@ -530,15 +532,15 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 					&& flangerine / 2 === d.ingredients.flangerine
 					&& (karmotrine / 2 === d.ingredients.karmotrine || d.ingredients.karmotrine === 'optional');
 
-			if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkbig)) return;
-			if (bronson_extract !== d.ingredients.bronson_extract && (bronson_extract / 2 !== d.ingredients.bronson_extract || !drinkbig)) return;
-			if (powdered_delta !== d.ingredients.powdered_delta && (powdered_delta / 2 !== d.ingredients.powdered_delta || !drinkbig)) return;
-			if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkbig)) return;
-			if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkbig)) && d.ingredients.karmotrine !== 'optional') return;
+			if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkbig)) { return; }
+			if (bronson_extract !== d.ingredients.bronson_extract && (bronson_extract / 2 !== d.ingredients.bronson_extract || !drinkbig)) { return; }
+			if (powdered_delta !== d.ingredients.powdered_delta && (powdered_delta / 2 !== d.ingredients.powdered_delta || !drinkbig)) { return; }
+			if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkbig)) { return; }
+			if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkbig)) && d.ingredients.karmotrine !== 'optional') { return; }
 
-			if (blended !== d.blended) return;
-			if (aged !== d.aged) return;
-			if (iced !== d.iced) return;
+			if (blended !== d.blended) { return; }
+			if (aged !== d.aged) { return; }
+			if (iced !== d.iced) { return; }
 
 			drink = d;
 		});
@@ -563,15 +565,15 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 	.setDescription('search up drinks, and make some drinks, va11halla style!\nbasically a text-based replica of the drink making part of va11halla'));
 
 cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
-	let params = getParams(msg);
-	
+	const params = getParams(msg);
+
 	if (params[0] === 'toggle') {
 		userdata[msg.author.id].nworddisable = !userdata[msg.author.id].nworddisable;
 		return `the system is now **${userdata[msg.author.id].nworddisable ? 'OFF' : 'ON'}**`;
 	} else {
 		return `You have:
 	**${userdata[msg.author.id].nwordpasses}** N-Word passes [**${userdata[msg.author.id].nworddisable ? 'OFF' : 'ON'}**] (Use m=nwordpass toggle to disable/enable)
-	You are: **\`[${'█'.repeat(Math.floor((userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded)*10))}${'_'.repeat(10 - (userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded)*10)}]\`** this close to getting another N-Word pass`;
+	You are: **\`[${'█'.repeat(Math.floor((userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded) * 10))}${'_'.repeat(10 - (userdata[msg.author.id].nwordpassxp / userdata[msg.author.id].nwordpassxpneeded) * 10)}]\`** this close to getting another N-Word pass`;
 	}
 })
 	.addAlias('nword')
@@ -582,7 +584,7 @@ cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
 	.addExample('nwordpass'));
 
 cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
-	let params = getParams(msg);
+	const params = getParams(msg);
 	let thingToRate = params.join(' ');
 
 	if (thingToRate.toLowerCase().startsWith('me') || thingToRate.toLowerCase().startsWith('my')) {
@@ -590,9 +592,9 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 		thingToRate += msg.author.id.toString().hashCode();
 	} else if (thingToRate.toLowerCase().startsWith('this server') || thingToRate.toLowerCase().startsWith('this discord')) {
 		// rate the server, not the string
-		thingToRate = thingToRate+msg.guild.id.toString().hashCode();
+		thingToRate = thingToRate + msg.guild.id.toString().hashCode();
 	}
-	let rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
+	const rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
 	return `I'd give ${params.join(' ')} a **${rating}/10**`;
 })
 	.setDescription('rates something')
@@ -600,25 +602,25 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 	.addExample('rate me'));
 
 cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
-	let params = getParams(msg);
+	const params = getParams(msg);
 
 	let thingToRate1 = params[0];
 	let thingToRate2 = params[1];
 
 	if (thingToRate1.toLowerCase().startsWith('me') || thingToRate1.toLowerCase().startsWith('my')) {
-		thingToRate1 = thingToRate1+msg.author.id.toString().hashCode();
+		thingToRate1 = thingToRate1 + msg.author.id.toString().hashCode();
 	} else if (thingToRate1.toLowerCase().startsWith('this server') || thingToRate1.toLowerCase().startsWith('this discord')) {
-		thingToRate1 = thingToRate1+msg.guild.id.toString().hashCode();
+		thingToRate1 = thingToRate1 + msg.guild.id.toString().hashCode();
 	}
 
 	if (thingToRate2.toLowerCase().startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
-		thingToRate2 = thingToRate2+msg.author.id.toString().hashCode();
+		thingToRate2 = thingToRate2 + msg.author.id.toString().hashCode();
 	} else if (thingToRate2.toLowerCase().startsWith('this server') || thingToRate2.toLowerCase().startsWith('this discord')) {
-		thingToRate2 = thingToRate2+msg.guild.id.toString().hashCode();
+		thingToRate2 = thingToRate2 + msg.guild.id.toString().hashCode();
 	}
 
-	let rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
-	let rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
+	const rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
+	const rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
 	return `Out of ${params[0]} and ${params[1]}, I'd pick **${rating1 === rating2 ? 'neither' : (rating1 > rating2 ? thingToRate1 : thingToRate2)}**`;
 })
 	.addAlias('choose')
@@ -627,8 +629,8 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 	.addExample('pick njs python'));
 
 cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
-	let thingToRate = getParams(msg).join(' ');
-	return `> ${thingToRate}\nI'd say, **${['yes','probably','maybe','no'][Math.abs(thingToRate.hashCode())*23%4]}**`;
+	const thingToRate = getParams(msg).join(' ');
+	return `> ${thingToRate}\nI'd say, **${['yes', 'probably', 'maybe', 'no'][Math.abs(thingToRate.hashCode()) * 23 % 4]}**`;
 })
 	.setDescription('ask the bot a question')
 	.setUsage('ask (string)')
@@ -637,7 +639,7 @@ cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
 	.addExample('ask is this a good example'));
 
 cs.addCommand('fun', new cs.Command('achievement', (msg) => {
-	let params = getParams(msg);
+	const params = getParams(msg);
 	msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + params.join('+'), name: 'achievement.png' }] });
 })
 	.addAlias('advancement')
@@ -647,13 +649,13 @@ cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
-	let randommsg: any = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
+	const randommsg: any = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
 	if (randommsg === undefined) { return; }
 
 	msg.channel.send('', new Discord.RichEmbed({
 		author: { name: randommsg.author.username, icon: randommsg.author.avatarURL },
 		timestamp: randommsg.createdTimestamp,
-		description: randommsg.content
+		description: randommsg.content,
 	}));
 })
 	.setHidden()
@@ -668,7 +670,7 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 	.setHidden()
 	.setGuildOnly()
 	.addUserPermission('MANAGE_MESSAGES')
-	.addClientPermissions(['MANAGE_MESSAGES','BAN_MEMBERS'])
+	.addClientPermissions(['MANAGE_MESSAGES', 'BAN_MEMBERS'])
 	.addAlias('permtestingalias'));
 
 cs.addCommand('core', new cs.Command('info', (msg) => {
@@ -677,16 +679,16 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 		.setTitle(`${bot.user.username} stats`)
 		.setURL(packagejson.repository)
 		.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
-		.addField('Memory Usage', Math.round(process.memoryUsage().rss/10000)/100+'MB', true)
-		.addField('CPU Usage', `Last second: **${cpuusage1sec}%**\nLast 30 seconds: **${cpuusage30sec}%**\nLast minute: **${cpuusagemin}%**\nRuntime: **${Math.round(process.cpuUsage().user/(process.uptime()*1000)*100)/100}%**`, true)
-		.addField('Uptime', `${Math.round(process.uptime()/76800)}d ${Math.round(process.uptime()/3200)}h ${Math.round(process.uptime()/60)}m ${Math.round(process.uptime())}s`, true));
+		.addField('Memory Usage', Math.round(process.memoryUsage().rss / 10000) / 100 + 'MB', true)
+		.addField('CPU Usage', `Last second: **${cpuusage1sec}%**\nLast 30 seconds: **${cpuusage30sec}%**\nLast minute: **${cpuusagemin}%**\nRuntime: **${Math.round(process.cpuUsage().user / (process.uptime() * 1000) * 100) / 100}%**`, true)
+		.addField('Uptime', `${Math.round(process.uptime() / 76800)}d ${Math.round(process.uptime() / 3200)}h ${Math.round(process.uptime() / 60)}m ${Math.round(process.uptime())}s`, true));
 })
 	.addAlias('stats')
 	.setDescription('get some info and stats about the bot'));
 
 cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
-	let params = getParams(msg);
-	if (!params[0]) params[0] = prefix;
+	const params = getParams(msg);
+	if (!params[0]) { params[0] = prefix; }
 
 	params[0] = params[0].toLowerCase();
 
@@ -694,7 +696,7 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 		guildsettings[msg.guild.id] = params[0];
 	} else {
 		guildsettings[msg.guild.id] = {
-			prefix: params[0]
+			prefix: params[0],
 		};
 	}
 
@@ -708,9 +710,9 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 
 foxconsole.info('starting...');
 
-bot.on('message', msg => {
+bot.on('message', (msg) => {
 	let content = msg.content;
-	let author = msg.author;
+	const author = msg.author;
 
 	if (author.id === process.env.OWNER && !content.startsWith(prefix)) {
 		foxquotes.push({ createdTimestamp: msg.createdTimestamp, content: msg.content, author: { username: author.username, avatarURL: author.avatarURL } });
@@ -723,16 +725,16 @@ bot.on('message', msg => {
 			nwordpassxp: 0,
 			nwordpassxpneeded: 100,
 			nextpass: 0,
-			nworddisable: true
+			nworddisable: true,
 		};
 	}
 	if (!userdata[author.id].nworddisable && !content.startsWith(prefix)) {
 		// patch for old accounts
 		if (!userdata[author.id].nwordpassxpneeded) {
-			userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses*50;
+			userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses * 50;
 		}
 
-		let count = (msg.content.toLowerCase().replace(' ', '').match(/nigg/g) || []).length;
+		const count = (msg.content.toLowerCase().replace(' ', '').match(/nigg/g) || []).length;
 
 		if (count === 0 && Date.now() > userdata[author.id].nextpass) {
 			userdata[author.id].nwordpassxp += Math.floor(Math.random() * 10 + 5);
@@ -741,7 +743,7 @@ bot.on('message', msg => {
 			if (userdata[author.id].nwordpassxp > userdata[author.id].nwordpassxpneeded) {
 				userdata[author.id].nwordpassxp -= 100;
 				userdata[author.id].nwordpasses += 1;
-				userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses*50;
+				userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses * 50;
 				msg.channel.send(`**${author.username}#${author.discriminator}** recieved an N-Word pass!`);
 			}
 		} else {
@@ -751,7 +753,7 @@ bot.on('message', msg => {
 			} else if (count !== 0) {
 				userdata[author.id].nwordpasses -= count;
 				msg.channel.send(`:bangbang: ${msg.author.toString()} used ${count} N-Word ${count === 1 ? 'pass' : 'passes'}`);
-				userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses*50;
+				userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses * 50;
 			}
 		}
 	}
@@ -766,12 +768,12 @@ bot.on('message', msg => {
 
 	if (content.startsWith(thisprefix)) {
 		content = content.slice(thisprefix.length, content.length);
-		let cmd = content.split(' ')[0];
+		const cmd = content.split(' ')[0];
 
 		foxconsole.debug('got command ' + cmd);
 
-		Object.values(cs.commands).forEach(c => {
-			Object.values(c).forEach(command => {
+		Object.values(cs.commands).forEach((c) => {
+			Object.values(c).forEach((command) => {
 				if (command.name === cmd || command.aliases.includes(cmd)) {
 					command.runCommand(msg, bot);
 				}
@@ -783,35 +785,37 @@ bot.on('message', msg => {
 		if (author.id === process.env.OWNER) {
 			switch (cmd) {
 			case 'debug':
-				let clean = function (text) {
+				const clean = function(text) {
 					if (typeof (text) === 'string') {
 						text = text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
 						return text;
-					} else
+					} else {
 						return text;
+					}
 				};
 
 				try {
-					var code = content.replace(cmd + ' ', '');
-					var evaled = eval(code);
+					const code = content.replace(cmd + ' ', '');
+					let evaled = eval(code);
 
-					if (typeof evaled !== 'string')
+					if (typeof evaled !== 'string') {
 						evaled = require('util').inspect(evaled);
+					}
 
-					let embed = {
+					const embed = {
 						title: 'Eval',
 						color: '990000',
 						fields: [{
 							name: 'Input',
 							value: '```xl\n' + code + '\n```',
-							inline: true
+							inline: true,
 						},
 						{
 							name: 'Output',
 							value: '```xl\n' + clean(evaled) + '\n```',
-							inline: true
-						}
-						]
+							inline: true,
+						},
+						],
 					};
 
 					msg.channel.send('', { embed });
@@ -835,19 +839,19 @@ bot.on('message', msg => {
 
 bot.on('ready', () => {
 	foxconsole.info('fetching application...');
-	bot.fetchApplication().then(app => {
+	bot.fetchApplication().then((app) => {
 		application = app;
 	});
 
 	foxconsole.info('doing post-login intervals...');
 
-	let presences = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`]];
+	const presences = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`]];
 
 	setInterval(() => {
 		presences.push([`${bot.guilds.size} servers`, 'WATCHING']);
 		presences.push([`with ${bot.users.size} users`, 'PLAYING']);
 
-		let presence = presences[Math.floor(Math.random() * presences.length)];
+		const presence = presences[Math.floor(Math.random() * presences.length)];
 		bot.user.setPresence({ status: 'dnd', game: { name: presence[0], type: presence[1] } });
 
 		foxconsole.debug(`changed presence to [${presence}]`);
@@ -872,7 +876,7 @@ bot.on('ready', () => {
 			}
 		});
 
-		if (!foxquotessaveneeded) return;
+		if (!foxquotessaveneeded) { return; }
 		foxconsole.debug('saving foxquotes...');
 		fs.writeFile('./foxquotes.json', JSON.stringify(foxquotes), (err) => {
 			if (err) {
