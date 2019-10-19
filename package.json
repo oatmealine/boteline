@@ -5,7 +5,9 @@
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "echo \"No linting\" && return 0"
+    "lint": "echo \"No linting\" && return 0",
+    "quickrun": "tsc && node built/main.js",
+    "build": "tsc"
   },
   "keywords": [
     "discord",

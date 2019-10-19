@@ -13,7 +13,7 @@ function getParams(message) {
 	return message.content.split(' ').slice(1, message.content.length);
 }
 
-class Command {
+export class Command {
 	public name: string;
 	public function: Function;
 	public usage: string;
@@ -83,27 +83,27 @@ class Command {
 		return this;
 	}
 
-	public setDescription(desc) {
+	public setDescription(desc? : string) {
 		this.description = desc === undefined ? 'No description provided' : desc;
 		return this;
 	}
 
-	public setHidden(hide) {
+	public setHidden(hide? : boolean) {
 		this.hidden = hide === undefined ? true : hide;
 		return this;
 	}
 
-	public setOwnerOnly(owner) {
+	public setOwnerOnly(owner? : boolean) {
 		this.owneronly = owner === undefined ? true : owner;
 		return this;
 	}
 
-	public setDMOnly(needs) {
+	public setDMOnly(needs?: boolean) {
 		this.needsDM = needs === undefined ? true : needs;
 		return this;
 	}
 
-	public setGuildOnly(needs) {
+	public setGuildOnly(needs?: boolean) {
 		this.needsGuild = needs === undefined ? true : needs;
 		return this;
 	}
@@ -221,7 +221,7 @@ class Command {
 	}
 }
 
-class SimpleCommand extends Command {
+export class SimpleCommand extends Command {
 	constructor(name, cfunction) {
 		super(name, cfunction);
 
@@ -244,7 +244,7 @@ class SimpleCommand extends Command {
 	}
 }
 
-const commands: object = {
+export const commands: object = {
 	core: {
 		help: new SimpleCommand('help', (message) => {
 			const params: string[] = message.content.split(' ');
@@ -340,7 +340,7 @@ const commands: object = {
 	},
 };
 
-function addCommand(category, command): void {
+export function addCommand(category, command): void {
 	if (!module.exports.commands[category]) {
 		module.exports.commands[category] = [];
 	}
@@ -348,10 +348,6 @@ function addCommand(category, command): void {
 	module.exports.commands[category][command.name] = command;
 }
 
-module.exports = {
-	bot: client,
-	SimpleCommand,
-	Command,
-	commands,
-	addCommand,
-};
+export function setBot(bot: Client) {
+	client = bot;
+}

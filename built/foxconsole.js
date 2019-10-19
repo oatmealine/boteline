@@ -1,5 +1,6 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 const chalk = require('chalk');
-let showDebug = false;
 function formattedDate() {
     const date = new Date();
     function addDigit(num) {
@@ -12,20 +13,25 @@ function formattedDate() {
     const hours = addDigit(date.getHours());
     const minutes = addDigit(date.getMinutes());
     const seconds = addDigit(date.getSeconds());
-    return ('[' + hours + ':' + minutes + ':' + seconds + ']').bold + ' ';
+    return chalk.bold(('[' + hours + ':' + minutes + ':' + seconds + ']')) + ' ';
 }
-module.exports = {
-    log: console.log,
-    info(str) { console.info(chalk.blue(formattedDate() + ('ℹ ' + str))); },
-    success(str) { console.log(chalk.green(formattedDate() + ('✓ ' + str))); },
-    warning(str) { console.log(chalk.yellow(formattedDate() + ('⚠ ' + str))); },
-    error(str) { console.log(chalk.red(formattedDate() + ('⚠ ' + str))); },
-    debug(str) {
-        if (showDebug) {
-            console.debug(chalk.cyan(formattedDate() + ('ℹ ' + str)));
-        }
-    },
-    showDebug(bool) {
-        showDebug = bool;
-    },
-};
+function info(str) { console.info(chalk.blue(formattedDate() + ('ℹ ' + str))); }
+exports.info = info;
+;
+function success(str) { console.log(chalk.green(formattedDate() + ('✓ ' + str))); }
+exports.success = success;
+;
+function warning(str) { console.log(chalk.yellow(formattedDate() + ('⚠ ' + str))); }
+exports.warning = warning;
+;
+function error(str) { console.log(chalk.red(formattedDate() + ('⚠ ' + str))); }
+exports.error = error;
+;
+exports.debugdisp = false;
+function debug(str) { if (exports.debugdisp)
+    console.debug(chalk.cyan(formattedDate() + ('ℹ ' + str))); }
+exports.debug = debug;
+;
+function showDebug(bool) { exports.debugdisp = bool; }
+exports.showDebug = showDebug;
+;

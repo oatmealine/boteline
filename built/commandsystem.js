@@ -171,6 +171,7 @@ class Command {
         return this.function(message, client);
     }
 }
+exports.Command = Command;
 class SimpleCommand extends Command {
     constructor(name, cfunction) {
         super(name, cfunction);
@@ -191,7 +192,8 @@ class SimpleCommand extends Command {
         };
     }
 }
-const commands = {
+exports.SimpleCommand = SimpleCommand;
+exports.commands = {
     core: {
         help: new SimpleCommand('help', (message) => {
             const params = message.content.split(' ');
@@ -294,10 +296,8 @@ function addCommand(category, command) {
     }
     module.exports.commands[category][command.name] = command;
 }
-module.exports = {
-    bot: client,
-    SimpleCommand,
-    Command,
-    commands,
-    addCommand,
-};
+exports.addCommand = addCommand;
+function setBot(bot) {
+    client = bot;
+}
+exports.setBot = setBot;

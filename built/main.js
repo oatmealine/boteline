@@ -1,36 +1,42 @@
+"use strict";
 /* eslint-disable no-case-declarations */
+Object.defineProperty(exports, "__esModule", { value: true });
+if (process.cwd().endsWith('built')) {
+    process.chdir('../');
+    console.log('changed dir to ' + process.cwd());
+}
 // libraries & modules
-const Discord = require('discord.js');
+const Discord = require("discord.js");
 const bot = new Discord.Client();
-const cs = require('./commandsystem.js');
-const foxconsole = require('./foxconsole.js');
-const { exec } = require('child_process');
-const fs = require('fs');
-const ffmpeg = require('fluent-ffmpeg');
+const cs = require("./commandsystem.js");
+const foxconsole = require("./foxconsole.js");
+const child_process_1 = require("child_process");
+const fs = require("fs");
+const ffmpeg = require("fluent-ffmpeg");
 const ch = require('chalk');
 // files
-const packagejson = require('./package.json');
-const packagelock = require('./package-lock.json');
+const packagejson = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }));
+const packagelock = JSON.parse(fs.readFileSync('./package-lock.json', { encoding: 'utf8' }));
 if (!fs.existsSync('./foxquotes.json')) {
     fs.writeFileSync('./foxquotes.json', '[]');
 }
-const foxquotes = require('./foxquotes.json');
+const foxquotes = JSON.parse(fs.readFileSync('./foxquotes.json', { encoding: 'utf8' }));
 if (!fs.existsSync('./userdata.json')) {
     fs.writeFileSync('./userdata.json', '{}');
 }
-const userdata = require('./userdata.json');
+const userdata = JSON.parse(fs.readFileSync('./userdata.json', { encoding: 'utf8' }));
 if (!fs.existsSync('./guildsettings.json')) {
     fs.writeFileSync('./guildsettings.json', '{}');
 }
-const guildsettings = require('./guildsettings.json');
+const guildsettings = JSON.parse(fs.readFileSync('./guildsettings.json', { encoding: 'utf8' }));
+const valhalladrinks = JSON.parse(fs.readFileSync('./valhalla.json', { encoding: 'utf8' }));
 let foxquotessaveneeded = false;
 // .env stuff
 require('dotenv').config();
-foxconsole.showDebug(process.env.DEBUG);
+foxconsole.showDebug(process.env.DEBUG == 'true');
 // constants & variables
 const prefix = process.env.PREFIX;
 const version = packagejson.version + ' alpha';
-const valhalladrinks = require('./valhalla.json');
 let application;
 // statistics
 let cpuusagemin = 'not enough data';
@@ -83,10 +89,8 @@ function makeDrinkEmbed(drink) {
                 value: `A **${drink.name}** is **${drink.ingredients.adelhyde}** Adelhyde, **${drink.ingredients.bronson_extract}** Bronson Extract, **${drink.ingredients.powdered_delta}** Powdered Delta, **${drink.ingredients.flangerine}** Flangerine ${drink.ingredients.karmotrine === 'optional' ? 'with *(optional)*' : `and **${drink.ingredients.karmotrine}**`} Karmotrine. All ${drink.aged ? `aged${drink.iced ? ', ' : ' and '}` : ''}${drink.iced ? 'on the rocks and ' : ''}${drink.blended ? 'blended' : 'mixed'}.`,
             },
         ],
-        footer: { text: 'CALICOMP 1.1' },
-        color: [255, 0, 255],
-    });
-    embed.setColor([255, 0, 255]);
+        footer: { text: 'CALICOMP 1.1' }
+    }).setColor([255, 0, 255]);
     return embed;
 }
 function hashCode(str) {
@@ -229,13 +233,13 @@ if (process.env.DEBUG) {
 // i KNOW this is messy but like ,,, how else would you do this
 console.log(ch.bold(`
 
-  ${ch.bgRed('              ')}
-${ch.bgRed('                  ')}
-${ch.bgRed('        ')}${ch.bgYellow('        ')}${ch.bgRed('  ')}
-${ch.bgRed('      ')}${ch.white.bgRed('  ██    ██')}${ch.bgRed('  ')}
-  ${ch.bgRed('    ')}${ch.bgYellow('          ')}
-    ${ch.bgRed('  ')}${ch.bgGreen('        ')}
-      ${ch.bgWhite('  ')}    ${ch.bgWhite('  ')}
+   ${ch.bgRed('              ')}
+ ${ch.bgRed('                  ')}
+ ${ch.bgRed('        ')}${ch.bgYellow('        ')}${ch.bgRed('  ')}
+ ${ch.bgRed('      ')}${ch.white.bgYellow('  ██    ██')}${ch.bgRed('  ')}
+   ${ch.bgRed('    ')}${ch.bgYellow('          ')}
+     ${ch.bgRed('  ')}${ch.bgGreen('        ')}
+       ${ch.bgWhite('  ')}    ${ch.bgWhite('  ')}
 
 `));
 foxconsole.info('adding commands...');
@@ -612,7 +616,7 @@ cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
         return;
     }
     msg.channel.send('', new Discord.RichEmbed({
-        author: { name: randommsg.author.username, icon: randommsg.author.avatarURL },
+        author: { name: randommsg.author.username, icon_url: randommsg.author.avatarURL },
         timestamp: randommsg.createdTimestamp,
         description: randommsg.content,
     }));
@@ -720,10 +724,10 @@ bot.on('message', (msg) => {
         content = content.slice(thisprefix.length, content.length);
         const cmd = content.split(' ')[0];
         foxconsole.debug('got command ' + cmd);
-        Object.values(cs.commands).forEach((c) => {
-            Object.values(c).forEach((command) => {
-                if (command.name === cmd || command.aliases.includes(cmd)) {
-                    command.runCommand(msg, bot);
+        Object.values(cs.commands).forEach((cat) => {
+            Object.values(cat).forEach((command) => {
+                if (command['name'] === cmd || command['aliases'].includes(cmd)) {
+                    command['runCommand'](msg, bot);
                 }
             });
         });
@@ -770,7 +774,7 @@ bot.on('message', (msg) => {
                     }
                     break;
                 case 'exec':
-                    exec(content.replace(cmd + ' ', ''), (err, stdout) => {
+                    child_process_1.exec(content.replace(cmd + ' ', ''), (err, stdout) => {
                         if (err) {
                             msg.channel.send('```' + err + '```');
                         }
@@ -788,7 +792,7 @@ bot.on('ready', () => {
         application = app;
     });
     foxconsole.info('doing post-login intervals...');
-    const presences = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`]];
+    const presences = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`, 'STREAMING']];
     setInterval(() => {
         presences.push([`${bot.guilds.size} servers`, 'WATCHING']);
         presences.push([`with ${bot.users.size} users`, 'PLAYING']);
@@ -829,7 +833,7 @@ bot.on('ready', () => {
             }
         });
     }, 120000);
-    cs.bot = bot;
+    cs.setBot(bot);
     foxconsole.success('ready!');
 });
 foxconsole.info('logging in...');
