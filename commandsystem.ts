@@ -347,7 +347,7 @@ export const commands: object = {
 		ping: new Command('ping', (message, bot) => {
 			const datestart = Date.now();
 			message.channel.send('hol up').then((m) => {
-				m.edit(`Message latency: ${Date.now() - datestart}ms\nWebsocket ping: ${bot.ping}ms`);
+				m.edit(`Message latency: ${Date.now() - datestart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
 			});
 		})
 			.setUsage('ping')
