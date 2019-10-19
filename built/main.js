@@ -39,9 +39,9 @@ const prefix = process.env.PREFIX;
 const version = packagejson.version + ' alpha';
 let application;
 // statistics
-let cpuusagemin = 'not enough data';
-let cpuusage30sec = 'not enough data';
-let cpuusage1sec = 'not enough data';
+let cpuusagemin = 0;
+let cpuusage30sec = 0;
+let cpuusage1sec = 0;
 let cpuusageminold = process.cpuUsage();
 let cpuusage30secold = process.cpuUsage();
 let cpuusage1secold = process.cpuUsage();
@@ -117,8 +117,8 @@ function seedAndRate(str) {
         return exclusions[str];
     }
     else {
-        const hashCode = Math.abs(str.hashCode());
-        return Math.round(normalDistribution(hashCode % 0.85) * 10);
+        const hc = Math.abs(hashCode(str));
+        return Math.round(normalDistribution(hc % 0.85) * 10);
     }
 }
 class FFMpegCommand extends cs.Command {
@@ -321,7 +321,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
     .addExample('celsius 59'));
 cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
     const params = getParams(message);
-    return `${params[0]}°C is ${params[0] < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
+    return `${params[0]}°C is ${Number(params[0]) < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
 })
     .setUsage('kelvin (number)')
     .setDescription('convert celsius to kelvin')
@@ -376,7 +376,7 @@ cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
     if (!params[0]) {
         params[0] = '20';
     }
-    return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(params[0] - 3)}k`, '-c:a aac'];
+    return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac'];
 })
     .setDescription('compresses a video')
     .addAlias('compression')
@@ -556,11 +556,11 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
     let thingToRate = params.join(' ');
     if (thingToRate.toLowerCase().startsWith('me') || thingToRate.toLowerCase().startsWith('my')) {
         // rate the user, not the string
-        thingToRate += msg.author.id.toString().hashCode();
+        thingToRate += hashCode(msg.author.id.toString());
     }
     else if (thingToRate.toLowerCase().startsWith('this server') || thingToRate.toLowerCase().startsWith('this discord')) {
         // rate the server, not the string
-        thingToRate = thingToRate + msg.guild.id.toString().hashCode();
+        thingToRate = thingToRate + hashCode(msg.guild.id.toString());
     }
     const rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
     return `I'd give ${params.join(' ')} a **${rating}/10**`;
@@ -573,16 +573,16 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
     let thingToRate1 = params[0];
     let thingToRate2 = params[1];
     if (thingToRate1.toLowerCase().startsWith('me') || thingToRate1.toLowerCase().startsWith('my')) {
-        thingToRate1 = thingToRate1 + msg.author.id.toString().hashCode();
+        thingToRate1 = thingToRate1 + hashCode(msg.author.id.toString());
     }
     else if (thingToRate1.toLowerCase().startsWith('this server') || thingToRate1.toLowerCase().startsWith('this discord')) {
-        thingToRate1 = thingToRate1 + msg.guild.id.toString().hashCode();
+        thingToRate1 = thingToRate1 + hashCode(msg.guild.id.toString());
     }
     if (thingToRate2.toLowerCase().startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
-        thingToRate2 = thingToRate2 + msg.author.id.toString().hashCode();
+        thingToRate2 = thingToRate2 + hashCode(msg.author.id.toString());
     }
     else if (thingToRate2.toLowerCase().startsWith('this server') || thingToRate2.toLowerCase().startsWith('this discord')) {
-        thingToRate2 = thingToRate2 + msg.guild.id.toString().hashCode();
+        thingToRate2 = thingToRate2 + hashCode(msg.guild.id.toString());
     }
     const rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
     const rating2 = seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
@@ -594,7 +594,7 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
     .addExample('pick njs python'));
 cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
     const thingToRate = getParams(msg).join(' ');
-    return `> ${thingToRate}\nI'd say, **${['yes', 'probably', 'maybe', 'no'][Math.abs(thingToRate.hashCode()) * 23 % 4]}**`;
+    return `> ${thingToRate}\nI'd say, **${['yes', 'probably', 'maybe', 'no'][Math.abs(hashCode(thingToRate)) * 23 % 4]}**`;
 })
     .setDescription('ask the bot a question')
     .setUsage('ask (string)')

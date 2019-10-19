@@ -1,5 +1,3 @@
-/* eslint-disable no-case-declarations */
-
 if (process.cwd().endsWith('built')) {
 	process.chdir('../');
 	console.log('changed dir to '+process.cwd())
@@ -51,13 +49,13 @@ const prefix : string = process.env.PREFIX;
 
 const version : string = packagejson.version + ' alpha';
 
-let application;
+let application: Discord.OAuth2Application;
 
 // statistics
 
-let cpuusagemin: any = 'not enough data';
-let cpuusage30sec: any = 'not enough data';
-let cpuusage1sec: any = 'not enough data';
+let cpuusagemin: number = 0;
+let cpuusage30sec: number = 0;
+let cpuusage1sec: number = 0;
 
 let cpuusageminold = process.cpuUsage();
 let cpuusage30secold = process.cpuUsage();
@@ -80,7 +78,7 @@ setInterval(() => {
 }, 60000);
 
 // functions
-function makeDrinkEmbed(drink) {
+function makeDrinkEmbed(drink: any) : Discord.RichEmbed {
 	const embed = new Discord.RichEmbed({
 		title: drink.name,
 		fields: [
@@ -113,7 +111,7 @@ function makeDrinkEmbed(drink) {
 	return embed;
 }
 
-function hashCode(str: string) {
+function hashCode(str: string) : number {
 	let hash = 0, i, chr;
 	if (str.length === 0) { return hash; }
 	for (i = 0; i < str.length; i++) {
@@ -124,22 +122,22 @@ function hashCode(str: string) {
 	return hash;
 }
 
-function getParams(message) {
+function getParams(message: Discord.Message) : string[] {
 	return message.content.split(' ').slice(1, message.content.length);
 }
 
-function normalDistribution(x) {
+function normalDistribution(x: number) : number {
 	return Math.pow(Math.E, (-Math.PI * x * x));
 }
 
-function seedAndRate(str) {
+function seedAndRate(str: string) : number {
 	const exclusions = {boteline: 0, mankind: 0, fox: 10, thefox: 10};
 
 	if (Object.keys(str).includes('str')) {
 		return exclusions[str];
 	} else {
-		const hashCode = Math.abs(str.hashCode());
-		return Math.round(normalDistribution(hashCode % 0.85) * 10);
+		const hc = Math.abs(hashCode(str));
+		return Math.round(normalDistribution(hc % 0.85) * 10);
 	}
 }
 
@@ -281,10 +279,10 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	.setUsage('invite'));
 
 cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
-	const params = message.content.split(' ').slice(1, message.content.length);
+	const params: string[] = getParams(message);
 
 	if (message.guild.members.get(params[0]) !== undefined) {
-		const banmember = message.guild.members.get(params[0]);
+		const banmember: Discord.GuildMember = message.guild.members.get(params[0]);
 
 		if (banmember.id === message.member.id) {
 			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
@@ -292,9 +290,9 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
 
 		if (banmember.bannable) {
 			banmember.ban();
-			return '✓ Banned ' + banmember.username;
+			return '✓ Banned ' + banmember.user.username;
 		} else {
-			return 'member ' + banmember.username + ' isn\'t bannable';
+			return 'member ' + banmember.user.username + ' isn\'t bannable';
 		}
 	} else {
 		return 'i don\'t know that person!';
@@ -310,10 +308,10 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
 	.setGuildOnly());
 
 cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
-	const params = message.content.split(' ').slice(1, message.content.length);
+	const params: string[] = message.content.split(' ').slice(1, message.content.length);
 
 	if (message.guild.members.get(params[0]) !== undefined) {
-		const banmember = message.guild.members.get(params[0]);
+		const banmember: Discord.GuildMember = message.guild.members.get(params[0]);
 
 		if (banmember.id === message.member.id) {
 			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
@@ -321,9 +319,9 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
 
 		if (banmember.kickable) {
 			banmember.ban();
-			return '✓ Kicked ' + banmember.username;
+			return '✓ Kicked ' + banmember.user.username;
 		} else {
-			return 'member ' + banmember.username + ' isn\'t kickable';
+			return 'member ' + banmember.user.username + ' isn\'t kickable';
 		}
 	} else {
 		return 'i don\'t know that person!';
@@ -358,7 +356,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
 
 cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
 	const params = getParams(message);
-	return `${params[0]}°C is ${params[0] < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
+	return `${params[0]}°C is ${Number(params[0]) < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
 })
 	.setUsage('kelvin (number)')
 	.setDescription('convert celsius to kelvin')
@@ -393,7 +391,7 @@ cs.addCommand('utilities', new cs.Command('icon', (message) => {
 
 cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
 	const params = getParams(msg);
-	let user;
+	let user: Discord.User;
 
 	if (params[0] !== undefined) {
 		user = bot.users.get(params[0]);
@@ -415,9 +413,9 @@ cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 	.setDescription('ква'));
 
 cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 	if (!params[0]) { params[0] = '20'; }
-	return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(params[0] - 3)}k`, '-c:a aac'];
+	  return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac'];
 })
 	.setDescription('compresses a video')
 	.addAlias('compression')
@@ -425,14 +423,14 @@ cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 
-	const eat = bot.emojis.get('612360473928663040').toString();
-	const hamger1 = bot.emojis.get('612360474293567500').toString();
-	const hamger2 = bot.emojis.get('612360473987252278').toString();
-	const hamger3 = bot.emojis.get('612360473974931458').toString();
+	const eat: string = bot.emojis.get('612360473928663040').toString();
+	const hamger1: string = bot.emojis.get('612360474293567500').toString();
+	const hamger2: string = bot.emojis.get('612360473987252278').toString();
+	const hamger3: string = bot.emojis.get('612360473974931458').toString();
 
-	const insidehamger = params[0] ? params.join(' ') : hamger2;
+	const insidehamger: string = params[0] ? params.join(' ') : hamger2;
 
 	msg.channel.send(eat + hamger1 + insidehamger + hamger3).then((m) => {
 		setTimeout(() => {
@@ -458,11 +456,11 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	.addClientPermission('USE_EXTERNAL_EMOJIS'));
 
 cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 
 	if (params[0] === 'search') {
-		const founddrinks = [];
-		const search = params.slice(1, params.length).join(' ');
+		const founddrinks: any[] = [];
+		const search: string = params.slice(1, params.length).join(' ');
 
 		valhalladrinks.forEach((d) => {
 			if (d.name.toLowerCase().includes(search.toLowerCase()) || d.flavour.toLowerCase() === search.toLowerCase()) {
@@ -527,8 +525,8 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 		foxconsole.debug(`${adelhyde}, ${bronson_extract}, ${powdered_delta}, ${flangerine}, ${karmotrine}`);
 		foxconsole.debug(`${blended}, ${aged}, ${iced}`);
 
-		let drink;
-		let drinkbig;
+		let drink: boolean;
+		let drinkbig: boolean;
 		valhalladrinks.forEach((d) => {
 			if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) { return; }
 
@@ -571,7 +569,7 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 	.setDescription('search up drinks, and make some drinks, va11halla style!\nbasically a text-based replica of the drink making part of va11halla'));
 
 cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 
 	if (params[0] === 'toggle') {
 		userdata[msg.author.id].nworddisable = !userdata[msg.author.id].nworddisable;
@@ -590,17 +588,17 @@ cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
 	.addExample('nwordpass'));
 
 cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 	let thingToRate = params.join(' ');
 
 	if (thingToRate.toLowerCase().startsWith('me') || thingToRate.toLowerCase().startsWith('my')) {
 		// rate the user, not the string
-		thingToRate += msg.author.id.toString().hashCode();
+		thingToRate += hashCode(msg.author.id.toString());
 	} else if (thingToRate.toLowerCase().startsWith('this server') || thingToRate.toLowerCase().startsWith('this discord')) {
 		// rate the server, not the string
-		thingToRate = thingToRate + msg.guild.id.toString().hashCode();
+		thingToRate = thingToRate + hashCode(msg.guild.id.toString());
 	}
-	const rating = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
+	const rating: number = seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
 	return `I'd give ${params.join(' ')} a **${rating}/10**`;
 })
 	.setDescription('rates something')
@@ -608,21 +606,21 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 	.addExample('rate me'));
 
 cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 
-	let thingToRate1 = params[0];
-	let thingToRate2 = params[1];
+	let thingToRate1: string = params[0];
+	let thingToRate2: string = params[1];
 
 	if (thingToRate1.toLowerCase().startsWith('me') || thingToRate1.toLowerCase().startsWith('my')) {
-		thingToRate1 = thingToRate1 + msg.author.id.toString().hashCode();
+		thingToRate1 = thingToRate1 + hashCode(msg.author.id.toString());
 	} else if (thingToRate1.toLowerCase().startsWith('this server') || thingToRate1.toLowerCase().startsWith('this discord')) {
-		thingToRate1 = thingToRate1 + msg.guild.id.toString().hashCode();
+		thingToRate1 = thingToRate1 + hashCode(msg.guild.id.toString());
 	}
 
 	if (thingToRate2.toLowerCase().startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
-		thingToRate2 = thingToRate2 + msg.author.id.toString().hashCode();
+		thingToRate2 = thingToRate2 + hashCode(msg.author.id.toString());
 	} else if (thingToRate2.toLowerCase().startsWith('this server') || thingToRate2.toLowerCase().startsWith('this discord')) {
-		thingToRate2 = thingToRate2 + msg.guild.id.toString().hashCode();
+		thingToRate2 = thingToRate2 + hashCode(msg.guild.id.toString());
 	}
 
 	const rating1 = seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
@@ -636,7 +634,7 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 
 cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
 	const thingToRate = getParams(msg).join(' ');
-	return `> ${thingToRate}\nI'd say, **${['yes', 'probably', 'maybe', 'no'][Math.abs(thingToRate.hashCode()) * 23 % 4]}**`;
+	return `> ${thingToRate}\nI'd say, **${['yes', 'probably', 'maybe', 'no'][Math.abs(hashCode(thingToRate)) * 23 % 4]}**`;
 })
 	.setDescription('ask the bot a question')
 	.setUsage('ask (string)')
@@ -645,7 +643,7 @@ cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
 	.addExample('ask is this a good example'));
 
 cs.addCommand('fun', new cs.Command('achievement', (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 	msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + params.join('+'), name: 'achievement.png' }] });
 })
 	.addAlias('advancement')
@@ -693,7 +691,7 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 	.setDescription('get some info and stats about the bot'));
 
 cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
-	const params = getParams(msg);
+	const params: string[] = getParams(msg);
 	if (!params[0]) { params[0] = prefix; }
 
 	params[0] = params[0].toLowerCase();
@@ -717,8 +715,8 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 foxconsole.info('starting...');
 
 bot.on('message', (msg) => {
-	let content = msg.content;
-	const author = msg.author;
+	let content: string = msg.content;
+	const author: Discord.User = msg.author;
 
 	if (author.id === process.env.OWNER && !content.startsWith(prefix)) {
 		foxquotes.push({ createdTimestamp: msg.createdTimestamp, content: msg.content, author: { username: author.username, avatarURL: author.avatarURL } });
@@ -740,7 +738,7 @@ bot.on('message', (msg) => {
 			userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses * 50;
 		}
 
-		const count = (msg.content.toLowerCase().replace(' ', '').match(/nigg/g) || []).length;
+		const count: number = (msg.content.toLowerCase().replace(' ', '').match(/nigg/g) || []).length;
 
 		if (count === 0 && Date.now() > userdata[author.id].nextpass) {
 			userdata[author.id].nwordpassxp += Math.floor(Math.random() * 10 + 5);
@@ -764,7 +762,7 @@ bot.on('message', (msg) => {
 		}
 	}
 
-	let thisprefix = prefix;
+	let thisprefix: string = prefix;
 
 	if (msg.guild) {
 		if (guildsettings[msg.guild.id]) {
@@ -774,7 +772,7 @@ bot.on('message', (msg) => {
 
 	if (content.startsWith(thisprefix)) {
 		content = content.slice(thisprefix.length, content.length);
-		const cmd = content.split(' ')[0];
+		const cmd: string = content.split(' ')[0];
 
 		foxconsole.debug('got command ' + cmd);
 
