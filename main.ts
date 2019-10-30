@@ -16,6 +16,8 @@ import * as fs from 'fs';
 
 import * as os from 'os';
 
+import * as rq from 'request';
+
 import * as ffmpeg from 'fluent-ffmpeg';
 const ch = require('chalk');
 // files
@@ -52,6 +54,17 @@ const prefix : string = process.env.PREFIX;
 const version : string = packagejson.version + ' alpha';
 
 let application: Discord.OAuth2Application;
+
+const cache = {
+	'splatoon': {
+		timer: new Date(0),
+		data: {}
+	},
+	'salmon': {
+		timer: new Date(0),
+		data: {}
+	}
+};
 
 // statistics
 
@@ -145,6 +158,67 @@ function seedAndRate(str: string) : number {
 		const hc = Math.abs(hashCode(str));
 		return Math.round(normalDistribution(hc % 0.85) * 10);
 	}
+}
+
+function checkSplatoon() : Promise<any> {
+	return new Promise(resolve => {
+		if (cache.splatoon !== undefined) {
+			if (cache.splatoon.timer.getHours() >= new Date().getHours() && new Date(cache.splatoon.timer.getTime()+1200000) >= new Date()) {
+				resolve(cache.splatoon);
+				return;
+			}
+		}
+
+		foxconsole.debug('fetching splatoon2.ink data...')
+		rq('https://splatoon2.ink/data/schedules.json', {
+			'user-agent': 'Boteline (oatmealine#1704)'
+		}, (err, response, body : string) => {
+			foxconsole.debug('got code '+response.statusCode);
+			if (response.statusCode === 200 && !err) {
+				foxconsole.debug('done!');
+				cache.splatoon.data = JSON.parse(body);
+				cache.splatoon.timer = new Date();
+				resolve(cache.splatoon);
+			} else {
+				foxconsole.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
+				resolve(cache.splatoon);
+			}
+		});
+	});
+};
+
+function checkSalmon() : Promise<any> {
+	return new Promise(resolve => {
+		if (cache.salmon !== undefined) {
+			if (cache.salmon.timer.getHours() >= new Date().getHours() && new Date(cache.salmon.timer.getTime()+1200000) >= new Date()) {
+				resolve(cache.salmon);
+				return;
+			}
+		}
+
+		foxconsole.debug('fetching splatoon2.ink data...')
+		rq('https://splatoon2.ink/data/coop-schedules.json', {
+			'user-agent': 'Boteline (oatmealine#1704)'
+		}, (err, response, body : string) => {
+			foxconsole.debug('got code '+response.statusCode);
+			if (response.statusCode === 200 && !err) {
+				foxconsole.debug('done!');
+				cache.salmon.data = JSON.parse(body);
+				cache.salmon.timer = new Date();
+				resolve(cache.salmon);
+			} else {
+				foxconsole.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
+				resolve(cache.salmon);
+			}
+		});
+	});
+};
+
+function formatTime(date : Date) : string {
+	let hours = date.getUTCHours()
+	let minutes = date.getUTCMinutes()
+
+	return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes} UTC`
 }
 
 class FFMpegCommand extends cs.Command {
@@ -730,6 +804,75 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 	.setDescription('set a custom prefix for boteline')
 	.setUsage('prefix [string]')
 	.addUserPermission('MANAGE_GUILD'));
+
+cs.addCommand('utilities', new cs.Command('splatoon', (msg) => {
+	checkSplatoon().then(obj => {
+		let data = obj.data;
+
+		let timeleft = Math.floor(data.league[0].end_time-Date.now()/1000);
+
+		const regularemote = bot.emojis.get('639188039503183907') !== undefined ? bot.emojis.get('639188039503183907').toString()+' ' : ''
+		const rankedemote = bot.emojis.get('639188039658242078') !== undefined ? bot.emojis.get('639188039658242078').toString()+' ' : ''
+		const leagueemote = bot.emojis.get('639188038089703452') !== undefined ? bot.emojis.get('639188038089703452').toString()+' ' : ''
+
+		let embed = new Discord.RichEmbed()
+		.setTitle('Splatoon 2 Map Schedules')
+		.addField(regularemote+'Regular Battle',
+		`${data.regular[0].stage_a.name}, ${data.regular[0].stage_b.name}
+		${data.regular[0].rule.name}`)
+		.addField(rankedemote+'Ranked Battle',
+		`${data.gachi[0].stage_a.name}, ${data.gachi[0].stage_b.name}
+		${data.gachi[0].rule.name}`)
+		.addField(leagueemote+'League Battle',
+		`${data.league[0].stage_a.name}, ${data.league[0].stage_b.name}
+		${data.league[0].rule.name}`)
+		.setColor('22FF22')
+		.setDescription(`${formatTime(new Date(data.league[0].start_time*1000))} - ${formatTime(new Date(data.league[0].end_time*1000))}
+		${Math.floor(timeleft/60/60)%24}h ${Math.floor(timeleft/60)%60}m ${timeleft%60}s left`)
+		.setURL('https://splatoon2.ink/')
+		.setImage('https://splatoon2.ink/assets/splatnet'+data.regular[0].stage_a.image)
+		.setFooter('Data last fetched '+obj.timer.toDateString()+', '+formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
+
+		msg.channel.send('', embed);
+	});
+})
+	.addAlias('splatoonschedule')
+	.addAlias('splatoon2')
+	.setDescription('Check the schedule of the Splatoon 2 stage rotations')
+	.addClientPermission('EMBED_LINKS'));
+
+cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
+	checkSalmon().then(obj => {
+		let data = obj.data;
+
+		let timeleftend = Math.floor(data.details[0].end_time-Date.now()/1000);
+		let timeleftstart = Math.floor(data.details[0].start_time-Date.now()/1000);
+
+		let weapons = [];
+		data.details[0].weapons.forEach(w => {
+			weapons.push(w.weapon.name)
+		})
+
+		let embed = new Discord.RichEmbed()
+		.setTitle('Splatoon 2 Salmon Run Schedule')
+		.addField('Weapons',
+		`${weapons.join(', ')}`)
+		.addField('Map',
+		`${data.details[0].stage.name}`)
+		.setColor('FF9922')
+		.setDescription(`${new Date(data.details[0].start_time*1000).toUTCString()} - ${new Date(data.details[0].end_time*1000).toUTCString()}
+		${timeleftstart < 0 ? `${Math.floor(timeleftend/60/60)%24}h ${Math.floor(timeleftend/60)%60}m ${timeleftend%60}s left until end` : `${Math.floor(timeleftstart/60/60)%24}h ${Math.floor(timeleftstart/60)%60}m ${timeleftstart%60}s left until start`}`)
+		.setURL('https://splatoon2.ink/')
+		.setImage('https://splatoon2.ink/assets/splatnet'+data.details[0].stage.image)
+		.setFooter('Data last fetched '+obj.timer.toDateString()+', '+formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
+
+		msg.channel.send('', embed);
+	});
+})
+	.addAlias('salmon')
+	.addAlias('salmonschedule')
+	.setDescription('Check the schedule of the Splatoon 2 Salmon Run stage/weapon rotations')
+	.addClientPermission('EMBED_LINKS'))
 
 foxconsole.info('starting...');
 
