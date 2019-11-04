@@ -25,11 +25,6 @@ const ch = require('chalk');
 const packagejson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
 const packagelock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
 
-if (!fs.existsSync('./foxquotes.json')) {
-	fs.writeFileSync('./foxquotes.json', '[]');
-}
-const foxquotes = JSON.parse(fs.readFileSync('./foxquotes.json', {encoding: 'utf8'}));
-
 if (!fs.existsSync('./userdata.json')) {
 	fs.writeFileSync('./userdata.json', '{}');
 }
@@ -41,8 +36,6 @@ if (!fs.existsSync('./guildsettings.json')) {
 const guildsettings = JSON.parse(fs.readFileSync('./guildsettings.json', {encoding: 'utf8'}));
 
 const valhalladrinks = JSON.parse(fs.readFileSync('./valhalla.json', {encoding: 'utf8'}));
-
-let foxquotessaveneeded : boolean = false;
 
 // .env stuff
 require('dotenv').config();
@@ -732,22 +725,6 @@ cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 	.addExample('achievement Made an example!')
 	.addClientPermission('ATTACH_FILES'));
 
-cs.addCommand('fun', new cs.Command('foxquote', (msg) => {
-	const randommsg: any = Object.values(foxquotes)[Math.floor(Math.random() * foxquotes.length)];
-	if (randommsg === undefined) { return; }
-
-	msg.channel.send('', new Discord.RichEmbed({
-		author: { name: randommsg.author.username, icon_url: randommsg.author.avatarURL },
-		timestamp: randommsg.createdTimestamp,
-		description: randommsg.content,
-	}));
-})
-	.setHidden()
-	.setUsage('foxquote')
-	.addAlias('quotefox')
-	.setDescription('fetches a random quote said by fox')
-	.addClientPermission('EMBED_LINKS'));
-
 cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 	return 'yay, it worked!';
 })
@@ -879,11 +856,6 @@ foxconsole.info('starting...');
 bot.on('message', (msg) => {
 	let content: string = msg.content;
 	const author: Discord.User = msg.author;
-
-	if (author.id === process.env.OWNER && !content.startsWith(prefix)) {
-		foxquotes.push({ createdTimestamp: msg.createdTimestamp, content: msg.content, author: { username: author.username, avatarURL: author.avatarURL } });
-		foxquotessaveneeded = true;
-	}
 
 	if (userdata[author.id] === undefined) {
 		userdata[author.id] = {
@@ -1041,17 +1013,6 @@ bot.on('ready', () => {
 				foxconsole.error('failed saving guildsettings: ' + err);
 			} else {
 				foxconsole.success('saved guild settings');
-			}
-		});
-
-		if (!foxquotessaveneeded) { return; }
-		foxconsole.debug('saving foxquotes...');
-		fs.writeFile('./foxquotes.json', JSON.stringify(foxquotes), (err) => {
-			if (err) {
-				foxconsole.error('failed saving foxquotes: ' + err);
-			} else {
-				foxconsole.success('saved foxquotes');
-				foxquotessaveneeded = false;
 			}
 		});
 	}, 120000);
