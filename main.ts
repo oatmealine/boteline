@@ -513,13 +513,13 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	const insidehamger: string = params[0] ? params.join(' ') : hamger2;
 
 	msg.channel.send(eat + hamger1 + insidehamger + hamger3).then((m) => {
-		setTimeout(() => {
+		bot.setTimeout(() => {
 			m.edit(eat + insidehamger + hamger3).then((m) => {
-				setTimeout(() => {
+				bot.setTimeout(() => {
 					m.edit(eat + hamger3).then((m) => {
-						setTimeout(() => {
+						bot.setTimeout(() => {
 							m.edit(eat).then((m) => {
-								setTimeout(() => {
+								bot.setTimeout(() => {
 									m.delete();
 								}, 2000);
 							});
@@ -630,7 +630,7 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 		});
 
 		msg.channel.send(':timer: **Making drink...**').then((editmsg) => {
-			setTimeout(() => {
+			bot.setTimeout(() => {
 				if (drink === undefined) {
 					editmsg.edit('Failed to make drink!');
 				} else {
@@ -1015,7 +1015,7 @@ bot.on('ready', () => {
 
 	const presences: [string, Discord.ActivityType][] = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`, 'STREAMING']];
 
-	setInterval(() => {
+	bot.setInterval(() => {
 		presences.push([`${bot.guilds.size} servers`, 'WATCHING']);
 		presences.push([`with ${bot.users.size} users`, 'PLAYING']);
 
@@ -1025,7 +1025,7 @@ bot.on('ready', () => {
 		foxconsole.debug(`changed presence to [${presence}]`);
 	}, 30000);
 
-	setInterval(() => {
+	bot.setInterval(() => {
 		foxconsole.debug('saving userdata...');
 		fs.writeFile('./userdata.json', JSON.stringify(userdata), (err) => {
 			if (err) {
