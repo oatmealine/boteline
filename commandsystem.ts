@@ -1,6 +1,6 @@
 import {Client, PermissionResolvable, RichEmbed} from 'discord.js';
 import * as Discord from 'discord.js';
-const foxconsole = require('./foxconsole.js');
+const foxConsole = require('./foxconsole.js');
 
 let client: Client;
 
@@ -124,7 +124,7 @@ export class Command {
 		if (Object.keys(Discord.Permissions.FLAGS).includes(perm)) {
 			this.clientPermissions.push(perm);
 		} else {
-			foxconsole.warning('unknown permission ' + perm);
+			foxConsole.warning('unknown permission ' + perm);
 		}
 		return this;
 	}
@@ -133,7 +133,7 @@ export class Command {
 		if (Object.keys(Discord.Permissions.FLAGS).includes(perm)) {
 			this.userPermissions.push(perm);
 		} else {
-			foxconsole.warning('unknown permission ' + perm);
+			foxConsole.warning('unknown permission ' + perm);
 		}
 		return this;
 	}
@@ -241,7 +241,7 @@ export class SimpleCommand extends Command {
 			const returned: any  = cfunction(message, client);
 
 			if (!returned) {
-				foxconsole.warning('SimpleCommand returned nothing, please use Command class instead');
+				foxConsole.warning('SimpleCommand returned nothing, please use Command class instead');
 				return;
 			}
 
@@ -258,7 +258,8 @@ export class SimpleCommand extends Command {
 
 export const commands = {};
 
-export function addCommand(category, command): void {
+export function addCommand(category, command : Command): void {
+	foxConsole.debug('+ '+command.name)
 	if (!module.exports.commands[category]) {
 		module.exports.commands[category] = [];
 	}
