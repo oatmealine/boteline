@@ -21,7 +21,7 @@ export class Command {
 	public needsDM: boolean;
 	public needsGuild: boolean;
 	public hidden: boolean;
-	public owneronly: boolean;
+	public ownerOnly: boolean;
 	public description: string;
 	public aliases: string[];
 	public examples: string[];
@@ -43,7 +43,7 @@ export class Command {
 		this.hidden = false;
 		this.ignorePrefix = false;
 		this.debugOnly = false;
-		this.owneronly = false;
+		this.ownerOnly = false;
 		this.description = 'No description provided';
 
 		this.aliases = [];
@@ -96,7 +96,7 @@ export class Command {
 	}
 
 	public setOwnerOnly(owner? : boolean) {
-		this.owneronly = owner === undefined ? true : owner;
+		this.ownerOnly = owner === undefined ? true : owner;
 		return this;
 	}
 
@@ -165,7 +165,7 @@ export class Command {
 			return message.channel.send('This command needs to be ran in a DM!');
 		}
 
-		let argumentsvalid: boolean[] = [];
+		let argumentsValid: boolean[] = [];
 
 		if (this.usage && !this.usageCheck) {
 			const argument = this.usage.split(' ');
@@ -176,42 +176,42 @@ export class Command {
 					switch (arg.slice(1, arg.length - 1)) {
 					case 'any':
 					case 'string':
-						argumentsvalid[i] = true;
+						argumentsValid[i] = true;
 						break;
 					case 'url':
-						argumentsvalid[i] = params[i].startsWith('http://') || params[i].startsWith('https://');
+						argumentsValid[i] = params[i].startsWith('http://') || params[i].startsWith('https://');
 						break;
 					case 'number':
-						argumentsvalid[i] = !isNaN(Number(params[i]));
+						argumentsValid[i] = !isNaN(Number(params[i]));
 						break;
 					case 'id':
-						argumentsvalid[i] = client ? Boolean((client.guilds.get(params[i]) || client.users.get(params[i]) || client.channels.get(params[i]))) : true;
+						argumentsValid[i] = client ? Boolean((client.guilds.get(params[i]) || client.users.get(params[i]) || client.channels.get(params[i]))) : true;
 					}
 				} else {
-					argumentsvalid[i] = arg.startsWith('[') && arg.endsWith(']');
+					argumentsValid[i] = arg.startsWith('[') && arg.endsWith(']');
 				}
 			});
 		} else {
-			argumentsvalid = this.usageCheck ? this.usageCheck(message) : null;
+			argumentsValid = this.usageCheck ? this.usageCheck(message) : null;
 		}
 
-		if (argumentsvalid !== null) {
-			if (argumentsvalid.includes(false)) {
+		if (argumentsValid !== null) {
+			if (argumentsValid.includes(false)) {
 				return message.channel.send(`Invalid syntax! \`${this.displayUsage}\``);
 			}
 		}
 
 		if (this.userPermissions.length > 0 && message.guild && message.author.id !== process.env.OWNER) {
-			const missingpermissions: PermissionResolvable[] = [];
+			const missingPermissions: PermissionResolvable[] = [];
 
 			this.userPermissions.forEach((perm) => {
 				if (!message.member.hasPermission(perm)) {
-					missingpermissions.push(perm);
+					missingPermissions.push(perm);
 				}
 			});
 
-			if (missingpermissions.length > 0) {
-				return message.channel.send(`**You can't run this command!** You need these permissions to use this command: \`${missingpermissions.join(', ')}\``);
+			if (missingPermissions.length > 0) {
+				return message.channel.send(`**You can't run this command!** You need these permissions to use this command: \`${missingPermissions.join(', ')}\``);
 			}
 		}
 
@@ -271,12 +271,12 @@ addCommand('core', new SimpleCommand('help', (message) => {
 
 	if (params[1]) {
 		let command: Command;
-		let categoryname: string;
+		let categoryName: string;
 
 		Object.values(module.exports.commands).forEach((category, i) => {
 			if (command) { return; }
 
-			categoryname = Object.keys(module.exports.commands)[i];
+			categoryName = Object.keys(module.exports.commands)[i];
 
 			Object.values(category).forEach((cmd) => {
 				if (cmd.name === params[1] || cmd.aliases.includes(params[1])) {
@@ -287,7 +287,7 @@ addCommand('core', new SimpleCommand('help', (message) => {
 
 		if (command) {
 			let embed = new Discord.RichEmbed()
-				.setTitle(`**${grammar(command.name)}** (${grammar(categoryname)})`)
+				.setTitle(`**${grammar(command.name)}** (${grammar(categoryName)})`)
 				.addField('Usage', command.displayUsage)
 				.setDescription(command.description)
 				.setColor(Math.floor(Math.random() * 16777215));
@@ -298,18 +298,18 @@ addCommand('core', new SimpleCommand('help', (message) => {
 			return embed;
 		} else {
 			let category: unknown;
-			let categoryname: string;
+			let categoryName: string;
 
 			Object.values(module.exports.commands).forEach((cat, i) => {
 				if (category) { return; }
 
-				categoryname = Object.keys(module.exports.commands)[i];
-				if (categoryname === params[1].toLowerCase()) { category = cat; }
+				categoryName = Object.keys(module.exports.commands)[i];
+				if (categoryName === params[1].toLowerCase()) { category = cat; }
 			});
 
 			if (category) {
 				const embed: RichEmbed = new Discord.RichEmbed()
-					.setTitle(`**${grammar(categoryname)}** [${Object.keys(category).length}]`)
+					.setTitle(`**${grammar(categoryName)}** [${Object.keys(category).length}]`)
 					.setColor(Math.floor(Math.random() * 16777215));
 
 				const commands: string[] = [];
@@ -332,14 +332,14 @@ addCommand('core', new SimpleCommand('help', (message) => {
 			.setFooter('Do help (category) to get all commands for a category!');
 
 		Object.values(module.exports.commands).forEach((category, i) => {
-			const categoryname = Object.keys(module.exports.commands)[i];
+			const categoryName = Object.keys(module.exports.commands)[i];
 			const commands = [];
 
 			Object.values(category).forEach((cmd) => {
 				if (!cmd.hidden) { commands.push(cmd.name); }
 			});
 
-			if (commands.length !== 0) { embed.addField(`${grammar(categoryname)} [${commands.length}]`, '`' + commands.join('`, `') + '`'); }
+			if (commands.length !== 0) { embed.addField(`${grammar(categoryName)} [${commands.length}]`, '`' + commands.join('`, `') + '`'); }
 		});
 
 		return embed;
@@ -351,9 +351,9 @@ addCommand('core', new SimpleCommand('help', (message) => {
 	.setDescription('see commands, or check out a comnmand in detail'));
 
 addCommand('core', new Command('ping', (message, bot) => {
-	const datestart = Date.now();
+	const dateStart = Date.now();
 	message.channel.send('hol up').then((m) => {
-		m.edit(`Message latency: ${Date.now() - datestart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
+		m.edit(`Message latency: ${Date.now() - dateStart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
 	});
 })
 	.setUsage('ping')

@@ -24,7 +24,7 @@ const bot = new Discord.Client({
 
 import * as cs from './commandsystem.js';
 
-import * as foxconsole from './foxconsole.js';
+import * as foxConsole from './foxconsole.js';
 
 import * as util from './util.js';
 
@@ -37,56 +37,56 @@ import * as ffmpeg from 'fluent-ffmpeg';
 const ch = require('chalk');
 // files
 
-const packagejson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
-const packagelock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
+const packageJson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
+const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
 
 if (!fs.existsSync('./userdata.json')) {
 	fs.writeFileSync('./userdata.json', '{}');
 }
-const userdata = JSON.parse(fs.readFileSync('./userdata.json', {encoding: 'utf8'}));
+const userData = JSON.parse(fs.readFileSync('./userdata.json', {encoding: 'utf8'}));
 
 if (!fs.existsSync('./guildsettings.json')) {
 	fs.writeFileSync('./guildsettings.json', '{}');
 }
-const guildsettings = JSON.parse(fs.readFileSync('./guildsettings.json', {encoding: 'utf8'}));
+const guildSettings = JSON.parse(fs.readFileSync('./guildsettings.json', {encoding: 'utf8'}));
 
-const valhalladrinks = JSON.parse(fs.readFileSync('./valhalla.json', {encoding: 'utf8'}));
+const valhallaDrinks = JSON.parse(fs.readFileSync('./valhalla.json', {encoding: 'utf8'}));
 
 // .env stuff
 require('dotenv').config();
-foxconsole.showDebug(process.env.DEBUG == 'true');
+foxConsole.showDebug(process.env.DEBUG == 'true');
 
 // constants & variables
 const prefix : string = process.env.PREFIX;
 
-const version : string = packagejson.version + ' alpha';
+const version : string = packageJson.version + ' alpha';
 
 let application: Discord.OAuth2Application;
 
 // statistics
 
-let cpuusagemin: number = 0;
-let cpuusage30sec: number = 0;
-let cpuusage1sec: number = 0;
+let cpuUsageMin: number = 0;
+let cpuUsage30sec: number = 0;
+let cpuUsage1sec: number = 0;
 
-let cpuusageminold = process.cpuUsage();
-let cpuusage30secold = process.cpuUsage();
-let cpuusage1secold = process.cpuUsage();
+let cpuUsageMinOld = process.cpuUsage();
+let cpuUsage30secOld = process.cpuUsage();
+let cpuUsage1secOld = process.cpuUsage();
 
 setInterval(() => {
-	const usage = process.cpuUsage(cpuusage1secold);
-	cpuusage1sec = 100 * (usage.user + usage.system) / 1000000;
-	cpuusage1secold = process.cpuUsage();
+	const usage = process.cpuUsage(cpuUsage1secOld);
+	cpuUsage1sec = 100 * (usage.user + usage.system) / 1000000;
+	cpuUsage1secOld = process.cpuUsage();
 }, 1000);
 setInterval(() => {
-	const usage = process.cpuUsage(cpuusage30secold);
-	cpuusage30sec = 100 * (usage.user + usage.system) / 30000000;
-	cpuusage30secold = process.cpuUsage();
+	const usage = process.cpuUsage(cpuUsage30secOld);
+	cpuUsage30sec = 100 * (usage.user + usage.system) / 30000000;
+	cpuUsage30secOld = process.cpuUsage();
 }, 30000);
 setInterval(() => {
-	const usage = process.cpuUsage(cpuusageminold);
-	cpuusagemin = 100 * (usage.user + usage.system) / 60000000;
-	cpuusageminold = process.cpuUsage();
+	const usage = process.cpuUsage(cpuUsageMinOld);
+	cpuUsageMin = 100 * (usage.user + usage.system) / 60000000;
+	cpuUsageMinOld = process.cpuUsage();
 }, 60000);
 
 class FFMpegCommand extends cs.Command {
@@ -118,74 +118,74 @@ class FFMpegCommand extends cs.Command {
 			}
 
 			if (attachments.length > 0) {
-				let videoattach : Discord.MessageAttachment;
+				let videoAttach : Discord.MessageAttachment;
 
 				attachments.forEach((attachment) => {
-					if (videoattach || !attachment) { return; }
+					if (videoAttach || !attachment) { return; }
 
 					const filetype = attachment.filename.split('.').pop();
 					const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
 
 					if (acceptedFiletypes.includes(filetype.toLowerCase())) {
-						videoattach = attachment;
+						videoAttach = attachment;
 					}
 				});
 
-				if (videoattach) {
-					let progmessage : Discord.Message;
-					let lastedit = 0; // to avoid ratelimiting
+				if (videoAttach) {
+					let progMessage : Discord.Message;
+					let lastEdit = 0; // to avoid ratelimiting
 
 					msg.channel.send('ok, downloading...').then((m) => {
-						progmessage = m;
+						progMessage = m;
 					});
 					msg.channel.startTyping();
 
 					if (params[0]) {
 						if (params[0].startsWith('.') || params[0].startsWith('/') || params[0].startsWith('~')) {
-							if (progmessage) {
-								progmessage.edit('i know exactly what you\'re doing there bud');
+							if (progMessage) {
+								progMessage.edit('i know exactly what you\'re doing there bud');
 							} else {
 								msg.channel.send('i know exactly what you\'re doing there bud');
 							}
 						}
 					}
 
-					ffmpeg(videoattach.url)
+					ffmpeg(videoAttach.url)
 						.inputOptions(this.inputOptions(msg))
 						.outputOptions(this.outputOptions(msg))
 						.on('start', (commandLine) => {
-							foxconsole.info('started ffmpeg with command: ' + commandLine);
-							if (progmessage) {
-								progmessage.edit('processing: 0% (0s) done');
+							foxConsole.info('started ffmpeg with command: ' + commandLine);
+							if (progMessage) {
+								progMessage.edit('processing: 0% (0s) done');
 							}
 						})
 						.on('stderr', (stderrLine) => {
-							foxconsole.debug('ffmpeg: ' + stderrLine);
+							foxConsole.debug('ffmpeg: ' + stderrLine);
 						})
 						.on('progress', (progress) => {
-							if (lastedit + 2000 < Date.now() && progmessage) {
-								lastedit = Date.now();
-								progmessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
+							if (lastEdit + 2000 < Date.now() && progMessage) {
+								lastEdit = Date.now();
+								progMessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
 							}
 						})
 						.on('error', (err) => {
 							msg.channel.stopTyping();
-							foxconsole.warning('ffmpeg failed!');
-							foxconsole.warning(err);
-							if (progmessage) {
-								progmessage.edit(`processing: error! \`${err}\``);
+							foxConsole.warning('ffmpeg failed!');
+							foxConsole.warning(err);
+							if (progMessage) {
+								progMessage.edit(`processing: error! \`${err}\``);
 							} else {
 								msg.channel.send(`An error has occured!: \`${err}\``);
 							}
 						})
 						.on('end', () => {
 							msg.channel.stopTyping();
-							if (progmessage) {
-								progmessage.edit('processing: done! uploading');
+							if (progMessage) {
+								progMessage.edit('processing: done! uploading');
 							}
 							msg.channel.send('ok, done', {files: ['./temp.mp4']}).then(() => {
-								if (progmessage) {
-									progmessage.delete();
+								if (progMessage) {
+									progMessage.delete();
 								}
 							});
 						})
@@ -217,7 +217,7 @@ console.log(ch.bold(`
        ${ch.bgWhite('  ')}    ${ch.bgWhite('  ')}
 
 `));
-foxconsole.info('adding commands...');
+foxConsole.info('adding commands...');
 
 cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
@@ -230,17 +230,17 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
 	const params = util.getParams(message);
 
 	if (message.guild.members.get(params[0]) !== undefined) {
-		const banmember = message.guild.members.get(params[0]);
+		const banMember = message.guild.members.get(params[0]);
 
-		if (banmember.id === message.member.id) {
+		if (banMember.id === message.member.id) {
 			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
 		}
 
-		if (banmember.bannable) {
-			banmember.ban();
-			return '✓ Banned ' + banmember.user.username;
+		if (banMember.bannable) {
+			banMember.ban();
+			return '✓ Banned ' + banMember.user.username;
 		} else {
-			return 'member ' + banmember.user.username + ' isn\'t bannable';
+			return 'member ' + banMember.user.username + ' isn\'t bannable';
 		}
 	} else {
 		return 'i don\'t know that person!';
@@ -259,17 +259,17 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
 	const params = message.content.split(' ').slice(1, message.content.length);
 
 	if (message.guild.members.get(params[0]) !== undefined) {
-		const banmember = message.guild.members.get(params[0]);
+		const banMember = message.guild.members.get(params[0]);
 
-		if (banmember.id === message.member.id) {
+		if (banMember.id === message.member.id) {
 			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
 		}
 
-		if (banmember.kickable) {
-			banmember.ban();
-			return '✓ Kicked ' + banmember.user.username;
+		if (banMember.kickable) {
+			banMember.ban();
+			return '✓ Kicked ' + banMember.user.username;
 		} else {
-			return 'member ' + banmember.user.username + ' isn\'t kickable';
+			return 'member ' + banMember.user.username + ' isn\'t kickable';
 		}
 	} else {
 		return 'i don\'t know that person!';
@@ -378,11 +378,11 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	const hamger2 = bot.emojis.get('612360473987252278').toString();
 	const hamger3 = bot.emojis.get('612360473974931458').toString();
 
-	const insidehamger: string = params[0] ? params.join(' ') : hamger2;
+	const insideHamger: string = params[0] ? params.join(' ') : hamger2;
 
-	msg.channel.send(eat + hamger1 + insidehamger + hamger3).then((m) => {
+	msg.channel.send(eat + hamger1 + insideHamger + hamger3).then((m) => {
 		bot.setTimeout(() => {
-			m.edit(eat + insidehamger + hamger3).then((m) => {
+			m.edit(eat + insideHamger + hamger3).then((m) => {
 				bot.setTimeout(() => {
 					m.edit(eat + hamger3).then((m) => {
 						bot.setTimeout(() => {
@@ -407,40 +407,40 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 	const params = util.getParams(msg);
 
 	if (params[0] === 'search') {
-		const founddrinks: any[] = [];
+		const foundDrinks: any[] = [];
 		const search = params.slice(1, params.length).join(' ');
 
-		valhalladrinks.forEach((d) => {
+		valhallaDrinks.forEach((d) => {
 			if (d.name.toLowerCase().includes(search.toLowerCase()) || d.flavour.toLowerCase() === search.toLowerCase()) {
-				founddrinks.push(d);
+				foundDrinks.push(d);
 			} else {
 				d.type.forEach((f) => {
 					if (search.toLowerCase() === f.toLowerCase()) {
-						founddrinks.push(d);
+						foundDrinks.push(d);
 					}
 				});
 			}
 		});
 
-		if (founddrinks.length < 1) {
+		if (foundDrinks.length < 1) {
 			msg.channel.send(`Found no matches for \`${params[1]}\``);
-		} else if (founddrinks.length === 1) {
-			msg.channel.send('', util.makeDrinkEmbed(founddrinks[0]));
+		} else if (foundDrinks.length === 1) {
+			msg.channel.send('', util.makeDrinkEmbed(foundDrinks[0]));
 		} else {
 			let founddrinksstr = '\n';
-			founddrinks.slice(0, 5).forEach((d) => {
+			foundDrinks.slice(0, 5).forEach((d) => {
 				founddrinksstr = founddrinksstr + '**' + d.name + '**\n';
 			});
-			if (founddrinks.length > 5) {
-				founddrinksstr = founddrinksstr + `..and ${founddrinks.length - 5} more drinks`;
+			if (foundDrinks.length > 5) {
+				founddrinksstr = founddrinksstr + `..and ${foundDrinks.length - 5} more drinks`;
 			}
 
-			msg.channel.send(`Found ${founddrinks.length} drinks:\n${founddrinksstr}`);
+			msg.channel.send(`Found ${foundDrinks.length} drinks:\n${founddrinksstr}`);
 		}
 	} else if (params[0] === 'make') {
 		let adelhyde = 0;
-		let bronson_extract = 0;
-		let powdered_delta = 0;
+		let bronsonExtract = 0;
+		let powderedDelta = 0;
 		let flangerine = 0;
 		let karmotrine = 0;
 
@@ -454,10 +454,10 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 				adelhyde += 1;
 				break;
 			case 'b':
-				bronson_extract += 1;
+				bronsonExtract += 1;
 				break;
 			case 'p':
-				powdered_delta += 1;
+				powderedDelta += 1;
 				break;
 			case 'f':
 				flangerine += 1;
@@ -471,26 +471,26 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 		iced = params.includes('ice');
 		aged = params.includes('aged');
 
-		foxconsole.debug(`${adelhyde}, ${bronson_extract}, ${powdered_delta}, ${flangerine}, ${karmotrine}`);
-		foxconsole.debug(`${blended}, ${aged}, ${iced}`);
+		foxConsole.debug(`${adelhyde}, ${bronsonExtract}, ${powderedDelta}, ${flangerine}, ${karmotrine}`);
+		foxConsole.debug(`${blended}, ${aged}, ${iced}`);
 
 		let drink: boolean;
-		let drinkbig: boolean;
+		let drinkBig: boolean;
 
-		valhalladrinks.forEach((d) => {
-			if (adelhyde + bronson_extract + powdered_delta + flangerine + karmotrine > 20) { return; }
+		valhallaDrinks.forEach((d) => {
+			if (adelhyde + bronsonExtract + powderedDelta + flangerine + karmotrine > 20) { return; }
 
-			drinkbig = adelhyde / 2 === d.ingredients.adelhyde
-					&& bronson_extract / 2 === d.ingredients.bronson_extract
-					&& powdered_delta / 2 === d.ingredients.powdered_delta
+			drinkBig = adelhyde / 2 === d.ingredients.adelhyde
+					&& bronsonExtract / 2 === d.ingredients.bronson_extract
+					&& powderedDelta / 2 === d.ingredients.powdered_delta
 					&& flangerine / 2 === d.ingredients.flangerine
 					&& (karmotrine / 2 === d.ingredients.karmotrine || d.ingredients.karmotrine === 'optional');
 
-			if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkbig)) { return; }
-			if (bronson_extract !== d.ingredients.bronson_extract && (bronson_extract / 2 !== d.ingredients.bronson_extract || !drinkbig)) { return; }
-			if (powdered_delta !== d.ingredients.powdered_delta && (powdered_delta / 2 !== d.ingredients.powdered_delta || !drinkbig)) { return; }
-			if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkbig)) { return; }
-			if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkbig)) && d.ingredients.karmotrine !== 'optional') { return; }
+			if (adelhyde !== d.ingredients.adelhyde && (adelhyde / 2 !== d.ingredients.adelhyde || !drinkBig)) { return; }
+			if (bronsonExtract !== d.ingredients.bronson_extract && (bronsonExtract / 2 !== d.ingredients.bronson_extract || !drinkBig)) { return; }
+			if (powderedDelta !== d.ingredients.powdered_delta && (powderedDelta / 2 !== d.ingredients.powdered_delta || !drinkBig)) { return; }
+			if (flangerine !== d.ingredients.flangerine && (flangerine / 2 !== d.ingredients.flangerine || !drinkBig)) { return; }
+			if ((karmotrine !== d.ingredients.karmotrine && (karmotrine / 2 !== d.ingredients.karmotrine || !drinkBig)) && d.ingredients.karmotrine !== 'optional') { return; }
 
 			if (blended !== d.blended) { return; }
 			if (aged !== d.aged) { return; }
@@ -504,7 +504,7 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 				if (drink === undefined) {
 					editmsg.edit('Failed to make drink!');
 				} else {
-					editmsg.edit('Successfully made drink!' + (drinkbig ? ' (its big too, woah)' : ''), util.makeDrinkEmbed(drink));
+					editmsg.edit('Successfully made drink!' + (drinkBig ? ' (its big too, woah)' : ''), util.makeDrinkEmbed(drink));
 				}
 			}, blended ? 7000 : 3000);
 		});
@@ -522,12 +522,12 @@ cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
 	const params = util.getParams(msg);
 
 	if (params[0] === 'toggle') {
-		userdata[msg.author.id].nworddisable = !userdata[msg.author.id].nworddisable;
-		return `the system is now **${userdata[msg.author.id].nworddisable ? 'OFF' : 'ON'}**`;
+		userData[msg.author.id].nworddisable = !userData[msg.author.id].nworddisable;
+		return `the system is now **${userData[msg.author.id].nworddisable ? 'OFF' : 'ON'}**`;
 	} else {
 		return `You have:
-	**${userdata[msg.author.id].nwordpasses}** N-Word passes [**${userdata[msg.author.id].nworddisable ? 'OFF' : 'ON'}**] (Use m=nwordpass toggle to disable/enable)
-	You are: **\`[${util.progress(userdata[msg.author.id].nwordpassxp, userdata[msg.author.id].nwordpassxpneeded)}]\`** this close to getting another N-Word pass`;
+	**${userData[msg.author.id].nwordpasses}** N-Word passes [**${userData[msg.author.id].nworddisable ? 'OFF' : 'ON'}**] (Use m=nwordpass toggle to disable/enable)
+	You are: **\`[${util.progress(userData[msg.author.id].nwordpassxp, userData[msg.author.id].nwordpassxpneeded)}]\`** this close to getting another N-Word pass`;
 	}
 })
 	.addAlias('nword')
@@ -548,7 +548,7 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 		// rate the server, not the string
 		thingToRate = thingToRate + util.hashCode(msg.guild.id.toString());
 	}
-	const rating: number = util.seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
+	const rating = util.seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
 	return `I'd give ${params.join(' ')} a **${rating}/10**`;
 })
 	.setDescription('rates something')
@@ -614,12 +614,12 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 
 cs.addCommand('core', new cs.Command('info', (msg) => {
 	msg.channel.send(new Discord.RichEmbed()
-		.setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packagelock.dependencies['discord.js'].version}`, bot.user.avatarURL)
+		.setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.avatarURL)
 		.setTitle(`${bot.user.username} stats`)
-		.setURL(packagejson.repository)
+		.setURL(packageJson.repository)
 		.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
 		.addField('Memory Usage', Math.round(process.memoryUsage().rss / 10000) / 100 + 'MB', true)
-		.addField('CPU Usage', `Last second: **${util.roundNumber(cpuusage1sec, 3)}%**\nLast 30 seconds: **${util.roundNumber(cpuusage30sec, 3)}%**\nLast minute: **${util.roundNumber(cpuusagemin, 3)}%**\nRuntime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
+		.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 3)}%**\nLast 30 seconds: **${util.roundNumber(cpuUsage30sec, 3)}%**\nLast minute: **${util.roundNumber(cpuUsageMin, 3)}%**\nRuntime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
 		.addField('Uptime', `${Math.round(process.uptime() / 76800)}d ${Math.round(process.uptime() / 3200)%24}h ${Math.round(process.uptime() / 60)%60}m ${Math.round(process.uptime())%60}s`, true));
 })
 	.addAlias('stats')
@@ -643,10 +643,10 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 
 	params[0] = params[0].toLowerCase();
 
-	if (guildsettings[msg.guild.id]) {
-		guildsettings[msg.guild.id] = params[0];
+	if (guildSettings[msg.guild.id]) {
+		guildSettings[msg.guild.id] = params[0];
 	} else {
-		guildsettings[msg.guild.id] = {
+		guildSettings[msg.guild.id] = {
 			prefix: params[0],
 		};
 	}
@@ -663,7 +663,7 @@ cs.addCommand('utilities', new cs.Command('splatoon', (msg) => {
 	util.checkSplatoon().then(obj => {
 		let data = obj.data;
 
-		let timeleft = Math.floor(data.league[0].end_time-Date.now()/1000);
+		let timeLeft = Math.floor(data.league[0].end_time-Date.now()/1000);
 
 		const regularemote = bot.emojis.get('639188039503183907') !== undefined ? bot.emojis.get('639188039503183907').toString()+' ' : ''
 		const rankedemote = bot.emojis.get('639188039658242078') !== undefined ? bot.emojis.get('639188039658242078').toString()+' ' : ''
@@ -682,7 +682,7 @@ cs.addCommand('utilities', new cs.Command('splatoon', (msg) => {
 		${data.league[0].rule.name}`)
 		.setColor('22FF22')
 		.setDescription(`${util.formatTime(new Date(data.league[0].start_time*1000))} - ${util.formatTime(new Date(data.league[0].end_time*1000))}
-		${Math.floor(timeleft/60/60)%24}h ${Math.floor(timeleft/60)%60}m ${timeleft%60}s left`)
+		${Math.floor(timeLeft/60/60)%24}h ${Math.floor(timeLeft/60)%60}m ${timeLeft%60}s left`)
 		.setURL('https://splatoon2.ink/')
 		.setImage('https://splatoon2.ink/assets/splatnet'+data.regular[0].stage_a.image)
 		.setFooter('Data last fetched '+obj.timer.toDateString()+', '+util.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
@@ -699,8 +699,8 @@ cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
 	util.checkSalmon().then(obj => {
 		let data = obj.data;
 
-		let timeleftend = Math.floor(data.details[0].end_time-Date.now()/1000);
-		let timeleftstart = Math.floor(data.details[0].start_time-Date.now()/1000);
+		let timeLeftEnd = Math.floor(data.details[0].end_time-Date.now()/1000);
+		let timeLeftStart = Math.floor(data.details[0].start_time-Date.now()/1000);
 
 		let weapons = [];
 		data.details[0].weapons.forEach(w => {
@@ -715,7 +715,7 @@ cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
 		`${data.details[0].stage.name}`)
 		.setColor('FF9922')
 		.setDescription(`${new Date(data.details[0].start_time*1000).toUTCString()} - ${new Date(data.details[0].end_time*1000).toUTCString()}
-		${timeleftstart < 0 ? `${Math.floor(timeleftend/60/60)%24}h ${Math.floor(timeleftend/60)%60}m ${timeleftend%60}s left until end` : `${Math.floor(timeleftstart/60/60)%24}h ${Math.floor(timeleftstart/60)%60}m ${timeleftstart%60}s left until start`}`)
+		${timeLeftStart < 0 ? `${Math.floor(timeLeftEnd/60/60)%24}h ${Math.floor(timeLeftEnd/60)%60}m ${timeLeftEnd%60}s left until end` : `${Math.floor(timeLeftStart/60/60)%24}h ${Math.floor(timeLeftStart/60)%60}m ${timeLeftStart%60}s left until start`}`)
 		.setURL('https://splatoon2.ink/')
 		.setImage('https://splatoon2.ink/assets/splatnet'+data.details[0].stage.image)
 		.setFooter('Data last fetched '+obj.timer.toDateString()+', '+util.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
@@ -728,14 +728,14 @@ cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
 	.setDescription('Check the schedule of the Splatoon 2 Salmon Run stage/weapon rotations')
 	.addClientPermission('EMBED_LINKS'))
 
-foxconsole.info('starting...');
+foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
 	let content: string = msg.content;
 	const author: Discord.User = msg.author;
 
-	if (userdata[author.id] === undefined) {
-		userdata[author.id] = {
+	if (userData[author.id] === undefined) {
+		userData[author.id] = {
 			nwordpasses: 1,
 			nwordpassxp: 0,
 			nwordpassxpneeded: 100,
@@ -743,54 +743,54 @@ bot.on('message', (msg) => {
 			nworddisable: true,
 		};
 	}
-	if (!userdata[author.id].nworddisable && !content.startsWith(prefix)) {
+	if (!userData[author.id].nworddisable && !content.startsWith(prefix)) {
 		// patch for old accounts
-		if (!userdata[author.id].nwordpassxpneeded) {
-			userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses * 50;
+		if (!userData[author.id].nwordpassxpneeded) {
+			userData[author.id].nwordpassxpneeded = 100 + userData[author.id].nwordpasses * 50;
 		}
 
 		const count: number = (msg.content.toLowerCase().replace(' ', '').match(/nigg/g) || []).length;
 
-		if (count === 0 && Date.now() > userdata[author.id].nextpass) {
-			userdata[author.id].nwordpassxp += Math.floor(Math.random() * 10 + 5);
-			userdata[author.id].nextpass = Date.now() + 120000;
+		if (count === 0 && Date.now() > userData[author.id].nextpass) {
+			userData[author.id].nwordpassxp += Math.floor(Math.random() * 10 + 5);
+			userData[author.id].nextpass = Date.now() + 120000;
 
-			if (userdata[author.id].nwordpassxp > userdata[author.id].nwordpassxpneeded) {
-				userdata[author.id].nwordpassxp -= 100;
-				userdata[author.id].nwordpasses += 1;
-				userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses * 50;
+			if (userData[author.id].nwordpassxp > userData[author.id].nwordpassxpneeded) {
+				userData[author.id].nwordpassxp -= 100;
+				userData[author.id].nwordpasses += 1;
+				userData[author.id].nwordpassxpneeded = 100 + userData[author.id].nwordpasses * 50;
 				msg.channel.send(`**${author.username}#${author.discriminator}** recieved an N-Word pass!`);
 			}
 		} else {
-			if (count > userdata[author.id].nwordpasses) {
+			if (count > userData[author.id].nwordpasses) {
 				if (msg.deletable) { msg.delete(); }
 				msg.reply('you don\'t have enough N-Word passes!');
 			} else if (count !== 0) {
-				userdata[author.id].nwordpasses -= count;
+				userData[author.id].nwordpasses -= count;
 				msg.channel.send(`:bangbang: ${msg.author.toString()} used ${count} N-Word ${count === 1 ? 'pass' : 'passes'}`);
-				userdata[author.id].nwordpassxpneeded = 100 + userdata[author.id].nwordpasses * 50;
+				userData[author.id].nwordpassxpneeded = 100 + userData[author.id].nwordpasses * 50;
 			}
 		}
 	}
 
-	let thisprefix: string = prefix;
+	let thisPrefix: string = prefix;
 
 	if (msg.guild) {
-		if (guildsettings[msg.guild.id]) {
-			thisprefix = guildsettings[msg.guild.id].prefix;
+		if (guildSettings[msg.guild.id]) {
+			thisPrefix = guildSettings[msg.guild.id].prefix;
 		}
 	}
 
-	if (content.startsWith(thisprefix) || content.startsWith(prefix)) {
-		content = content.slice(content.startsWith(thisprefix) ? thisprefix.length : prefix.length, content.length);
-		const cmd: string = content.split(' ')[0];
+	if (content.startsWith(thisPrefix) || content.startsWith(prefix)) {
+		content = content.slice(content.startsWith(thisPrefix) ? thisPrefix.length : prefix.length, content.length);
+		const cmd = content.split(' ')[0];
 
-		foxconsole.debug('got command ' + cmd);
+		foxConsole.debug('got command ' + cmd);
 
 		Object.values(cs.commands).forEach((cat) => {
 			Object.values(cat).forEach((command) => {
 				if ((command['name'] === cmd || command['aliases'].includes(cmd)) && 
-				((msg.content.startsWith(thisprefix) || (msg.content.startsWith(prefix) && command['ignorePrefix'])) || (thisprefix == prefix)) && 
+				((msg.content.startsWith(thisPrefix) || (msg.content.startsWith(prefix) && command['ignorePrefix'])) || (thisPrefix == prefix)) && 
 				(!command['debugOnly'] || process.env.DEBUG == 'true')) {
 					command['runCommand'](msg, bot);
 				}
@@ -855,12 +855,12 @@ bot.on('message', (msg) => {
 });
 
 bot.on('ready', () => {
-	foxconsole.info('fetching application...');
+	foxConsole.info('fetching application...');
 	bot.fetchApplication().then((app) => {
 		application = app;
 	});
 
-	foxconsole.info('doing post-login intervals...');
+	foxConsole.info('doing post-login intervals...');
 
 	const presences: [string, Discord.ActivityType][] = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`, 'STREAMING']];
 
@@ -871,36 +871,36 @@ bot.on('ready', () => {
 		const presence : [string, Discord.ActivityType] = presences[Math.floor(Math.random() * presences.length)];
 		bot.user.setPresence({ status: 'dnd', game: { name: presence[0], type: presence[1] } });
 
-		foxconsole.debug(`changed presence to [${presence}]`);
+		foxConsole.debug(`changed presence to [${presence}]`);
 	}, 30000);
 
 	bot.setInterval(() => {
-		foxconsole.debug('saving userdata...');
-		fs.writeFile('./userdata.json', JSON.stringify(userdata), (err) => {
+		foxConsole.debug('saving userdata...');
+		fs.writeFile('./userdata.json', JSON.stringify(userData), (err) => {
 			if (err) {
-				foxconsole.error('failed saving userdata: ' + err);
+				foxConsole.error('failed saving userdata: ' + err);
 			} else {
-				foxconsole.success('saved userdata');
+				foxConsole.success('saved userdata');
 			}
 		});
 
-		foxconsole.debug('saving guild settings...');
-		fs.writeFile('./guildsettings.json', JSON.stringify(guildsettings), (err) => {
+		foxConsole.debug('saving guild settings...');
+		fs.writeFile('./guildsettings.json', JSON.stringify(guildSettings), (err) => {
 			if (err) {
-				foxconsole.error('failed saving guildsettings: ' + err);
+				foxConsole.error('failed saving guildsettings: ' + err);
 			} else {
-				foxconsole.success('saved guild settings');
+				foxConsole.success('saved guild settings');
 			}
 		});
 	}, 120000);
 
 	cs.setBot(bot);
 
-	foxconsole.success('ready!');
+	foxConsole.success('ready!');
 });
 
-foxconsole.info('logging in...');
+foxConsole.info('logging in...');
 bot.login(process.env.TOKEN).then(() => {
 	process.env.TOKEN = 'NTUxO_n1ceTryl0L-r9Pj8Y';
-	foxconsole.info('patched out token');
+	foxConsole.info('patched out token');
 });
