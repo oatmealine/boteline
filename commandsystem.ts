@@ -4,14 +4,12 @@ const foxconsole = require('./foxconsole.js');
 
 let client: Client;
 
-function grammar(str: string) {
+function grammar(str: string) : string {
 	const newstring = str.slice(1, str.length);
 	return str[0].toUpperCase() + newstring;
 }
 
-function getParams(message) {
-	return message.content.split(' ').slice(1, message.content.length);
-}
+import * as util from './util.js';
 
 export class Command {
 	public name: string;
@@ -31,7 +29,7 @@ export class Command {
 	public ignorePrefix: boolean;
 	public debugOnly: boolean;
 
-	constructor(name, cfunction) {
+	constructor(name : string, cfunction : Function) {
 		this.name = name;
 		this.function = cfunction;
 		this.usage = name;
@@ -59,29 +57,29 @@ export class Command {
 		return this;
 	}
 
-	public setUsage(usgstring) {
-		this.usage = usgstring;
-		this.displayUsage = usgstring;
+	public setUsage(usage : string) {
+		this.usage = usage;
+		this.displayUsage = usage;
 		return this;
 	}
 
-	public setDisplayUsage(usgstring) {
-		this.displayUsage = usgstring;
+	public setDisplayUsage(usage : string) {
+		this.displayUsage = usage;
 		return this;
 	}
 
-	public addExample(examplestring) {
-		this.examples.push(examplestring);
+	public addExample(example : string) {
+		this.examples.push(example);
 		return this;
 	}
 
-	public addAlias(aliasstring) {
-		this.aliases.push(aliasstring);
+	public addAlias(alias : string) {
+		this.aliases.push(alias);
 		return this;
 	}
 
-	public addAliases(aliasarr) {
-		aliasarr.forEach((alias) => {
+	public addAliases(aliases : string[]) {
+		aliases.forEach((alias) => {
 			this.addAlias(alias);
 		});
 		return this;
@@ -122,42 +120,42 @@ export class Command {
 		return this;
 	}
 
-	public addClientPermission(string) {
-		if (Object.keys(Discord.Permissions.FLAGS).includes(string)) {
-			this.clientPermissions.push(string);
+	public addClientPermission(perm) {
+		if (Object.keys(Discord.Permissions.FLAGS).includes(perm)) {
+			this.clientPermissions.push(perm);
 		} else {
-			foxconsole.warning('unknown permission ' + string);
+			foxconsole.warning('unknown permission ' + perm);
 		}
 		return this;
 	}
 
-	public addUserPermission(string) {
-		if (Object.keys(Discord.Permissions.FLAGS).includes(string)) {
-			this.userPermissions.push(string);
+	public addUserPermission(perm) {
+		if (Object.keys(Discord.Permissions.FLAGS).includes(perm)) {
+			this.userPermissions.push(perm);
 		} else {
-			foxconsole.warning('unknown permission ' + string);
+			foxconsole.warning('unknown permission ' + perm);
 		}
 		return this;
 	}
 
-	public addClientPermissions(stringarr) {
-		stringarr.forEach((string) => {
+	public addClientPermissions(perms : string[]) {
+		perms.forEach((string) => {
 			this.addClientPermission(string);
 		});
 
 		return this;
 	}
 
-	public addUserPermissions(stringarr) {
-		stringarr.forEach((string) => {
+	public addUserPermissions(perms : string[]) {
+		perms.forEach((string) => {
 			this.addUserPermission(string);
 		});
 
 		return this;
 	}
 
-	public runCommand(message, client) {
-		const params: string[] = getParams(message);
+	public runCommand(message: Discord.Message, client: Discord.Client) {
+		const params = util.getParams(message);
 
 		if (this.needsGuild && !message.guild) {
 			return message.channel.send('This command needs to be ran in a server!');
@@ -170,7 +168,7 @@ export class Command {
 		let argumentsvalid: boolean[] = [];
 
 		if (this.usage && !this.usageCheck) {
-			const argument: string[] = this.usage.split(' ');
+			const argument = this.usage.split(' ');
 			argument.shift();
 
 			argument.forEach((arg, i) => {
@@ -187,7 +185,7 @@ export class Command {
 						argumentsvalid[i] = !isNaN(Number(params[i]));
 						break;
 					case 'id':
-						argumentsvalid[i] = client ? (client.guilds.get(params[i]) || client.users.get(params[i]) || client.channels.get(params[i])) : true;
+						argumentsvalid[i] = client ? Boolean((client.guilds.get(params[i]) || client.users.get(params[i]) || client.channels.get(params[i]))) : true;
 					}
 				} else {
 					argumentsvalid[i] = arg.startsWith('[') && arg.endsWith(']');
@@ -236,7 +234,7 @@ export class Command {
 }
 
 export class SimpleCommand extends Command {
-	constructor(name, cfunction) {
+	constructor(name : string, cfunction : Function) {
 		super(name, cfunction);
 
 		this.function = (message, client) => {
@@ -258,102 +256,7 @@ export class SimpleCommand extends Command {
 	}
 }
 
-export const commands: object = {
-	core: {
-		help: new SimpleCommand('help', (message) => {
-			const params: string[] = message.content.split(' ');
-
-			if (params[1]) {
-				let command: Command;
-				let categoryname: string;
-
-				Object.values(module.exports.commands).forEach((category, i) => {
-					if (command) { return; }
-
-					categoryname = Object.keys(module.exports.commands)[i];
-
-					Object.values(category).forEach((cmd) => {
-						if (cmd.name === params[1] || cmd.aliases.includes(params[1])) {
-							command = cmd;
-						}
-					});
-				});
-
-				if (command) {
-					let embed = new Discord.RichEmbed()
-						.setTitle(`**${grammar(command.name)}** (${grammar(categoryname)})`)
-						.addField('Usage', command.displayUsage)
-						.setDescription(command.description)
-						.setColor(Math.floor(Math.random() * 16777215));
-
-					if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + command.examples.join('`,\n`') + '`'); }
-					if (command.aliases.length !== 0) { embed = embed.addField('Aliases', command.aliases.join(', ')); }
-
-					return embed;
-				} else {
-					let category: unknown;
-					let categoryname: string;
-
-					Object.values(module.exports.commands).forEach((cat, i) => {
-						if (category) { return; }
-
-						categoryname = Object.keys(module.exports.commands)[i];
-						if (categoryname === params[1].toLowerCase()) { category = cat; }
-					});
-
-					if (category) {
-						const embed: RichEmbed = new Discord.RichEmbed()
-							.setTitle(`**${grammar(categoryname)}** [${Object.keys(category).length}]`)
-							.setColor(Math.floor(Math.random() * 16777215));
-
-						const commands: string[] = [];
-
-						Object.values(category).forEach((cmd) => {
-							if (!cmd.hidden) { commands.push('`' + cmd.name + '` - ' + cmd.description); }
-						});
-
-						if (commands.length !== 0) { embed.addField('Commands', commands.join('\n')); }
-
-						return embed;
-					} else {
-						return `Command or category \`${params[1]}\` not found!`;
-					}
-				}
-			} else {
-				const embed = new Discord.RichEmbed()
-					.setTitle('**All Boteline Commands**')
-					.setColor(Math.floor(Math.random() * 16777215))
-					.setFooter('Do help (category) to get all commands for a category!');
-
-				Object.values(module.exports.commands).forEach((category, i) => {
-					const categoryname = Object.keys(module.exports.commands)[i];
-					const commands = [];
-
-					Object.values(category).forEach((cmd) => {
-						if (!cmd.hidden) { commands.push(cmd.name); }
-					});
-
-					if (commands.length !== 0) { embed.addField(`${grammar(categoryname)} [${commands.length}]`, '`' + commands.join('`, `') + '`'); }
-				});
-
-				return embed;
-			}
-		})
-			.setUsage('help [string]')
-			.setIgnorePrefix()
-			.addAlias('cmds')
-			.setDescription('see commands, or check out a comnmand in detail'),
-
-		ping: new Command('ping', (message, bot) => {
-			const datestart = Date.now();
-			message.channel.send('hol up').then((m) => {
-				m.edit(`Message latency: ${Date.now() - datestart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
-			});
-		})
-			.setUsage('ping')
-			.setDescription('ping the bot'),
-	},
-};
+export const commands = {};
 
 export function addCommand(category, command): void {
 	if (!module.exports.commands[category]) {
@@ -363,6 +266,101 @@ export function addCommand(category, command): void {
 	module.exports.commands[category][command.name] = command;
 }
 
+addCommand('core', new SimpleCommand('help', (message) => {
+	const params = message.content.split(' ');
+
+	if (params[1]) {
+		let command: Command;
+		let categoryname: string;
+
+		Object.values(module.exports.commands).forEach((category, i) => {
+			if (command) { return; }
+
+			categoryname = Object.keys(module.exports.commands)[i];
+
+			Object.values(category).forEach((cmd) => {
+				if (cmd.name === params[1] || cmd.aliases.includes(params[1])) {
+					command = cmd;
+				}
+			});
+		});
+
+		if (command) {
+			let embed = new Discord.RichEmbed()
+				.setTitle(`**${grammar(command.name)}** (${grammar(categoryname)})`)
+				.addField('Usage', command.displayUsage)
+				.setDescription(command.description)
+				.setColor(Math.floor(Math.random() * 16777215));
+
+			if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + command.examples.join('`,\n`') + '`'); }
+			if (command.aliases.length !== 0) { embed = embed.addField('Aliases', command.aliases.join(', ')); }
+
+			return embed;
+		} else {
+			let category: unknown;
+			let categoryname: string;
+
+			Object.values(module.exports.commands).forEach((cat, i) => {
+				if (category) { return; }
+
+				categoryname = Object.keys(module.exports.commands)[i];
+				if (categoryname === params[1].toLowerCase()) { category = cat; }
+			});
+
+			if (category) {
+				const embed: RichEmbed = new Discord.RichEmbed()
+					.setTitle(`**${grammar(categoryname)}** [${Object.keys(category).length}]`)
+					.setColor(Math.floor(Math.random() * 16777215));
+
+				const commands: string[] = [];
+
+				Object.values(category).forEach((cmd) => {
+					if (!cmd.hidden) { commands.push('`' + cmd.name + '` - ' + cmd.description); }
+				});
+
+				if (commands.length !== 0) { embed.addField('Commands', commands.join('\n')); }
+
+				return embed;
+			} else {
+				return `Command or category \`${params[1]}\` not found!`;
+			}
+		}
+	} else {
+		const embed = new Discord.RichEmbed()
+			.setTitle('**All Boteline Commands**')
+			.setColor(Math.floor(Math.random() * 16777215))
+			.setFooter('Do help (category) to get all commands for a category!');
+
+		Object.values(module.exports.commands).forEach((category, i) => {
+			const categoryname = Object.keys(module.exports.commands)[i];
+			const commands = [];
+
+			Object.values(category).forEach((cmd) => {
+				if (!cmd.hidden) { commands.push(cmd.name); }
+			});
+
+			if (commands.length !== 0) { embed.addField(`${grammar(categoryname)} [${commands.length}]`, '`' + commands.join('`, `') + '`'); }
+		});
+
+		return embed;
+	}
+})
+	.setUsage('help [string]')
+	.setIgnorePrefix()
+	.addAlias('cmds')
+	.setDescription('see commands, or check out a comnmand in detail'));
+
+addCommand('core', new Command('ping', (message, bot) => {
+	const datestart = Date.now();
+	message.channel.send('hol up').then((m) => {
+		m.edit(`Message latency: ${Date.now() - datestart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
+	});
+})
+	.setUsage('ping')
+	.setDescription('ping the bot'));
+
 export function setBot(bot: Client) {
 	client = bot;
+	bot['addCommand'] = addCommand;
+	bot['commands'] = commands;
 }
