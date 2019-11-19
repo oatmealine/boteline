@@ -34,6 +34,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import * as ffmpeg from 'fluent-ffmpeg';
+import { getPackedSettings } from 'http2';
 const ch = require('chalk');
 // files
 
@@ -727,6 +728,44 @@ cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
 	.addAlias('salmonschedule')
 	.setDescription('Check the schedule of the Splatoon 2 Salmon Run stage/weapon rotations')
 	.addClientPermission('EMBED_LINKS'))
+
+cs.addCommand('fun', new cs.SimpleCommand('gay', (msg) => {
+	let params = util.getParams(msg);
+	let ratingThing = params.join(' ').toLowerCase();
+
+	const transOverride = ['duck', 'oatmealine', 'oat', 'jill', 'ladizi', 'lavie', 'arceus', 'leah'];
+	const enbyOverride = ['jude'];
+	const gayOverride = ['discord', 'oat', 'jill', 'oatmealine', 'ur mom'];
+	const biOverride = [];
+	const aceOverride = ['catte'];
+
+	let ratedHash = util.hashCode(params.join(' ').toLowerCase());
+	let ratedHashUpper = util.hashCode(params.join(' ').toUpperCase())
+
+	let isGay = (ratedHash % 3) === 0 || gayOverride.includes(ratingThing);
+	let isBi = (ratedHashUpper % 4) === 0 || biOverride.includes(ratingThing);
+	let isAce = (ratedHash % 16) === 0 || aceOverride.includes(ratingThing);
+	let isTrans = ((ratedHashUpper % 5) === 0) || transOverride.includes(ratingThing);
+	let isEnby = ((ratedHashUpper % 10) === 0) || enbyOverride.includes(ratingThing);
+
+	let sexuality = '';
+	if (isGay) sexuality = 'gay';
+	if (isBi) sexuality = 'bi';
+	if (isAce) sexuality = 'asexual';
+
+	return `**${ratingThing}** is ${sexuality !== '' ? sexuality : (isTrans || isEnby ? '' : 'not gay')}${(sexuality !== '' && (isTrans || isEnby)) ? ' and ' : ''}${(isTrans || isEnby ? (isEnby ? 'non-binary' : 'trans') : '')}!`;
+})
+	.addAlias('isgay')
+	.addAlias('istrans')
+	.addAlias('isenby')
+	.addAlias('isbi')
+	.addAlias('trans')
+	.addAlias('enby')
+	.addAlias('bi')
+	.setDescription('check if something is lgbtq or not and which part it is')
+	.addExample('gay jill')
+	.setUsage('gay (string)')
+	.setDisplayUsage('gay (thing to test)'));
 
 foxConsole.info('starting...');
 
