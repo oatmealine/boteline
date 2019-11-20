@@ -223,8 +223,7 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
 })
 	.setDescription('get the bot\'s invite')
-	.addAlias('invitelink')
-	.setUsage(''));
+	.addAlias('invitelink'));
 
 cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
 	const params = util.getParams(message);
@@ -330,7 +329,6 @@ cs.addCommand('utilities', new cs.SimpleCommand('mbps', (message) => {
 cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
 })
-	.setUsage('')
 	.addAlias('servericon')
 	.addAlias('serverpic')
 	.setDescription('get the server\'s icon')
