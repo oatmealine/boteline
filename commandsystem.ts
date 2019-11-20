@@ -295,7 +295,7 @@ addCommand('core', new SimpleCommand('help', (message) => {
 			let commandExamplesPatched = command.examples.map(v => command.name+' '+v);
 
 			if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + commandExamplesPatched.join('`,\n`') + '`'); }
-			if (command.aliases.length !== 0) { embed = embed.addField('Aliases', command.aliases.join(', ')); }
+			if (command.aliases.length !== 0) { embed = embed.addField('Aliases', '`' + command.aliases.join('`, `') + '`'); }
 
 			return embed;
 		} else {
@@ -358,7 +358,6 @@ addCommand('core', new Command('ping', (message, bot) => {
 		m.edit(`Message latency: ${Date.now() - dateStart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
 	});
 })
-	.setUsage('')
 	.setDescription('ping the bot'));
 
 export function setBot(bot: Client) {
