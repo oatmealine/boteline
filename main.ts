@@ -34,7 +34,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import * as ffmpeg from 'fluent-ffmpeg';
-import { getPackedSettings } from 'http2';
 const ch = require('chalk');
 // files
 
@@ -225,7 +224,7 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 })
 	.setDescription('get the bot\'s invite')
 	.addAlias('invitelink')
-	.setUsage('invite'));
+	.setUsage(''));
 
 cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
 	const params = util.getParams(message);
@@ -247,11 +246,11 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
 		return 'i don\'t know that person!';
 	}
 })
-	.setUsage('ban (id)')
+	.setUsage('(id)')
 	.setDescription('ban a user')
 	.addAlias('banuser')
 	.addAlias('banmember')
-	.addExample('ban 360111651602825216')
+	.addExample('360111651602825216')
 	.addClientPermission('BAN_MEMBERS')
 	.addUserPermission('BAN_MEMBERS')
 	.setGuildOnly());
@@ -276,11 +275,11 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
 		return 'i don\'t know that person!';
 	}
 })
-	.setUsage('kick (id)')
+	.setUsage('(id)')
 	.addAlias('kickuser')
 	.addAlias('kickmember')
 	.setDescription('kick a user')
-	.addExample('kick 360111651602825216')
+	.addExample('360111651602825216')
 	.addClientPermission('KICK_MEMBERS')
 	.addUserPermission('KICK_MEMBERS')
 	.setGuildOnly());
@@ -290,48 +289,48 @@ cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
 	return `${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`;
 })
 	.addAliases(['farenheit', 'farenheight', 'fairenheight', 'fairenheit', 'fahrenheight', 'americancelcius', 'stupidunit', 'notcelsius', 'notcelcius', 'weirdformulaunit', 'multiplyby1.8andadd32'])
-	.setUsage('fahrenheit (number)')
+	.setUsage('(number)')
 	.setDescription('convert celsius to fahrenheit')
-	.addExample('fahrenheit 15'));
+	.addExample('15'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
 	const params = util.getParams(message);
 	return `${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`;
 })
-	.setUsage('celsius (number)')
+	.setUsage('(number)')
 	.addAlias('celcius')
 	.setDescription('convert fahrenheit to celsius')
-	.addExample('celsius 59'));
+	.addExample('59'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
 	const params = util.getParams(message);
 	return `${params[0]}°C is ${Number(params[0]) < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
 })
-	.setUsage('kelvin (number)')
+	.setUsage('(number)')
 	.setDescription('convert celsius to kelvin')
-	.addExample('kelvin 15'));
+	.addExample('15'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('mbs', (message) => {
 	const params = util.getParams(message);
 	return `${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`;
 })
-	.setUsage('mbs (number)')
+	.setUsage('(number)')
 	.addAlias('mb/s')
 	.setDescription('convert mbps to mb/s')
-	.addExample('mbs 8'));
+	.addExample('8'));
 
 cs.addCommand('utilities', new cs.SimpleCommand('mbps', (message) => {
 	const params = util.getParams(message);
 	return `${params[0]}MB/s is **${Math.round((Number(params[0])) * 800) / 100}Mbps**`;
 })
-	.setUsage('mbps (number)')
+	.setUsage('(number)')
 	.setDescription('convert mb/s to mbps')
-	.addExample('mbps 1'));
+	.addExample('1'));
 
 cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
 })
-	.setUsage('icon')
+	.setUsage('')
 	.addAlias('servericon')
 	.addAlias('serverpic')
 	.setDescription('get the server\'s icon')
@@ -349,7 +348,7 @@ cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
 	}
 	msg.channel.send('', { files: [{ attachment: user.avatarURL, name: 'avatar.png' }] });
 })
-	.setUsage('pfp [id]')
+	.setUsage('\[id]')
 	.addAlias('avatar')
 	.setDescription('get a user\'s pfp')
 	.addClientPermission('ATTACH_FILES'));
@@ -368,7 +367,7 @@ cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
 })
 	.setDescription('compresses a video')
 	.addAlias('compression')
-	.setUsage('compress [number]')
+	.setUsage('[number]')
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
@@ -400,7 +399,7 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	});
 })
 	.setDescription('eat the Burger')
-	.setUsage('eat [any]')
+	.setUsage('[any]')
 	.addAlias('burger')
 	.addClientPermission('USE_EXTERNAL_EMOJIS'));
 
@@ -512,11 +511,11 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 	}
 })
 	.addAlias('va11halla')
-	.addAlias('vallhalla')
-	.setUsage('valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [mixed?] [on the rocks?] [aged?])')
-	.addExample('valhalla search Frothy Water')
-	.addExample('valhalla make abpf aged')
-	.addExample('valhalla aabbbbppffffkkkkkkkk')
+	.setUsage('(string) (string) [string] [string] [string]')
+	.setDisplayUsage('valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [mixed?] [on the rocks?] [aged?])')
+	.addExample('search Frothy Water')
+	.addExample('make abpf aged')
+	.addExample('make aabbbbppffffkkkkkkkk')
 	.setDescription('search up drinks, and make some drinks, va11halla style!\nbasically a text-based replica of the drink making part of va11halla'));
 
 cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
@@ -534,9 +533,8 @@ cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
 	.addAlias('nword')
 	.addAlias('nwordpasses')
 	.setDescription('see your amount of nwordpasses, or toggle the system')
-	.setUsage('nwordpass [toggle]')
-	.addExample('nwordpass toggle')
-	.addExample('nwordpass'));
+	.setUsage('[toggle]')
+	.addExample('toggle'));
 
 cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 	const params = util.getParams(msg);
@@ -553,8 +551,8 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 	return `I'd give ${params.join(' ')} a **${rating}/10**`;
 })
 	.setDescription('rates something')
-	.setUsage('rate (string)')
-	.addExample('rate me'));
+	.setUsage('(string)')
+	.addExample('me'));
 
 cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 	const params = util.getParams(msg);
@@ -580,18 +578,18 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 })
 	.addAlias('choose')
 	.setDescription('rates 2 objects, and picks one of them')
-	.setUsage('pick (string) (string)')
-	.addExample('pick njs python'));
+	.setUsage('(string) (string)')
+	.addExample('njs python'));
 
 cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
 	const thingToRate = util.getParams(msg).join(' ');
 	return `> ${thingToRate}\nI'd say, **${['yes', 'probably', 'maybe', 'no'][Math.abs(util.hashCode(thingToRate)) * 23 % 4]}**`;
 })
 	.setDescription('ask the bot a question')
-	.setUsage('ask (string)')
+	.setUsage('(string)')
 	.addAlias('askquestion')
 	.addAlias('question')
-	.addExample('ask is this a good example'));
+	.addExample('is this a good example'));
 
 cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 	const params = util.getParams(msg);
@@ -599,8 +597,8 @@ cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 })
 	.addAlias('advancement')
 	.setDescription('make a minecraft achievement')
-	.setUsage('achievement (string)')
-	.addExample('achievement Made an example!')
+	.setUsage('(string)')
+	.addExample('Made an example!')
 	.addClientPermission('ATTACH_FILES'));
 
 cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
@@ -657,7 +655,7 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 	.addAlias('setprefix')
 	.addAlias('customprefix')
 	.setDescription('set a custom prefix for boteline')
-	.setUsage('prefix [string]')
+	.setUsage('[string]')
 	.addUserPermission('MANAGE_GUILD'));
 
 cs.addCommand('utilities', new cs.Command('splatoon', (msg) => {
@@ -763,9 +761,9 @@ cs.addCommand('fun', new cs.SimpleCommand('gay', (msg) => {
 	.addAlias('enby')
 	.addAlias('bi')
 	.setDescription('check if something is lgbtq or not and which part it is')
-	.addExample('gay jill')
-	.setUsage('gay (string)')
-	.setDisplayUsage('gay (thing to test)'));
+	.addExample('jill')
+	.setUsage('(string)')
+	.setDisplayUsage('(thing to test)'));
 
 foxConsole.info('starting...');
 

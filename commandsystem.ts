@@ -169,7 +169,6 @@ export class Command {
 
 		if (this.usage && !this.usageCheck) {
 			const argument = this.usage.split(' ');
-			argument.shift();
 
 			argument.forEach((arg, i) => {
 				if (params[i] !== undefined) {
@@ -197,7 +196,7 @@ export class Command {
 
 		if (argumentsValid !== null) {
 			if (argumentsValid.includes(false)) {
-				return message.channel.send(`Invalid syntax! \`${this.displayUsage}\``);
+				return message.channel.send(`Invalid syntax! \`${this.name+' '+this.displayUsage}\``);
 			}
 		}
 
@@ -289,11 +288,13 @@ addCommand('core', new SimpleCommand('help', (message) => {
 		if (command) {
 			let embed = new Discord.RichEmbed()
 				.setTitle(`**${grammar(command.name)}** (${grammar(categoryName)})`)
-				.addField('Usage', command.displayUsage)
+				.addField('Usage', command.name+' '+command.displayUsage)
 				.setDescription(command.description)
 				.setColor(Math.floor(Math.random() * 16777215));
 
-			if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + command.examples.join('`,\n`') + '`'); }
+			let commandExamplesPatched = command.examples.map(v => command.name+' '+v);
+
+			if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + commandExamplesPatched.join('`,\n`') + '`'); }
 			if (command.aliases.length !== 0) { embed = embed.addField('Aliases', command.aliases.join(', ')); }
 
 			return embed;
@@ -346,7 +347,7 @@ addCommand('core', new SimpleCommand('help', (message) => {
 		return embed;
 	}
 })
-	.setUsage('help [string]')
+	.setUsage('[string]')
 	.setIgnorePrefix()
 	.addAlias('cmds')
 	.setDescription('see commands, or check out a comnmand in detail'));
@@ -357,7 +358,7 @@ addCommand('core', new Command('ping', (message, bot) => {
 		m.edit(`Message latency: ${Date.now() - dateStart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
 	});
 })
-	.setUsage('ping')
+	.setUsage('')
 	.setDescription('ping the bot'));
 
 export function setBot(bot: Client) {
