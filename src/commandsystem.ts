@@ -29,8 +29,8 @@ export class Command {
 	constructor(name : string, cfunction : Function) {
 	  this.name = name;
 	  this.function = cfunction;
-	  this.usage = name;
-	  this.displayUsage = name;
+	  this.usage = '';
+	  this.displayUsage = '';
 	  this.clientPermissions = [];
 	  this.userPermissions = [];
 

@@ -28,6 +28,8 @@ import * as fs from 'fs';
 
 import * as os from 'os';
 
+import { createCanvas, loadImage } from 'canvas';
+
 import * as ffmpeg from 'fluent-ffmpeg';
 const ch = require('chalk');
 // files
@@ -720,7 +722,7 @@ cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
   .setDescription('Check the schedule of the Splatoon 2 Salmon Run stage/weapon rotations')
   .addClientPermission('EMBED_LINKS'));
 
-cs.addCommand('fun', new cs.SimpleCommand('gay', (msg) => {
+cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
   let params = util.getParams(msg);
   let ratingThing = params.join(' ').toLowerCase();
 
@@ -746,17 +748,85 @@ cs.addCommand('fun', new cs.SimpleCommand('gay', (msg) => {
 
   return `**${ratingThing}** is ${sexuality !== '' ? sexuality : (isTrans || isEnby ? '' : 'not gay')}${(sexuality !== '' && (isTrans || isEnby)) ? ' and ' : ''}${(isTrans || isEnby ? (isEnby ? 'non-binary' : 'trans') : '')}!`;
 })
-  .addAlias('isgay')
   .addAlias('istrans')
   .addAlias('isenby')
   .addAlias('isbi')
-  .addAlias('trans')
-  .addAlias('enby')
-  .addAlias('bi')
   .setDescription('check if something is lgbtq or not and which part it is')
   .addExample('jill')
   .setUsage('(string)')
   .setDisplayUsage('(thing to test)'));
+
+cs.addCommand('image', new cs.Command('gay', (msg) => {
+  const canvas = createCanvas(300, 390);
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, 300, 390)
+
+  ctx.font = '30px Impact';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center'; 
+  ctx.fillText(msg.author.username + ' is GAY', 150, 340 + 15);
+  
+  loadImage(msg.author.avatarURL).then((image) => {
+    ctx.drawImage(image, 10, 10, 280, 280);
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(10, 10, 280, 280)
+
+    ctx.fillStyle = ctx.createLinearGradient(0, 10, 0, 290);
+    ctx.fillStyle.addColorStop(0, 'rgba(255,0,0,0.5)');
+    ctx.fillStyle.addColorStop(0.15, 'rgba(255,127,0,0.5)');
+    ctx.fillStyle.addColorStop(0.3, 'rgba(255,255,0,0.5)');
+    ctx.fillStyle.addColorStop(0.45, 'rgba(0,255,0,0.5)');
+    ctx.fillStyle.addColorStop(0.7, 'rgba(0,255,255,0.5)');
+    ctx.fillStyle.addColorStop(0.85, 'rgba(0,0,255,0.5)');
+    ctx.fillStyle.addColorStop(1, 'rgba(255,0,255,0.5)');
+
+    ctx.fillRect(10,10,280,280);
+  
+    msg.channel.send('', {files: [canvas.toBuffer()]})
+  });
+})
+  .addClientPermission('ATTACH_FILES')
+  .addAlias('gayoverlay')
+  .setDescription('puts a gay flag over your icon'));
+
+cs.addCommand('image', new cs.Command('trans', (msg) => {
+  const canvas = createCanvas(300, 390);
+  const ctx = canvas.getContext('2d');
+  
+  ctx.fillStyle = 'black';
+  ctx.fillRect(0, 0, 300, 390)
+  
+  ctx.font = '30px Impact';
+  ctx.fillStyle = 'white';
+  ctx.textAlign = 'center'; 
+  ctx.fillText(msg.author.username + ' is TRANS', 150, 340 + 15);
+    
+  loadImage(msg.author.avatarURL).then((image) => {
+    ctx.drawImage(image, 10, 10, 280, 280);
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = 4;
+    ctx.strokeRect(10, 10, 280, 280)
+  
+    ctx.fillStyle = ctx.createLinearGradient(0, 10, 0, 290);
+    ctx.fillStyle.addColorStop(0, 'rgba(85,205,252,0.5)');
+    ctx.fillStyle.addColorStop(0.3, 'rgba(247,168,184,0.5)');
+    ctx.fillStyle.addColorStop(0.5, 'rgba(255,255,255,0.5)');
+    ctx.fillStyle.addColorStop(0.7, 'rgba(247,168,184,0.5)');
+    ctx.fillStyle.addColorStop(1, 'rgba(85,205,252,0.5)');
+  
+    ctx.fillRect(10,10,280,280);
+    
+    msg.channel.send('', {files: [canvas.toBuffer()]})
+  });
+})
+  .addClientPermission('ATTACH_FILES')
+  .addAlias('transoverlay')
+  .setDescription('puts a trans flag over your icon'));
 
 foxConsole.info('starting...');
 
