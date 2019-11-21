@@ -7,6 +7,6 @@
       "noImplicitReturns": true
   },
   "include": [
-      "./*"
+      "src/*"
   ]
 }

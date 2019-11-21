@@ -1,8 +1,8 @@
 node_modules
-.env
-foxquotes.json
-userdata.json
-guildsettings.json
-temp.mp4
-built/
 .vscode
+
+built/
+
+data/*
+temp/*
+.env

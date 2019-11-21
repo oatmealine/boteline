@@ -1,8 +1,3 @@
-if (process.cwd().endsWith('built')) {
-  process.chdir('../');
-  console.log('changed dir to '+process.cwd());
-}
-
 // libraries & modules
 import * as Discord from 'discord.js';
 const bot = new Discord.Client({
@@ -40,17 +35,17 @@ const ch = require('chalk');
 const packageJson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
 const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
 
-if (!fs.existsSync('./userdata.json')) {
-  fs.writeFileSync('./userdata.json', '{}');
+if (!fs.existsSync('./data/userdata.json')) {
+  fs.writeFileSync('./data/userdata.json', '{}');
 }
-const userData = JSON.parse(fs.readFileSync('./userdata.json', {encoding: 'utf8'}));
+const userData = JSON.parse(fs.readFileSync('./data/userdata.json', {encoding: 'utf8'}));
 
-if (!fs.existsSync('./guildsettings.json')) {
-  fs.writeFileSync('./guildsettings.json', '{}');
+if (!fs.existsSync('./data/guildsettings.json')) {
+  fs.writeFileSync('./data/guildsettings.json', '{}');
 }
-const guildSettings = JSON.parse(fs.readFileSync('./guildsettings.json', {encoding: 'utf8'}));
+const guildSettings = JSON.parse(fs.readFileSync('./data/guildsettings.json', {encoding: 'utf8'}));
 
-const valhallaDrinks = JSON.parse(fs.readFileSync('./valhalla.json', {encoding: 'utf8'}));
+const valhallaDrinks = JSON.parse(fs.readFileSync('./src/valhalla.json', {encoding: 'utf8'}));
 
 // .env stuff
 require('dotenv').config();
@@ -183,14 +178,14 @@ class FFMpegCommand extends cs.Command {
 	            if (progMessage) {
 	              progMessage.edit('processing: done! uploading');
 	            }
-	            msg.channel.send('ok, done', {files: ['./temp.mp4']}).then(() => {
+	            msg.channel.send('ok, done', {files: ['./temp/temp.mp4']}).then(() => {
 	              if (progMessage) {
 	                progMessage.delete();
 	              }
 	            });
 	          })
 	        // .pipe(stream);
-	          .save('./temp.mp4');
+	          .save('./temp/temp.mp4');
 	      } else {
 	        msg.channel.send('No video attachments found');
 	      }
@@ -912,7 +907,7 @@ bot.on('ready', () => {
 
   bot.setInterval(() => {
     foxConsole.debug('saving userdata...');
-    fs.writeFile('./userdata.json', JSON.stringify(userData), (err) => {
+    fs.writeFile('./data/userdata.json', JSON.stringify(userData), (err) => {
       if (err) {
         foxConsole.error('failed saving userdata: ' + err);
       } else {
@@ -921,7 +916,7 @@ bot.on('ready', () => {
     });
 
     foxConsole.debug('saving guild settings...');
-    fs.writeFile('./guildsettings.json', JSON.stringify(guildSettings), (err) => {
+    fs.writeFile('./data/guildsettings.json', JSON.stringify(guildSettings), (err) => {
       if (err) {
         foxConsole.error('failed saving guildsettings: ' + err);
       } else {
