@@ -166,14 +166,23 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
 
     if (guild) {
       let users = guild.members.filter(u => u.nickname !== null && u.nickname.toLowerCase().startsWith(parse.toLowerCase()));
-
       if (users.size > 0) {
         return users.first().user;
-      } else {
-        let users = guild.members.filter(u => u.user.username.toLowerCase().startsWith(parse.toLowerCase()));
-        if (users.size > 0) {
-          return users.first().user;
-        }
+      }
+
+      users = guild.members.filter(u => u.nickname !== null && u.nickname.toLowerCase() === parse.toLowerCase());
+      if (users.size > 0) {
+        return users.first().user;
+      }
+
+      users = guild.members.filter(u => u.user.username.toLowerCase() === parse.toLowerCase());
+      if (users.size > 0) {
+        return users.first().user;
+      }
+
+      users = guild.members.filter(u => u.user.username.toLowerCase().startsWith(parse.toLowerCase()));
+      if (users.size > 0) {
+        return users.first().user;
       }
     }
 

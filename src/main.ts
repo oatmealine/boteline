@@ -212,7 +212,8 @@ class CanvasGradientApplyCommand extends cs.Command {
     this.addClientPermission('ATTACH_FILES');
     this.setUsage('[user]');
 
-	  this.function = (msg) => {
+	  this.function = (msg : Discord.Message) => {
+      msg.channel.startTyping();
       let params = util.getParams(msg);
 
       const canvas = createCanvas(300, 390);
@@ -233,7 +234,7 @@ class CanvasGradientApplyCommand extends cs.Command {
       ctx.textAlign = 'center'; 
       ctx.fillText(user.username + ' is ' + bottomstring, 150, 340 + 15);
         
-      loadImage(user.avatarURL).then((image) => {
+      loadImage(user.displayAvatarURL).then((image) => {
         ctx.drawImage(image, 10, 10, 280, 280);
 
         ctx.strokeStyle = 'white';
@@ -250,7 +251,9 @@ class CanvasGradientApplyCommand extends cs.Command {
       
         ctx.fillRect(10,10,280,280);
         
-        msg.channel.send('', {files: [canvas.toBuffer()]});
+        msg.channel.send('', {files: [canvas.toBuffer()]}).then(m => {
+          msg.channel.stopTyping();
+        });
       });
 	  };
 	  return this;
@@ -282,11 +285,10 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 
 cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
   const params = util.getParams(message);
+  const banMember = message.guild.members.get(util.parseUser(bot, params[0], message.guild).id);
 
-  if (message.guild.members.get(params[0]) !== undefined) {
-    const banMember = message.guild.members.get(params[0]);
-
-    if (banMember.id === message.member.id) {
+  if (banMember !== undefined) {
+    if (banMember.id === message.user.id) {
       return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
     }
 
@@ -300,7 +302,7 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
     return 'i don\'t know that person!';
   }
 })
-  .setUsage('(id)')
+  .setUsage('(user)')
   .setDescription('ban a user')
   .addAlias('banuser')
   .addAlias('banmember')
@@ -311,10 +313,9 @@ cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
 
 cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
   const params = message.content.split(' ').slice(1, message.content.length);
+  const banMember = message.guild.members.get(util.parseUser(bot, params[0], message.guild).id);
 
-  if (message.guild.members.get(params[0]) !== undefined) {
-    const banMember = message.guild.members.get(params[0]);
-
+  if (banMember !== undefined) {
     if (banMember.id === message.member.id) {
       return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
     }
@@ -329,7 +330,7 @@ cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
     return 'i don\'t know that person!';
   }
 })
-  .setUsage('(id)')
+  .setUsage('(user)')
   .addAlias('kickuser')
   .addAlias('kickmember')
   .setDescription('kick a user')
@@ -395,13 +396,13 @@ cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
   let user: Discord.User;
 
   if (params[0] !== undefined) {
-    user = bot.users.get(params[0]);
+    user = util.parseUser(bot, params[0], msg.guild);
   } else {
     user = msg.author;
   }
-  msg.channel.send('', { files: [{ attachment: user.avatarURL, name: 'avatar.png' }] });
+  msg.channel.send('', { files: [{ attachment: user.displayAvatarURL, name: 'avatar.png' }] });
 })
-  .setUsage('[id]')
+  .setUsage('[user]')
   .addAlias('avatar')
   .setDescription('get a user\'s pfp')
   .addClientPermission('ATTACH_FILES'));
@@ -666,7 +667,7 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 
 cs.addCommand('core', new cs.Command('info', (msg) => {
   msg.channel.send(new Discord.RichEmbed()
-    .setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.avatarURL)
+    .setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.displayAvatarURL)
     .setTitle(`${bot.user.username} stats`)
     .setURL(packageJson.repository)
     .setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
@@ -677,7 +678,7 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
   .addAlias('stats')
   .setDescription('get some info and stats about the bot'));
 
-cs.addCommand('core', new cs.Command('foxstats', (msg) => {
+cs.addCommand('core', new cs.Command('hoststats', (msg) => {
   msg.channel.send(new Discord.RichEmbed()
     .setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()})`)
     .setTitle(`Host's stats - ${os.hostname()}`)
@@ -686,7 +687,7 @@ cs.addCommand('core', new cs.Command('foxstats', (msg) => {
     .addField('Memory', `${util.roundNumber((os.totalmem()-os.freemem())/1000000, 3)}MB/${util.roundNumber(os.totalmem()/1000000, 3)}MB used`, true)
     .addField('CPU', `${os.cpus()[0].model}`, true));
 })
-  .addAliases(['matstatsfoxedition', 'hoststats', 'host', 'neofetch'])
+  .addAliases(['matstatsfoxedition', 'oatstats', 'host', 'neofetch'])
   .setDescription('get some info and stats about the bot'));
 
 cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
