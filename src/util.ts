@@ -144,3 +144,39 @@ export function formatTime(date : Date) : string {
 
   return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes} UTC`;
 }
+
+// discord utils
+export function parseUser(bot : Discord.Client, parse : string, guild? : Discord.Guild) : Discord.User | null {
+  if(parse.startsWith('<@') && parse.startsWith('>')) {
+    parse = parse.substr(2, parse.length-3);
+  }
+
+  if(!isNaN(Number(parse))) {
+    return bot.users.get(parse) === undefined ? null : bot.users.get(parse);
+  } else {
+    if (parse.split('#').length === 2) {
+      let name = parse.split('#')[0];
+      let discrim = parse.split('#')[1];
+      let users = bot.users.filter(u => u.username === name && u.discriminator === discrim);
+  
+      if (users.size === 1) {
+        return users.first();
+      }
+    }
+
+    if (guild) {
+      let users = guild.members.filter(u => u.nickname !== null && u.nickname.toLowerCase().startsWith(parse.toLowerCase()));
+
+      if (users.size > 0) {
+        return users.first().user;
+      } else {
+        let users = guild.members.filter(u => u.user.username.toLowerCase().startsWith(parse.toLowerCase()));
+        if (users.size > 0) {
+          return users.first().user;
+        }
+      }
+    }
+
+    return null;
+  }
+}

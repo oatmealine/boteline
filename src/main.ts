@@ -199,6 +199,64 @@ class FFMpegCommand extends cs.Command {
 	}
 }
 
+class CanvasGradientApplyCommand extends cs.Command {
+  public gradient : string[];
+  public bottomstring : string;
+
+  constructor(name : string, gradient : string[], bottomstring : string) {
+	  super(name, null);
+
+    this.bottomstring = bottomstring;
+    this.gradient = gradient;
+    
+    this.addClientPermission('ATTACH_FILES');
+    this.setUsage('[user]');
+
+	  this.function = (msg) => {
+      let params = util.getParams(msg);
+
+      const canvas = createCanvas(300, 390);
+      const ctx = canvas.getContext('2d');
+      
+      let user = params.length === 0 ? msg.author : util.parseUser(bot, params[0], msg.guild);
+      
+      if (user === null) {
+        msg.channel.send('User not found');
+        return;
+      }
+
+      ctx.fillStyle = 'black';
+      ctx.fillRect(0, 0, 300, 390);
+      
+      ctx.font = '30px Impact';
+      ctx.fillStyle = 'white';
+      ctx.textAlign = 'center'; 
+      ctx.fillText(user.username + ' is ' + bottomstring, 150, 340 + 15);
+        
+      loadImage(user.avatarURL).then((image) => {
+        ctx.drawImage(image, 10, 10, 280, 280);
+
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 4;
+        ctx.strokeRect(10, 10, 280, 280);
+      
+        let ctxGradient = ctx.createLinearGradient(0, 10, 0, 290);
+
+        gradient.forEach((clr,i,arr) => {
+          ctxGradient.addColorStop(i / (arr.length - 1), clr);
+        });
+        
+        ctx.fillStyle = ctxGradient;
+      
+        ctx.fillRect(10,10,280,280);
+        
+        msg.channel.send('', {files: [canvas.toBuffer()]});
+      });
+	  };
+	  return this;
+  }
+}
+
 console.log(ch.red.bold(`boteline v${version}`));
 if (process.env.DEBUG) { console.debug(ch.grey('debug printing on')); }
 
@@ -756,77 +814,37 @@ cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
   .setUsage('(string)')
   .setDisplayUsage('(thing to test)'));
 
-cs.addCommand('image', new cs.Command('gay', (msg) => {
-  const canvas = createCanvas(300, 390);
-  const ctx = canvas.getContext('2d');
+cs.addCommand('image', new CanvasGradientApplyCommand('gay',
+  ['rgba(255,0,0,0.5)',
+    'rgba(255,127,0,0.5)',
+    'rgba(255,255,0,0.5)',
+    'rgba(0,255,0,0.5)',
+    'rgba(0,255,255,0.5)',
+    'rgba(0,0,255,0.5)',
+    'rgba(255,0,255,0.5)'],
+  'GAY')
+  .setDescription('puts a gay flag over your (or someone else\'s) icon')
+  .addAlias('gayoverlay'));
 
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, 300, 390)
+cs.addCommand('image', new CanvasGradientApplyCommand('trans',
+  ['rgba(85,205,252,0.6)',
+    'rgba(247,168,184,0.6)',
+    'rgba(255,255,255,0.6)',
+    'rgba(247,168,184,0.6)',
+    'rgba(85,205,252,0.6)'],
+  'TRANS')
+  .setDescription('puts a trans flag over your (or someone else\'s) icon')
+  .addAlias('transoverlay'));
 
-  ctx.font = '30px Impact';
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center'; 
-  ctx.fillText(msg.author.username + ' is GAY', 150, 340 + 15);
-  
-  loadImage(msg.author.avatarURL).then((image) => {
-    ctx.drawImage(image, 10, 10, 280, 280);
-
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(10, 10, 280, 280)
-
-    ctx.fillStyle = ctx.createLinearGradient(0, 10, 0, 290);
-    ctx.fillStyle.addColorStop(0, 'rgba(255,0,0,0.5)');
-    ctx.fillStyle.addColorStop(0.15, 'rgba(255,127,0,0.5)');
-    ctx.fillStyle.addColorStop(0.3, 'rgba(255,255,0,0.5)');
-    ctx.fillStyle.addColorStop(0.45, 'rgba(0,255,0,0.5)');
-    ctx.fillStyle.addColorStop(0.7, 'rgba(0,255,255,0.5)');
-    ctx.fillStyle.addColorStop(0.85, 'rgba(0,0,255,0.5)');
-    ctx.fillStyle.addColorStop(1, 'rgba(255,0,255,0.5)');
-
-    ctx.fillRect(10,10,280,280);
-  
-    msg.channel.send('', {files: [canvas.toBuffer()]})
-  });
-})
-  .addClientPermission('ATTACH_FILES')
-  .addAlias('gayoverlay')
-  .setDescription('puts a gay flag over your icon'));
-
-cs.addCommand('image', new cs.Command('trans', (msg) => {
-  const canvas = createCanvas(300, 390);
-  const ctx = canvas.getContext('2d');
-  
-  ctx.fillStyle = 'black';
-  ctx.fillRect(0, 0, 300, 390)
-  
-  ctx.font = '30px Impact';
-  ctx.fillStyle = 'white';
-  ctx.textAlign = 'center'; 
-  ctx.fillText(msg.author.username + ' is TRANS', 150, 340 + 15);
-    
-  loadImage(msg.author.avatarURL).then((image) => {
-    ctx.drawImage(image, 10, 10, 280, 280);
-
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = 4;
-    ctx.strokeRect(10, 10, 280, 280)
-  
-    ctx.fillStyle = ctx.createLinearGradient(0, 10, 0, 290);
-    ctx.fillStyle.addColorStop(0, 'rgba(85,205,252,0.5)');
-    ctx.fillStyle.addColorStop(0.3, 'rgba(247,168,184,0.5)');
-    ctx.fillStyle.addColorStop(0.5, 'rgba(255,255,255,0.5)');
-    ctx.fillStyle.addColorStop(0.7, 'rgba(247,168,184,0.5)');
-    ctx.fillStyle.addColorStop(1, 'rgba(85,205,252,0.5)');
-  
-    ctx.fillRect(10,10,280,280);
-    
-    msg.channel.send('', {files: [canvas.toBuffer()]})
-  });
-})
-  .addClientPermission('ATTACH_FILES')
-  .addAlias('transoverlay')
-  .setDescription('puts a trans flag over your icon'));
+cs.addCommand('image', new CanvasGradientApplyCommand('bi',
+  ['rgba(214,2,112,0.6)',
+    'rgba(214,2,112,0.6)',
+    'rgba(155,79,150,0.6)',
+    'rgba(0,56,168,0.6)',
+    'rgba(0,56,168,0.6)'],
+  'BI')
+  .setDescription('puts a bi flag over your (or someone else\'s) icon')
+  .addAlias('bioverlay'));
 
 foxConsole.info('starting...');
 
@@ -994,6 +1012,8 @@ bot.on('ready', () => {
       }
     });
   }, 120000);
+
+  cs.setClient(bot);
 
   foxConsole.success('ready!');
 });

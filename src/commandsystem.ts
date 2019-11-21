@@ -1,12 +1,14 @@
+/* eslint-disable no-unused-vars */
 import * as Discord from 'discord.js';
-const foxConsole = require('./foxconsole.js');
+import * as foxConsole from './foxconsole.js';
+import * as util from './util.js';
 
 function grammar(str: string) : string {
   const newstring = str.slice(1, str.length);
   return str[0].toUpperCase() + newstring;
 }
 
-import * as util from './util.js';
+let client : Discord.Client;
 
 export class Command {
 	public name: string;
@@ -174,6 +176,9 @@ export class Command {
 	        case 'string':
 	          argumentsValid[i] = true;
 	          break;
+	        case 'user':
+	          argumentsValid[i] = util.parseUser(client, params[i], message.guild === null ? undefined : message.guild) !== null;
+	          break;
 	        case 'url':
 	          argumentsValid[i] = params[i].startsWith('http://') || params[i].startsWith('https://');
 	          break;
@@ -261,6 +266,10 @@ export function addCommand(category, command : Command): void {
   }
 
   module.exports.commands[category][command.name] = command;
+}
+
+export function setClient(clientSet : Discord.Client) {
+  client = clientSet;
 }
 
 addCommand('core', new SimpleCommand('help', (message) => {
