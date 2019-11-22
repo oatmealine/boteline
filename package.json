@@ -15,8 +15,8 @@
     "discord-bot",
     "bot"
   ],
-  "repository": "https://github.com/thefoxbot/boteline",
-  "author": "thefox",
+  "repository": "https://github.com/oatmealine/boteline",
+  "author": "oatmealine",
   "license": "MIT",
   "dependencies": {
     "@types/fluent-ffmpeg": "^2.1.11",
