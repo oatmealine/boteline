@@ -21,6 +21,7 @@ TOKEN="token here"
 PREFIX="m="
 OWNER="209765088196821012"
 DEBUG=false
+YANDEXTRANSLATETOKEN="optional, your yandex translate api key for m=translate & m=langs"
 ```
 
 (if debug is true, debug logs will appear. enable this if you want to submit a bug with logs)
