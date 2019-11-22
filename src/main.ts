@@ -676,7 +676,7 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 
 cs.addCommand('core', new cs.Command('info', (msg) => {
   msg.channel.send(new Discord.RichEmbed()
-    .setFooter(`Made using Node.JS ${process.version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.displayAvatarURL)
+    .setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.displayAvatarURL)
     .setTitle(`${bot.user.username} stats`)
     .setURL(packageJson.repository)
     .setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
@@ -900,6 +900,23 @@ if (yt !== null) {
   })
     .setDescription('get the available languages for '+prefix+'translate'));
 }
+
+cs.addCommand('core', new cs.Command('listdependencies', (msg) => {
+  let dependencyEmbed = new Discord.RichEmbed()
+    .setTitle('Boteline Dependencies')
+    .setColor('#FFFF00')
+    .setDescription('Dependencies taken from package.json, dependency versions taken from package-lock.json');
+  
+  Object.keys(packageJson.dependencies).forEach((dependency : string) => {
+    if (!dependency.startsWith('@') && packageLock.dependencies[dependency] !== undefined) dependencyEmbed.addField(dependency, packageLock.dependencies[dependency].version, true);
+  });
+
+  msg.channel.send('', {embed: dependencyEmbed});
+})
+  .addAlias('dependencies')
+  .addAlias('depends')
+  .addClientPermission('EMBED_LINKS')
+  .setDescription('list the dependencies boteline uses, and their versions'));
 
 foxConsole.info('starting...');
 
