@@ -31,6 +31,8 @@ import * as os from 'os';
 import { createCanvas, loadImage } from 'canvas';
 
 import * as ffmpeg from 'fluent-ffmpeg';
+import YandexTranslate from 'yet-another-yandex-translate';
+import { DH_NOT_SUITABLE_GENERATOR } from 'constants';
 const ch = require('chalk');
 // files
 
@@ -276,6 +278,14 @@ console.log(ch.bold(`
 
 `));
 foxConsole.info('adding commands...');
+
+// yandex translate api
+let yt : YandexTranslate | null;
+if (process.env.YANDEXTRANSLATETOKEN) {
+  yt = new YandexTranslate(process.env.YANDEXTRANSLATETOKEN);
+} else {
+  yt = null;
+}
 
 cs.addCommand('core', new cs.SimpleCommand('invite', () => {
   return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
@@ -846,6 +856,51 @@ cs.addCommand('image', new CanvasGradientApplyCommand('bi',
   'BI')
   .setDescription('puts a bi flag over your (or someone else\'s) icon')
   .addAlias('bioverlay'));
+
+if (yt !== null) {
+  cs.addCommand('utilities', new cs.Command('translate', (msg : Discord.Message) => {
+    let params = util.getParams(msg);
+    let lang = params[0];
+    params.shift();
+
+    msg.channel.startTyping();
+
+    yt.translate(params.join(' '), {to: lang, format: 'html'}).then(translated => {
+      let translateEmbed = new Discord.RichEmbed()
+        .setDescription(translated)
+        .setFooter('Powered by Yandex.Translate')
+        .setColor('#FF0000');
+      msg.channel.send('', {embed: translateEmbed});
+      msg.channel.stopTyping();
+    })
+    .catch(err => {
+      msg.channel.send('An error occured! \`'+err+'\`\nThis is likely Yandex.Translate\'s fault, so blame them');
+      msg.channel.stopTyping();
+    });
+  })
+    .addClientPermission('EMBED_LINKS')
+    .setDescription('translate some text, get accepted langs list with '+prefix+'langs')
+    .addAlias('transl')
+    .setUsage('(string) (string)')
+    .setDisplayUsage('(language to translate to) (text, language is autodetected)')
+    .addExample('translate en тестируем ботелине'));
+
+  cs.addCommand('utilities', new cs.Command('langs', (msg : Discord.Message) => {
+    yt.getLangs().then(langs => {
+      // since for some unknown reason langs.langs doesnt exist, i have to use this bullshit
+
+      let langCodes = [];
+      langs.dirs.forEach(l => {
+        l.split('-').forEach(lang => {
+          if (!langCodes.includes(lang)) langCodes.push(lang);
+        });
+      });
+
+      msg.channel.send('The supported languages for '+prefix+'translate are:\n`' + Object.values(langCodes).join('`, `') + '`');
+    });
+  })
+    .setDescription('get the available languages for '+prefix+'translate'));
+}
 
 foxConsole.info('starting...');
 
