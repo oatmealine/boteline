@@ -32,7 +32,6 @@ import { createCanvas, loadImage } from 'canvas';
 
 import * as ffmpeg from 'fluent-ffmpeg';
 import YandexTranslate from 'yet-another-yandex-translate';
-import { DH_NOT_SUITABLE_GENERATOR } from 'constants';
 const ch = require('chalk');
 // files
 
@@ -253,7 +252,7 @@ class CanvasGradientApplyCommand extends cs.Command {
       
         ctx.fillRect(10,10,280,280);
         
-        msg.channel.send('', {files: [canvas.toBuffer()]}).then(m => {
+        msg.channel.send('', {files: [canvas.toBuffer()]}).then(() => {
           msg.channel.stopTyping();
         });
       });
@@ -873,10 +872,10 @@ if (yt !== null) {
       msg.channel.send('', {embed: translateEmbed});
       msg.channel.stopTyping();
     })
-    .catch(err => {
-      msg.channel.send('An error occured! \`'+err+'\`\nThis is likely Yandex.Translate\'s fault, so blame them');
-      msg.channel.stopTyping();
-    });
+      .catch(err => {
+        msg.channel.send('An error occured! `'+err+'`\nThis is likely Yandex.Translate\'s fault, so blame them');
+        msg.channel.stopTyping();
+      });
   })
     .addClientPermission('EMBED_LINKS')
     .setDescription('translate some text, get accepted langs list with '+prefix+'langs')
