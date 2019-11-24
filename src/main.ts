@@ -857,14 +857,43 @@ cs.addCommand('image', new CanvasGradientApplyCommand('bi',
   .addAlias('bioverlay'));
 
 if (yt !== null) {
-  cs.addCommand('utilities', new cs.Command('translate', (msg : Discord.Message) => {
+  cs.addCommand('utilities', new cs.Command('autotranslate', (msg : Discord.Message) => {
     let params = util.getParams(msg);
     let lang = params[0];
     params.shift();
 
     msg.channel.startTyping();
 
-    yt.translate(params.join(' '), {to: lang, format: 'html'}).then(translated => {
+    yt.translate(params.join(' '), {to: lang, format: 'plain'}).then(translated => {
+      let translateEmbed = new Discord.RichEmbed()
+        .setDescription(translated)
+        .setFooter('Powered by Yandex.Translate')
+        .setColor('#FF0000');
+      msg.channel.send('', {embed: translateEmbed});
+      msg.channel.stopTyping();
+    })
+      .catch(err => {
+        msg.channel.send('An error occured! `'+err+'`\nThis is likely Yandex.Translate\'s fault, so blame them');
+        msg.channel.stopTyping();
+      });
+  })
+    .addClientPermission('EMBED_LINKS')
+    .setDescription(prefix + 'translate, but with the first language set to auto')
+    .addAlias('atransl')
+    .addAlias('atr')
+    .setUsage('(string) (string)')
+    .setDisplayUsage('(language to translate to) (text, language is autodetected)')
+    .addExample('translate en тестируем ботелине'));
+
+  cs.addCommand('utilities', new cs.Command('translate', (msg : Discord.Message) => {
+    let params = util.getParams(msg);
+    let langfrom = params[0];
+    let langto = params[1];
+    params.splice(0, 2);
+
+    msg.channel.startTyping();
+
+    yt.translate(params.join(' '), {from: langfrom, to: langto, format: 'plain'}).then(translated => {
       let translateEmbed = new Discord.RichEmbed()
         .setDescription(translated)
         .setFooter('Powered by Yandex.Translate')
@@ -880,9 +909,70 @@ if (yt !== null) {
     .addClientPermission('EMBED_LINKS')
     .setDescription('translate some text, get accepted langs list with '+prefix+'langs')
     .addAlias('transl')
-    .setUsage('(string) (string)')
-    .setDisplayUsage('(language to translate to) (text, language is autodetected)')
-    .addExample('translate en тестируем ботелине'));
+    .addAlias('tr')
+    .setUsage('(string) (string) (string)')
+    .setDisplayUsage('(language to translate from) (language to translate to) (text)')
+    .addExample('ru en тестируем ботелине'));
+
+  cs.addCommand('utilities', new cs.Command('masstranslate', async (msg : Discord.Message) => {
+    let params = util.getParams(msg);
+    let times = Number(params[0]);
+
+    if (times > 20) {
+      msg.channel.send('count cannot be over 20');
+      return;
+    }
+
+    params.shift();
+
+    // stupid hack . Im sorry in advance
+    let progMessage;
+    let progUpdateTimeout = 0;
+    await msg.channel.send('ok! starting masstranslate... 0/'+times).then(m => {
+      progMessage = m;
+    });
+
+    let langs = await yt.getLangs();
+
+    let langCodes = [];
+    langs.dirs.forEach(l => {
+      l.split('-').forEach(lang => {
+        if (!langCodes.includes(lang)) langCodes.push(lang);
+      });
+    });
+
+    let text = params.join(' ');
+    let oldLang : string = undefined;
+    
+    for(let i = 0; i < times; i++) {
+      let newLang = langCodes[Math.floor(Math.random()*langCodes.length)];
+      text = await yt.translate(text, {from: oldLang, to: newLang, format: 'plain'});
+      oldLang = newLang;
+
+      if (progUpdateTimeout < Date.now() - 1000) {
+        progMessage.edit('masstranslating... '+i+'/'+times);
+        progUpdateTimeout = Date.now() + 1000;
+      }
+    }
+
+    progMessage.edit('converting back to english...');
+    text = await yt.translate(text, {from: oldLang, to: 'en', format: 'plain'});
+
+    progMessage.delete();
+
+    let translateEmbed = new Discord.RichEmbed()
+      .setDescription(text)
+      .setFooter('Powered by Yandex.Translate')
+      .setColor('#FF0000');
+    msg.channel.send('', {embed: translateEmbed});
+  })
+    .addClientPermission('EMBED_LINKS')
+    .setDescription('translate a piece of text back and forth a certain amount of times to random languages before translating it back to english. will mostly return gibberish if set to a high value')
+    .addAlias('masstransl')
+    .addAlias('mtr')
+    .setUsage('(number) (string)')
+    .setDisplayUsage('(how many times to translate it) (text, language is autodetected)')
+    .addExample('5 this piece of text will likely come out as garbage! but fun garbage at that. try it out!'));
 
   cs.addCommand('utilities', new cs.Command('langs', (msg : Discord.Message) => {
     yt.getLangs().then(langs => {
