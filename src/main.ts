@@ -944,7 +944,7 @@ if (yt !== null) {
     let text = params.join(' ');
     let oldLang : string = undefined;
     
-    for(let i = 0; i < times; i++) {
+    for(let i = 1; i < times+1; i++) {
       let newLang = langCodes[Math.floor(Math.random()*langCodes.length)];
       text = await yt.translate(text, {from: oldLang, to: newLang, format: 'plain'});
       oldLang = newLang;
