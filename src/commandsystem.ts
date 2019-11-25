@@ -14,20 +14,30 @@ let prefix = 'm=';
 export class Command {
 	public name: string;
 	public function: Function;
+	public description: string;
+
 	public usage: string;
 	public displayUsage: string;
+
 	public clientPermissions: Discord.PermissionResolvable[];
 	public userPermissions: Discord.PermissionResolvable[];
 	public needsDM: boolean;
 	public needsGuild: boolean;
+
 	public hidden: boolean;
 	public ownerOnly: boolean;
-	public description: string;
-	public aliases: string[];
-	public examples: string[];
-	public usageCheck: Function;
 	public ignorePrefix: boolean;
 	public debugOnly: boolean;
+
+	public aliases: string[];
+	public examples: string[];
+
+	public usageCheck: Function;
+
+	public globalCooldown : number;
+	public userCooldown : number;
+	private globalCooldowns : number = 0;
+	private userCooldowns : Object = {};
 
 	constructor(name : string, cfunction : Function) {
 	  this.name = name;
@@ -47,7 +57,10 @@ export class Command {
 	  this.description = 'No description provided';
 
 	  this.aliases = [];
-	  this.examples = [];
+		this.examples = [];
+		
+		this.globalCooldown = 0;
+		this.userCooldown = 0;
 
 	  return this;
 	}
@@ -154,6 +167,16 @@ export class Command {
 	  return this;
 	}
 
+	public setUserCooldown(time : number) {
+		this.userCooldown = time;
+		return this;
+	}
+
+	public setGlobalCooldown(time : number) {
+		this.globalCooldown = time;
+		return this;
+	}
+
 	public runCommand(message: Discord.Message, client: Discord.Client) {
 	  const params = util.getParams(message);
 
@@ -163,7 +186,23 @@ export class Command {
 
 	  if (this.needsDM && message.guild) {
 	    return message.channel.send('This command needs to be ran in a DM!');
-	  }
+		}
+		
+		if (this.userCooldown > 0) {
+			if (this.userCooldowns[message.author.id] === undefined || Date.now() - this.userCooldowns[message.author.id] > 0) {
+				this.userCooldowns[message.author.id] = this.userCooldown;
+			} else {
+				return message.react('⏱️');
+			}
+		}
+
+		if (this.globalCooldown > 0) {
+			if ((Date.now() - this.globalCooldowns) > 0) {
+				this.globalCooldowns = Date.now() + this.globalCooldown;
+			} else {
+				return message.react('⏱️');
+			}
+		}
 
 	  let argumentsValid: boolean[] = [];
 

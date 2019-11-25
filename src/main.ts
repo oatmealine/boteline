@@ -434,7 +434,9 @@ cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
   .setDescription('compresses a video')
   .addAlias('compression')
   .setUsage('[number]')
-  .addClientPermission('ATTACH_FILES'));
+  .addClientPermission('ATTACH_FILES')
+  .setGlobalCooldown(1000)
+  .setUserCooldown(5000));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
   const params = util.getParams(msg);
@@ -837,7 +839,9 @@ cs.addCommand('image', new CanvasGradientApplyCommand('gay',
     'rgba(255,0,255,0.5)'],
   'GAY')
   .setDescription('puts a gay flag over your (or someone else\'s) icon')
-  .addAlias('gayoverlay'));
+  .addAlias('gayoverlay')
+  .setGlobalCooldown(100)
+  .setUserCooldown(1000));
 
 cs.addCommand('image', new CanvasGradientApplyCommand('trans',
   ['rgba(85,205,252,0.6)',
@@ -847,7 +851,9 @@ cs.addCommand('image', new CanvasGradientApplyCommand('trans',
     'rgba(85,205,252,0.6)'],
   'TRANS')
   .setDescription('puts a trans flag over your (or someone else\'s) icon')
-  .addAlias('transoverlay'));
+  .addAlias('transoverlay')
+  .setGlobalCooldown(100)
+  .setUserCooldown(1000));
 
 cs.addCommand('image', new CanvasGradientApplyCommand('bi',
   ['rgba(214,2,112,0.6)',
@@ -857,7 +863,9 @@ cs.addCommand('image', new CanvasGradientApplyCommand('bi',
     'rgba(0,56,168,0.6)'],
   'BI')
   .setDescription('puts a bi flag over your (or someone else\'s) icon')
-  .addAlias('bioverlay'));
+  .addAlias('bioverlay')
+  .setGlobalCooldown(100)
+  .setUserCooldown(1000));
 
 if (yt !== null) {
   cs.addCommand('utilities', new cs.Command('autotranslate', (msg : Discord.Message) => {
@@ -886,7 +894,9 @@ if (yt !== null) {
     .addAlias('atr')
     .setUsage('(string) (string)')
     .setDisplayUsage('(language to translate to) (text, language is autodetected)')
-    .addExample('en тестируем ботелине'));
+    .addExample('en тестируем ботелине')
+    .setGlobalCooldown(500)
+    .setUserCooldown(1000));
 
   cs.addCommand('utilities', new cs.Command('translate', (msg : Discord.Message) => {
     let params = util.getParams(msg);
@@ -915,7 +925,9 @@ if (yt !== null) {
     .addAlias('tr')
     .setUsage('(string) (string) (string)')
     .setDisplayUsage('(language to translate from) (language to translate to) (text)')
-    .addExample('ru en тестируем ботелине'));
+    .addExample('ru en тестируем ботелине')
+    .setGlobalCooldown(500)
+    .setUserCooldown(1000));
 
   cs.addCommand('utilities', new cs.Command('masstranslate', async (msg : Discord.Message) => {
     let params = util.getParams(msg);
@@ -994,7 +1006,9 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
     .addAlias('mtr')
     .setUsage('(number) (string) [string]')
     .setDisplayUsage('(how many times to translate it) [mode - normal, hard, auto or curated] (text, language is autodetected)')
-    .addExample('5 normal this piece of text will likely come out as garbage! but fun garbage at that. try it out!'));
+    .addExample('5 normal this piece of text will likely come out as garbage! but fun garbage at that. try it out!')
+    .setGlobalCooldown(700)
+    .setUserCooldown(3000));
 
   cs.addCommand('utilities', new cs.Command('langs', (msg : Discord.Message) => {
     yt.getLangs().then(langs => {
