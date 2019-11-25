@@ -32,6 +32,8 @@ import { createCanvas, loadImage } from 'canvas';
 
 import * as ffmpeg from 'fluent-ffmpeg';
 import YandexTranslate from 'yet-another-yandex-translate';
+const yandex_langs = { "Azerbaijan": "az", "Malayalam": "ml", "Albanian": "sq", "Maltese": "mt", "Amharic": "am", "Macedonian": "mk", "English": "en", "Maori": "mi", "Arabic": "ar", "Marathi": "mr", "Armenian": "hy", "Mari": "mhr", "Afrikaans": "af", "Mongolian": "mn", "Basque": "eu", "German": "de", "Bashkir": "ba", "Nepali": "ne", "Belarusian": "be", "Norwegian": "no", "Bengali": "bn", "Punjabi": "pa", "Burmese": "my", "Papiamento": "pap", "Bulgarian": "bg", "Persian": "fa", "Bosnian": "bs", "Polish": "pl", "Welsh": "cy", "Portuguese": "pt", "Hungarian": "hu", "Romanian": "ro", "Vietnamese": "vi", "Russian": "ru", "Haitian_(Creole)": "ht", "Cebuano": "ceb", "Galician": "gl", "Serbian": "sr", "Dutch": "nl", "Sinhala": "si", "Hill_Mari": "mrj", "Slovakian": "sk", "Greek": "el", "Slovenian": "sl", "Georgian": "ka", "Swahili": "sw", "Gujarati": "gu", "Sundanese": "su", "Danish": "da", "Tajik": "tg", "Hebrew": "he", "Thai": "th", "Yiddish": "yi", "Tagalog": "tl", "Indonesian": "id", "Tamil": "ta", "Irish": "ga", "Tatar": "tt", "Italian": "it", "Telugu": "te", "Icelandic": "is", "Turkish": "tr", "Spanish": "es", "Udmurt": "udm", "Kazakh": "kk", "Uzbek": "uz", "Kannada": "kn", "Ukrainian": "uk", "Catalan": "ca", "Urdu": "ur", "Kyrgyz": "ky", "Finnish": "fi", "Chinese": "zh", "French": "fr", "Korean": "ko", "Hindi": "hi", "Xhosa": "xh", "Croatian": "hr", "Khmer": "km", "Czech": "cs", "Laotian": "lo", "Swedish": "sv", "Latin": "la", "Scottish": "gd", "Latvian": "lv", "Estonian": "et", "Lithuanian": "lt", "Esperanto": "eo", "Luxembourgish": "lb", "Javanese": "jv", "Malagasy": "mg", "Japanese": "ja", "Malay": "ms" }
+
 const ch = require('chalk');
 // files
 
@@ -919,73 +921,83 @@ if (yt !== null) {
     let times = Number(params[0]);
 
     if (times > 25) {
-      msg.channel.send('count cannot be over 20');
+      msg.channel.send('count cannot be over 25');
       return;
     }
 
-    params.shift();
+    let modeommited = false;
+    let mode : number;
+    switch(params[1]) {
+      case 'curated':
+        mode = 0; break;
+      case 'normal':
+        mode = 1; break;
+      case 'auto':
+        mode = 2; break;
+      case 'hard':
+        mode = 3; break;
+      default:
+        mode = 0;
+        params[2] = params[1] + params[2];
+        break;
+    }
+
+    params.splice(0, 2);
 
     // stupid hack . Im sorry in advance
     let progMessage;
     let progUpdateTimeout = 0;
-    await msg.channel.send('ok! starting masstranslate... 0/'+times).then(m => {
+    await msg.channel.send(`getting languages...`).then(m => {
       progMessage = m;
     });
 
-    let langs = await yt.getLangs();
-
     let langCodes = [];
-    langs.dirs.forEach(l => {
-      l.split('-').forEach(lang => {
-        if (!langCodes.includes(lang)) langCodes.push(lang);
-      });
-    });
+    if (mode === 0) {
+      langCodes = ['az', 'mt', 'hy', 'mhr', 'bs', 'cy', 'vi', 'ht', 'ceb', 'gl', 'mrj', 'el', 'da', 'gu', 'su', 'tg', 'th', 'he', 'ga', 'tt', 'tr', 'kk', 'uz', 'ur', 'xh', 'lv', 'lb', 'jv', 'ja'];
+    } else {
+      langCodes = Object.values(yandex_langs);
+    }
 
     let text = params.join(' ');
-    let oldLang : string = undefined;
+    let randLangs = [];
+    for (let i = 0; i < times; i++) {
+      randLangs[i] = langCodes[Math.floor(Math.random()*langCodes.length)];
+    }
     
-    for(let i = 1; i < times+1; i++) {
-      let newLang = langCodes[Math.floor(Math.random()*langCodes.length)];
-      text = await yt.translate(text, {from: oldLang, to: newLang, format: 'plain'});
-      oldLang = newLang;
+    for(let i = 0; i < times; i++) {
+      let fromLang = randLangs[i-1];
+      if (mode === 2) fromLang = undefined;
+      if (mode === 3) fromLang = langCodes[Math.floor(Math.random()*langCodes.length)];
+
+      text = await yt.translate(text, {from: randLangs[i-1], to: randLangs[i], format: 'plain'});
 
       if (progUpdateTimeout < Date.now() - 1000) {
-        progMessage.edit('masstranslating... '+i+'/'+times);
+        progMessage.edit(`masstranslating using mode ${mode}... ${i+1}/${times} \`[${util.progress(i, times, 10)}]\`
+${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', ')}`);
         progUpdateTimeout = Date.now() + 1000;
       }
     }
 
     progMessage.edit('converting back to english...');
-    text = await yt.translate(text, {from: oldLang, to: 'en', format: 'plain'});
-
-    progMessage.delete();
+    text = await yt.translate(text, {from: randLangs[times], to: 'en', format: 'plain'});
 
     let translateEmbed = new Discord.RichEmbed()
       .setDescription(text)
       .setFooter('Powered by Yandex.Translate')
       .setColor('#FF0000');
-    msg.channel.send('', {embed: translateEmbed});
+    progMessage.edit('', {embed: translateEmbed});
   })
     .addClientPermission('EMBED_LINKS')
     .setDescription('translate a piece of text back and forth a certain amount of times to random languages before translating it back to english. will mostly return gibberish if set to a high value')
     .addAlias('masstransl')
     .addAlias('mtr')
-    .setUsage('(number) (string)')
-    .setDisplayUsage('(how many times to translate it) (text, language is autodetected)')
-    .addExample('5 this piece of text will likely come out as garbage! but fun garbage at that. try it out!'));
+    .setUsage('(number) (string) [string]')
+    .setDisplayUsage('(how many times to translate it) [mode - normal, hard, auto or curated] (text, language is autodetected)')
+    .addExample('5 normal this piece of text will likely come out as garbage! but fun garbage at that. try it out!'));
 
   cs.addCommand('utilities', new cs.Command('langs', (msg : Discord.Message) => {
     yt.getLangs().then(langs => {
-      // since for some unknown reason langs.langs doesnt exist, i have to use this bullshit
-
-      let langCodes = [];
-      langs.dirs.forEach(l => {
-        l.split('-').forEach(lang => {
-          if (!langCodes.includes(lang)) langCodes.push(lang);
-        });
-      });
-
-      msg.channel.send('The supported languages for '+prefix+'translate are:\n`' + Object.values(langCodes).join('`, `') + '`');
+      msg.channel.send('The supported languages for '+prefix+'translate are:\n`' + Object.values(yandex_langs).join('`, `') + '`');
     });
   })
     .setDescription('get the available languages for '+prefix+'translate'));
