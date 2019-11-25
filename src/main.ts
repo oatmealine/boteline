@@ -883,7 +883,7 @@ if (yt !== null) {
     .addAlias('atr')
     .setUsage('(string) (string)')
     .setDisplayUsage('(language to translate to) (text, language is autodetected)')
-    .addExample('translate en тестируем ботелине'));
+    .addExample('en тестируем ботелине'));
 
   cs.addCommand('utilities', new cs.Command('translate', (msg : Discord.Message) => {
     let params = util.getParams(msg);
@@ -918,7 +918,7 @@ if (yt !== null) {
     let params = util.getParams(msg);
     let times = Number(params[0]);
 
-    if (times > 20) {
+    if (times > 25) {
       msg.channel.send('count cannot be over 20');
       return;
     }
