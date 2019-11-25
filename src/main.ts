@@ -58,6 +58,7 @@ foxConsole.showDebug(process.env.DEBUG == 'true');
 
 // constants & variables
 const prefix : string = process.env.PREFIX;
+cs.setPrefix(prefix);
 
 const version : string = packageJson.version + ' alpha';
 

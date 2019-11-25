@@ -9,6 +9,7 @@ function grammar(str: string) : string {
 }
 
 let client : Discord.Client;
+let prefix = 'm=';
 
 export class Command {
 	public name: string;
@@ -272,6 +273,10 @@ export function setClient(clientSet : Discord.Client) {
   client = clientSet;
 }
 
+export function setPrefix(prefixSet : string) {
+	prefix = prefixSet;
+}
+
 addCommand('core', new SimpleCommand('help', (message) => {
   const params = message.content.split(' ');
 
@@ -294,11 +299,11 @@ addCommand('core', new SimpleCommand('help', (message) => {
     if (command) {
       let embed = new Discord.RichEmbed()
         .setTitle(`**${grammar(command.name)}** (${grammar(categoryName)})`)
-        .addField('Usage', command.name+' '+command.displayUsage)
+        .addField('Usage', prefix+command.name+' '+command.displayUsage)
         .setDescription(command.description)
         .setColor(Math.floor(Math.random() * 16777215));
 
-      let commandExamplesPatched = command.examples.map(v => command.name+' '+v);
+      let commandExamplesPatched = command.examples.map(v => prefix+command.name+' '+v);
 
       if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + commandExamplesPatched.join('`,\n`') + '`'); }
       if (command.aliases.length !== 0) { embed = embed.addField('Aliases', '`' + command.aliases.join('`, `') + '`'); }
