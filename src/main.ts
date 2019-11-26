@@ -1022,7 +1022,12 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
     progMessage.edit('', {embed: translateEmbed});
   })
     .addClientPermission('EMBED_LINKS')
-    .setDescription('translate a piece of text back and forth a certain amount of times to random languages before translating it back to english. will mostly return gibberish if set to a high value')
+    .setDescription(`translate a piece of text back and forth a certain amount of times to random languages before translating it back to english. will mostly return gibberish if set to a high value
+normal mode - a regular mode, does what youd expect this command to do
+hard - the language that text is translated from is randomized. ex. instead of en -> es, es -> ru its en -> es, tt -> ru
+curated - the language list is curated to only have the most ridiculous results
+(langname) - translates text back and forth to one specific language (see examples)
+legacy - uses old language list`)
     .addAlias('masstransl')
     .addAlias('mtr')
     .setUsage('(number) (string) [string]')

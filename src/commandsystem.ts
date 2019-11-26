@@ -367,7 +367,7 @@ addCommand('core', new SimpleCommand('help', (message) => {
         const commands: string[] = [];
 
         Object.values(category).forEach((cmd) => {
-          if (!cmd.hidden) { commands.push('`' + cmd.name + '` - ' + cmd.description); }
+          if (!cmd.hidden) { commands.push('`' + cmd.name + '` - ' + cmd.description.split('\n')[0]); }
         });
 
         if (commands.length !== 0) { embed.addField('Commands', commands.join('\n')); }
