@@ -189,3 +189,7 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
     return null;
   }
 }
+
+export function shortenStr(str : string, chars : number) {
+  return str.substr(0, chars) + '...';
+}

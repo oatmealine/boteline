@@ -878,6 +878,7 @@ if (yt !== null) {
     yt.translate(params.join(' '), {to: lang, format: 'plain'}).then(translated => {
       let translateEmbed = new Discord.RichEmbed()
         .setDescription(translated)
+        .setTitle(`${util.shortenStr(params.join(' '), 50)} translated to ${lang} will be...`)
         .setFooter('Powered by Yandex.Translate')
         .setColor('#FF0000');
       msg.channel.send('', {embed: translateEmbed});
@@ -909,6 +910,7 @@ if (yt !== null) {
     yt.translate(params.join(' '), {from: langfrom, to: langto, format: 'plain'}).then(translated => {
       let translateEmbed = new Discord.RichEmbed()
         .setDescription(translated)
+        .setTitle(`${util.shortenStr(params.join(' '), 50)} translated from ${langfrom} to ${langto} will be...`)
         .setFooter('Powered by Yandex.Translate')
         .setColor('#FF0000');
       msg.channel.send('', {embed: translateEmbed});
@@ -1014,6 +1016,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 
     let translateEmbed = new Discord.RichEmbed()
       .setDescription(text)
+      .setTitle(`\`${util.shortenStr(text, 50)}\` translated ${times} will be...`)
       .setFooter('Powered by Yandex.Translate, mode '+mode)
       .setColor('#FF0000');
     progMessage.edit('', {embed: translateEmbed});
