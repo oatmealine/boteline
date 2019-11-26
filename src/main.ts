@@ -942,6 +942,7 @@ if (yt !== null) {
 
 		let forcelang : string = null;
 		let mode : number;
+		let cutoff = 2;
 		switch(params[1]) {
 		case 'curated':
 			mode = 0; break;
@@ -957,14 +958,14 @@ if (yt !== null) {
 				forcelang = params[1];
 			} else {
 				mode = 0;
-				params[2] = params[1] + params[2];
+				cutoff = 1;
 			}
 			break;
 		case 'legacy':
 			mode = 5; break;
 		}
 
-		params.splice(0, 2);
+		params.splice(0, cutoff);
 
 		// stupid hack . Im sorry in advance
 		let progMessage;
@@ -1016,7 +1017,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 
 		let translateEmbed = new Discord.RichEmbed()
 			.setDescription(text)
-			.setTitle(`\`${util.shortenStr(params.join(' '), 100)}\` translated ${times} will be...`)
+			.setTitle(`\`${util.shortenStr(params.join(' '), 100)}\` translated ${times} times will be...`)
 			.setFooter('Powered by Yandex.Translate, mode '+mode)
 			.setColor('#FF0000');
 		progMessage.edit('', {embed: translateEmbed});

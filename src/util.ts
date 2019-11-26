@@ -191,5 +191,5 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
 }
 
 export function shortenStr(str : string, chars : number) {
-	return str.substr(0, chars) + '...';
+	return str.substr(0, chars).trimEnd() + ((str.length > chars) ? '...' : '');
 }
