@@ -1016,7 +1016,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 
 		let translateEmbed = new Discord.RichEmbed()
 			.setDescription(text)
-			.setTitle(`\`${util.shortenStr(text, 50)}\` translated ${times} will be...`)
+			.setTitle(`\`${util.shortenStr(params.join(' '), 100)}\` translated ${times} will be...`)
 			.setFooter('Powered by Yandex.Translate, mode '+mode)
 			.setColor('#FF0000');
 		progMessage.edit('', {embed: translateEmbed});
