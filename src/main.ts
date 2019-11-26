@@ -931,7 +931,7 @@ if (yt !== null) {
     .setGlobalCooldown(500)
     .setUserCooldown(1000));
 
-  cs.addCommand('utilities', new cs.Command('masstranslate', async (msg : Discord.Message) => {
+  cs.addCommand('fun', new cs.Command('masstranslate', async (msg : Discord.Message) => {
     let params = util.getParams(msg);
     let times = Number(params[0]);
 
