@@ -938,7 +938,7 @@ if (yt !== null) {
       return;
     }
 
-    let modeommited = false;
+    let forcelang : string = null;
     let mode : number;
     switch(params[1]) {
       case 'curated':
@@ -950,9 +950,16 @@ if (yt !== null) {
       case 'hard':
         mode = 3; break;
       default:
-        mode = 0;
-        params[2] = params[1] + params[2];
+        if (Object.values(yandex_langs).includes(params[1])) {
+          mode = 4;
+          forcelang = params[1];
+        } else {
+          mode = 0;
+          params[2] = params[1] + params[2];
+        }
         break;
+      case 'legacy':
+        mode = 5; break;
     }
 
     params.splice(0, 2);
@@ -960,21 +967,32 @@ if (yt !== null) {
     // stupid hack . Im sorry in advance
     let progMessage;
     let progUpdateTimeout = 0;
-    await msg.channel.send(`getting languages...`).then(m => {
+    await msg.channel.send(`getting languages... (mode ${mode})`).then(m => {
       progMessage = m;
     });
 
     let langCodes = [];
     if (mode === 0) {
       langCodes = ['az', 'mt', 'hy', 'mhr', 'bs', 'cy', 'vi', 'ht', 'ceb', 'gl', 'mrj', 'el', 'da', 'gu', 'su', 'tg', 'th', 'he', 'ga', 'tt', 'tr', 'kk', 'uz', 'ur', 'xh', 'lv', 'lb', 'jv', 'ja'];
+    } else if (mode === 5) {
+      let langs = await yt.getLangs();
+
+      langs.dirs.forEach(l => {
+        l.split('-').forEach(lang => {
+          if (!langCodes.includes(lang)) langCodes.push(lang);
+        });
+      });
     } else {
       langCodes = Object.values(yandex_langs);
     }
 
     let text = params.join(' ');
     let randLangs = [];
-    for (let i = 0; i < times; i++) {
-      randLangs[i] = langCodes[Math.floor(Math.random()*langCodes.length)];
+    if (mode === 4) {
+      let origlang = await yt.detect(params.join(' '));
+      randLangs = Array(times).fill('').map((v,i) => (i%2 === 0) ? forcelang : origlang);
+    } else {
+      randLangs = Array(times).fill('').map(() => langCodes[Math.floor(Math.random()*langCodes.length)]);
     }
     
     for(let i = 0; i < times; i++) {
@@ -982,7 +1000,7 @@ if (yt !== null) {
       if (mode === 2) fromLang = undefined;
       if (mode === 3) fromLang = langCodes[Math.floor(Math.random()*langCodes.length)];
 
-      text = await yt.translate(text, {from: randLangs[i-1], to: randLangs[i], format: 'plain'});
+      text = await yt.translate(text, {from: fromLang, to: randLangs[i], format: 'plain'});
 
       if (progUpdateTimeout < Date.now() - 1000) {
         progMessage.edit(`masstranslating using mode ${mode}... ${i+1}/${times} \`[${util.progress(i, times, 10)}]\`
@@ -996,7 +1014,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 
     let translateEmbed = new Discord.RichEmbed()
       .setDescription(text)
-      .setFooter('Powered by Yandex.Translate')
+      .setFooter('Powered by Yandex.Translate, mode '+mode)
       .setColor('#FF0000');
     progMessage.edit('', {embed: translateEmbed});
   })
@@ -1005,8 +1023,9 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
     .addAlias('masstransl')
     .addAlias('mtr')
     .setUsage('(number) (string) [string]')
-    .setDisplayUsage('(how many times to translate it) [mode - normal, hard, auto or curated] (text, language is autodetected)')
-    .addExample('5 normal this piece of text will likely come out as garbage! but fun garbage at that. try it out!')
+    .setDisplayUsage('(how many times to translate it) [mode - normal, hard, auto, curated, (langname) or legacy] (text, language is autodetected)')
+    .addExample('5 this piece of text will likely come out as garbage! but fun garbage at that. try it out!')
+    .addExample('5 ja this text will be translated back and forth inbetween english and japanese')
     .setGlobalCooldown(700)
     .setUserCooldown(3000));
 
