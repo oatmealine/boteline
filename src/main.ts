@@ -64,7 +64,7 @@ const version : string = packageJson.version + ' alpha';
 
 let application: Discord.OAuth2Application;
 
-let starboardBinds = {}
+let starboardBinds = {};
 
 // statistics
 
@@ -1083,10 +1083,15 @@ cs.addCommand('moderation', new cs.Command('starboard', (msg : Discord.Message) 
 
 	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
 
-	guildSettings[msg.guild.id].starboard = {channel: channel.id, starsNeeded: Number(params[1]), emote: emote ? emote.id : params[2], guildEmote: emote !== null};
+	if (params[1] !== '0') {
+		guildSettings[msg.guild.id].starboard = {channel: channel.id, starsNeeded: Number(params[1]), emote: emote ? emote.id : params[2], guildEmote: emote !== null};
 
-	let starSettings = guildSettings[msg.guild.id].starboard;
-	return msg.channel.send(`gotcha! all messages with ${starSettings.starsNeeded} ${starSettings.guildEmote ? msg.guild.emojis.get(starSettings.emote).toString() : starSettings.emote} reactions will be quoted in <#${starSettings.channel}>`)
+		let starSettings = guildSettings[msg.guild.id].starboard;
+		return msg.channel.send(`gotcha! all messages with ${starSettings.starsNeeded} ${starSettings.guildEmote ? msg.guild.emojis.get(starSettings.emote).toString() : starSettings.emote} reactions will be quoted in <#${starSettings.channel}>`);
+	} else {
+		delete guildSettings[msg.guild.id].starboard;
+		return msg.channel.send('removed starboard from server!');
+	}
 })
 	.addAlias('board')
 	.addAlias('setStarboard')
@@ -1094,7 +1099,7 @@ cs.addCommand('moderation', new cs.Command('starboard', (msg : Discord.Message) 
 	.addClientPermission('MANAGE_MESSAGES')
 	.setUsage('(string) (number) [string]')
 	.setDisplayUsage('(channel) (reacts needed) [emote]')
-	.setDescription('changes the starboard location')
+	.setDescription('changes the starboard location, set reacts needed to 0 to remove')
 	.setGuildOnly());
 
 foxConsole.info('starting...');
@@ -1262,14 +1267,14 @@ bot.on('messageReactionAdd', (reaction, user) => {
 				} else {
 					// @ts-ignore (you cant react to a message ...in a vc)
 					channel.send('', {embed: embed})
-					.then(m => {
-						starboardBinds[reaction.message.id] = m;
-					});
+						.then(m => {
+							starboardBinds[reaction.message.id] = m;
+						});
 				}
 			}
 		}
 	}
-})
+});
 
 bot.on('ready', () => {
 	foxConsole.info('fetching application...');
