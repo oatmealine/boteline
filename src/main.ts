@@ -64,6 +64,8 @@ const version : string = packageJson.version + ' alpha';
 
 let application: Discord.OAuth2Application;
 
+let starboardBinds = {}
+
 // statistics
 
 let cpuUsageMin: number = 0;
@@ -1065,6 +1067,36 @@ cs.addCommand('core', new cs.Command('listdependencies', (msg) => {
 	.addClientPermission('EMBED_LINKS')
 	.setDescription('list the dependencies boteline uses, and their versions'));
 
+cs.addCommand('moderation', new cs.Command('starboard', (msg : Discord.Message) => {
+	let params = util.getParams(msg);
+
+	let channel = msg.guild.channels.find(c => c.id === params[0].replace('<#','').replace('>',''));
+	if(!channel) {
+		return msg.channel.send('channel doesnt exist!');
+	} else {
+		if(!channel.memberPermissions(msg.guild.me).hasPermission('SEND_MESSAGES')) return msg.channel.send('i cant send messages there!');
+		if(!channel.memberPermissions(msg.guild.me).hasPermission('EMBED_LINKS')) return msg.channel.send('i cant add embeds there!');
+	}
+
+	if (!params[2]) params[2] = '⭐';
+	let emote = msg.guild.emojis.find(em => em.id === params[2].slice(-19,-1));
+
+	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
+
+	guildSettings[msg.guild.id].starboard = {channel: channel.id, starsNeeded: Number(params[1]), emote: emote ? emote.id : params[2], guildEmote: emote !== null};
+
+	let starSettings = guildSettings[msg.guild.id].starboard;
+	return msg.channel.send(`gotcha! all messages with ${starSettings.starsNeeded} ${starSettings.guildEmote ? msg.guild.emojis.get(starSettings.emote).toString() : starSettings.emote} reactions will be quoted in <#${starSettings.channel}>`)
+})
+	.addAlias('board')
+	.addAlias('setStarboard')
+	.addUserPermission('MANAGE_CHANNELS')
+	.addClientPermission('MANAGE_MESSAGES')
+	.setUsage('(string) (number) [string]')
+	.setDisplayUsage('(channel) (reacts needed) [emote]')
+	.setDescription('changes the starboard location')
+	.setGuildOnly());
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
@@ -1192,6 +1224,52 @@ bot.on('message', (msg) => {
 		}
 	}
 });
+
+bot.on('messageReactionAdd', (reaction, user) => {
+	foxConsole.debug('tahjsdkjfhasdf');
+	if (reaction.message.guild !== null && guildSettings[reaction.message.guild.id] !== undefined && guildSettings[reaction.message.guild.id].starboard !== undefined) {
+		let starboardSettings = guildSettings[reaction.message.guild.id].starboard;
+
+		if (starboardSettings.guildEmote) {
+			if (starboardSettings.emote !== reaction.emoji.id) return;
+		} else {
+			if (starboardSettings.emote !== reaction.emoji.toString()) return;
+		}
+
+		if (user.id === reaction.message.author.id || user.bot) {
+			reaction.remove(user);
+			return;
+		}
+
+		if (reaction.count >= starboardSettings.starsNeeded) {
+			let channel = reaction.message.guild.channels.find(ch => ch.id === starboardSettings.channel);
+
+			if (channel) {
+				let embed = new Discord.RichEmbed()
+					.setAuthor(reaction.message.author.username+'#'+reaction.message.author.discriminator, reaction.message.author.avatarURL)
+					.setDescription(`[Original](${reaction.message.url})\n\n` + util.shortenStr(reaction.message.content, 1900))
+					.setTimestamp(reaction.message.createdTimestamp)
+					.setFooter(`${reaction.count} ${reaction.emoji.name}s`, starboardSettings.guildEmote ? reaction.message.guild.emojis.find(em => em.id === reaction.emoji.id).url : undefined)
+					.setColor('FFFF00');
+
+				if(reaction.message.attachments) {
+					let image = reaction.message.attachments.filter(at => at.width !== null).first();
+					if (image) embed.setImage(image.url);
+				}
+
+				if (starboardBinds[reaction.message.id]) {
+					starboardBinds[reaction.message.id].edit('', {embed: embed});
+				} else {
+					// @ts-ignore (you cant react to a message ...in a vc)
+					channel.send('', {embed: embed})
+					.then(m => {
+						starboardBinds[reaction.message.id] = m;
+					});
+				}
+			}
+		}
+	}
+})
 
 bot.on('ready', () => {
 	foxConsole.info('fetching application...');
