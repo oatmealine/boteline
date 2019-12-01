@@ -650,8 +650,8 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 	.addExample('njs python'));
 
 cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
-	const thingToRate = util.getParams(msg).join(' ');
-	return `> ${thingToRate}\nI'd say, **${['yes', 'probably', 'maybe', 'no'][Math.abs(util.hashCode(thingToRate)) * 23 % 4]}**`;
+	const thingToRate = util.getParams(msg).join(' ').toLowerCase();
+	return `> ${util.getParams(msg).join(' ')}\n${['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'][Math.round((1 - util.normalDistribution(Math.abs(util.hashCode(thingToRate)) / 23 % 2 * 2 - 1) + 1) / 2 * 4)]}`;
 })
 	.setDescription('ask the bot a question')
 	.setUsage('(string)')
@@ -711,11 +711,15 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 	params[0] = params[0].toLowerCase();
 
 	if (guildSettings[msg.guild.id]) {
-		guildSettings[msg.guild.id] = params[0];
+		guildSettings[msg.guild.id].prefix = params[0];
 	} else {
 		guildSettings[msg.guild.id] = {
 			prefix: params[0],
 		};
+	}
+
+	if (guildSettings[msg.guild.id].prefix === prefix) {
+		delete guildSettings[msg.guild.id].prefix;
 	}
 
 	return `changed prefix to ${params[0]}`;
@@ -1111,6 +1115,7 @@ bot.on('message', (msg) => {
 	if (msg.guild) {
 		if (guildSettings[msg.guild.id]) {
 			thisPrefix = guildSettings[msg.guild.id].prefix;
+			if (thisPrefix === undefined) {thisPrefix = prefix;}
 		}
 	}
 
