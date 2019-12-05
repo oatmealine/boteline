@@ -29,10 +29,21 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import { createCanvas, loadImage } from 'canvas';
-
 import * as ffmpeg from 'fluent-ffmpeg';
 import YandexTranslate from 'yet-another-yandex-translate';
 const yandex_langs = { 'Azerbaijan': 'az', 'Malayalam': 'ml', 'Albanian': 'sq', 'Maltese': 'mt', 'Amharic': 'am', 'Macedonian': 'mk', 'English': 'en', 'Maori': 'mi', 'Arabic': 'ar', 'Marathi': 'mr', 'Armenian': 'hy', 'Mari': 'mhr', 'Afrikaans': 'af', 'Mongolian': 'mn', 'Basque': 'eu', 'German': 'de', 'Bashkir': 'ba', 'Nepali': 'ne', 'Belarusian': 'be', 'Norwegian': 'no', 'Bengali': 'bn', 'Punjabi': 'pa', 'Burmese': 'my', 'Papiamento': 'pap', 'Bulgarian': 'bg', 'Persian': 'fa', 'Bosnian': 'bs', 'Polish': 'pl', 'Welsh': 'cy', 'Portuguese': 'pt', 'Hungarian': 'hu', 'Romanian': 'ro', 'Vietnamese': 'vi', 'Russian': 'ru', 'Haitian_(Creole)': 'ht', 'Cebuano': 'ceb', 'Galician': 'gl', 'Serbian': 'sr', 'Dutch': 'nl', 'Sinhala': 'si', 'Hill_Mari': 'mrj', 'Slovakian': 'sk', 'Greek': 'el', 'Slovenian': 'sl', 'Georgian': 'ka', 'Swahili': 'sw', 'Gujarati': 'gu', 'Sundanese': 'su', 'Danish': 'da', 'Tajik': 'tg', 'Hebrew': 'he', 'Thai': 'th', 'Yiddish': 'yi', 'Tagalog': 'tl', 'Indonesian': 'id', 'Tamil': 'ta', 'Irish': 'ga', 'Tatar': 'tt', 'Italian': 'it', 'Telugu': 'te', 'Icelandic': 'is', 'Turkish': 'tr', 'Spanish': 'es', 'Udmurt': 'udm', 'Kazakh': 'kk', 'Uzbek': 'uz', 'Kannada': 'kn', 'Ukrainian': 'uk', 'Catalan': 'ca', 'Urdu': 'ur', 'Kyrgyz': 'ky', 'Finnish': 'fi', 'Chinese': 'zh', 'French': 'fr', 'Korean': 'ko', 'Hindi': 'hi', 'Xhosa': 'xh', 'Croatian': 'hr', 'Khmer': 'km', 'Czech': 'cs', 'Laotian': 'lo', 'Swedish': 'sv', 'Latin': 'la', 'Scottish': 'gd', 'Latvian': 'lv', 'Estonian': 'et', 'Lithuanian': 'lt', 'Esperanto': 'eo', 'Luxembourgish': 'lb', 'Javanese': 'jv', 'Malagasy': 'mg', 'Japanese': 'ja', 'Malay': 'ms' };
+
+let pm2;
+
+try {
+	pm2 = require('pm2');
+	pm2.connect(function (err){
+		if (err) throw err;
+	});
+} catch (err) {
+	pm2 = null;
+	foxConsole.warning('pm2 module doesnt exist, reboot will not exist');
+}
 
 const ch = require('chalk');
 // files
@@ -1180,6 +1191,7 @@ bot.on('message', (msg) => {
 
 		if (author.id === process.env.OWNER) {
 			switch (cmd) {
+			case 'eval':
 			case 'debug':
 				try {
 					const code = content.replace(cmd + ' ', '');
@@ -1209,6 +1221,14 @@ bot.on('message', (msg) => {
 					msg.react('☑');
 				} catch (err) {
 					msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+				}
+				break;
+			case 'reboot':
+			case 'restart':
+				if (pm2 !== null) {
+					msg.react('🆗').then(() => {
+						pm2.restart('boteline', () => {});
+					});
 				}
 				break;
 			case 'exec':
