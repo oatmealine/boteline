@@ -8,20 +8,8 @@
 
 2. `npm install`
 
-3. create a .env file based on the example below
+3. make a file named `.env` based on `.env.example`
 
 4. `tsc`
 
 5. `node built/main.js`
-
-## example .env
-
-```
-TOKEN="token here"
-PREFIX="m="
-OWNER="209765088196821012"
-DEBUG=false
-YANDEXTRANSLATETOKEN="optional, your yandex translate api key for m=translate & m=langs"
-```
-
-(if debug is true, debug logs will appear. enable this if you want to submit a bug with logs)
