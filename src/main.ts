@@ -1231,7 +1231,6 @@ bot.on('message', (msg) => {
 });
 
 bot.on('messageReactionAdd', (reaction, user) => {
-	foxConsole.debug('tahjsdkjfhasdf');
 	if (reaction.message.guild !== null && guildSettings[reaction.message.guild.id] !== undefined && guildSettings[reaction.message.guild.id].starboard !== undefined) {
 		let starboardSettings = guildSettings[reaction.message.guild.id].starboard;
 
@@ -1276,7 +1275,14 @@ bot.on('messageReactionAdd', (reaction, user) => {
 	}
 });
 
+let firedReady = false;
+
 bot.on('ready', () => {
+	if (firedReady) {
+		foxConsole.warning('ready event was fired twice');
+		return;
+	}
+
 	foxConsole.info('fetching application...');
 	bot.fetchApplication().then((app) => {
 		application = app;
@@ -1292,26 +1298,19 @@ bot.on('ready', () => {
 
 		const presence : [string, Discord.ActivityType] = presences[Math.floor(Math.random() * presences.length)];
 		bot.user.setPresence({ status: 'dnd', game: { name: presence[0], type: presence[1] } });
-
-		foxConsole.debug(`changed presence to [${presence}]`);
 	}, 30000);
 
 	bot.setInterval(() => {
-		foxConsole.debug('saving userdata...');
+		foxConsole.debug('saving userdata & guild settings...');
 		fs.writeFile('./data/userdata.json', JSON.stringify(userData), (err) => {
 			if (err) {
 				foxConsole.error('failed saving userdata: ' + err);
-			} else {
-				foxConsole.success('saved userdata');
 			}
 		});
 
-		foxConsole.debug('saving guild settings...');
 		fs.writeFile('./data/guildsettings.json', JSON.stringify(guildSettings), (err) => {
 			if (err) {
 				foxConsole.error('failed saving guildsettings: ' + err);
-			} else {
-				foxConsole.success('saved guild settings');
 			}
 		});
 	}, 120000);
@@ -1319,6 +1318,7 @@ bot.on('ready', () => {
 	cs.setClient(bot);
 
 	foxConsole.success('ready!');
+	firedReady = true;
 });
 
 foxConsole.info('logging in...');
