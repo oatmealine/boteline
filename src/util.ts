@@ -1,6 +1,7 @@
 import * as rq from 'request';
 import * as Discord from 'discord.js';
 import * as foxconsole from './foxconsole.js';
+import * as fs from 'fs';
 
 const cache = {
 	'splatoon': {
@@ -145,6 +146,18 @@ export function formatTime(date : Date) : string {
 	return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes} UTC`;
 }
 
+export function readIfExists(path : fs.PathLike, options? : {encoding?: string | null, flag?: string}, ifNonExistant? : any) {
+	if (fs.existsSync(path)) {
+		return fs.readFileSync(path, options);
+	} else {
+		return ifNonExistant;
+	}
+}
+
+export function shortenStr(str: string, chars: number) {
+	return str.substr(0, chars).trimRight() + ((str.length > chars) ? '...' : '');
+}
+
 // discord utils
 export function parseUser(bot : Discord.Client, parse : string, guild? : Discord.Guild) : Discord.User | null {
 	if(parse.startsWith('<@') && parse.startsWith('>')) {
@@ -188,8 +201,4 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
 
 		return null;
 	}
-}
-
-export function shortenStr(str : string, chars : number) {
-	return str.substr(0, chars).trimRight() + ((str.length > chars) ? '...' : '');
 }

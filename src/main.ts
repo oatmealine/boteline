@@ -40,15 +40,9 @@ const ch = require('chalk');
 const packageJson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
 const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
 
-if (!fs.existsSync('./data/userdata.json')) {
-	fs.writeFileSync('./data/userdata.json', '{}');
-}
-const userData = JSON.parse(fs.readFileSync('./data/userdata.json', {encoding: 'utf8'}));
+const userData = JSON.parse(util.readIfExists('./data/userdata.json', {encoding: 'utf8'}, '{}'));
 
-if (!fs.existsSync('./data/guildsettings.json')) {
-	fs.writeFileSync('./data/guildsettings.json', '{}');
-}
-const guildSettings = JSON.parse(fs.readFileSync('./data/guildsettings.json', {encoding: 'utf8'}));
+const guildSettings = JSON.parse(util.readIfExists('./data/guildsettings.json', {encoding: 'utf8'}, '{}'));
 
 const valhallaDrinks = JSON.parse(fs.readFileSync('./src/valhalla.json', {encoding: 'utf8'}));
 
