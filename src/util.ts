@@ -202,3 +202,20 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
 		return null;
 	}
 }
+
+export function starboardEmbed(message : Discord.Message, starboardSettings, edited = false, reaction? : Discord.MessageReaction) {
+	if (!reaction) {
+		if (starboardSettings.guildEmote) {
+			reaction = message.reactions.find(reac => reac.emoji.id === starboardSettings.emote);
+		} else {
+			reaction = message.reactions.find(reac => reac.emoji.toString() === starboardSettings.emote);
+		}
+	}
+
+	return new Discord.RichEmbed()
+		.setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+		.setDescription(`[Original](${message.url})${edited ? ' (edited)' : ''}\n\n` + shortenStr(message.content, 900))
+		.setTimestamp(message.createdTimestamp)
+		.setFooter(`${reaction.count} ${reaction.emoji.name}s`, starboardSettings.guildEmote ? reaction.message.guild.emojis.find(em => em.id === reaction.emoji.id).url : undefined)
+		.setColor('FFFF00');
+}

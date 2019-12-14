@@ -1244,6 +1244,18 @@ bot.on('message', (msg) => {
 	}
 });
 
+bot.on('messageUpdate', (oldMsg, msg) => {
+	if (msg.guild !== null && guildSettings[msg.guild.id] !== undefined && guildSettings[msg.guild.id].starboard !== undefined) {
+		let starboardSettings = guildSettings[msg.guild.id].starboard;
+
+		if (starboardBinds[msg.id]) {
+			let embed = util.starboardEmbed(msg, starboardSettings, true);
+
+			starboardBinds[msg.id].edit('', {embed: embed});
+		}
+	}
+})
+
 bot.on('messageReactionAdd', (reaction, user) => {
 	if (reaction.message.guild !== null && guildSettings[reaction.message.guild.id] !== undefined && guildSettings[reaction.message.guild.id].starboard !== undefined) {
 		let starboardSettings = guildSettings[reaction.message.guild.id].starboard;
@@ -1263,12 +1275,7 @@ bot.on('messageReactionAdd', (reaction, user) => {
 			let channel = reaction.message.guild.channels.find(ch => ch.id === starboardSettings.channel);
 
 			if (channel) {
-				let embed = new Discord.RichEmbed()
-					.setAuthor(reaction.message.author.username+'#'+reaction.message.author.discriminator, reaction.message.author.avatarURL)
-					.setDescription(`[Original](${reaction.message.url})\n\n` + util.shortenStr(reaction.message.content, 1900))
-					.setTimestamp(reaction.message.createdTimestamp)
-					.setFooter(`${reaction.count} ${reaction.emoji.name}s`, starboardSettings.guildEmote ? reaction.message.guild.emojis.find(em => em.id === reaction.emoji.id).url : undefined)
-					.setColor('FFFF00');
+				let embed = util.starboardEmbed(reaction.message, starboardSettings, false, reaction);
 
 				if(reaction.message.attachments) {
 					let image = reaction.message.attachments.filter(at => at.width !== null).first();
