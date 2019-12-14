@@ -1256,6 +1256,15 @@ bot.on('messageUpdate', (oldMsg, msg) => {
 	}
 });
 
+bot.on('messageDelete', (msg) => {
+	if(msg.guild !== null && guildSettings[msg.guild.id] !== undefined && guildSettings[msg.guild.id].starboard !== undefined) {
+		if (starboardBinds[msg.id]) {
+			starboardBinds[msg.id].delete();
+			delete starboardBinds[msg.id];
+		}
+	}
+})
+
 function handleReactions(reaction, user) {
 	if (reaction.message.guild !== null && guildSettings[reaction.message.guild.id] !== undefined && guildSettings[reaction.message.guild.id].starboard !== undefined) {
 		let starboardSettings = guildSettings[reaction.message.guild.id].starboard;
