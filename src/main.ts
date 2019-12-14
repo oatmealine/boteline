@@ -1254,9 +1254,9 @@ bot.on('messageUpdate', (oldMsg, msg) => {
 			starboardBinds[msg.id].edit('', {embed: embed});
 		}
 	}
-})
+});
 
-bot.on('messageReactionAdd', (reaction, user) => {
+function handleReactions(reaction, user) {
 	if (reaction.message.guild !== null && guildSettings[reaction.message.guild.id] !== undefined && guildSettings[reaction.message.guild.id].starboard !== undefined) {
 		let starboardSettings = guildSettings[reaction.message.guild.id].starboard;
 
@@ -1292,9 +1292,15 @@ bot.on('messageReactionAdd', (reaction, user) => {
 						});
 				}
 			}
+		} else if (starboardBinds[reaction.message.id]) {
+			starboardBinds[reaction.message.id].delete();
+			delete starboardBinds[reaction.message.id];
 		}
 	}
-});
+}
+
+bot.on('messageReactionAdd', handleReactions);
+bot.on('messageReactionRemove', handleReactions);
 
 let firedReady = false;
 
