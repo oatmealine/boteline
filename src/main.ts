@@ -658,7 +658,7 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 
 cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
 	const thingToRate = util.getParams(msg).join(' ').toLowerCase();
-	return `> ${util.getParams(msg).join(' ')}\n${['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'][Math.round((1 - util.normalDistribution(Math.abs(util.hashCode(thingToRate)) / 23 % 2 * 2 - 1) + 1) / 2 * 4)]}`;
+	return `> ${util.getParams(msg).join(' ')}\n${['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'][Math.round((1 - util.normalDistribution((Math.abs(util.hashCode(thingToRate)) / 10) % 2 - 1)) / 2 * 8)]}`;
 })
 	.setDescription('ask the bot a question')
 	.setUsage('(string)')
