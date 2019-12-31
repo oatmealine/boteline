@@ -240,11 +240,16 @@ class CanvasGradientApplyCommand extends cs.Command {
 
 			ctx.fillStyle = 'black';
 			ctx.fillRect(0, 0, 300, 390);
+
+			let displayname = user.username;
+			if (msg.guild && msg.guild.members.get(user.id)) {
+				displayname = msg.guild.members.get(user.id).displayName;
+			}
 			
 			ctx.font = '30px Impact';
 			ctx.fillStyle = 'white';
 			ctx.textAlign = 'center'; 
-			ctx.fillText(user.username + ' is ' + bottomstring, 150, 340 + 15);
+			ctx.fillText(displayname.toUpperCase() + ' is ' + bottomstring, 150, 340 + 15);
 				
 			loadImage(user.displayAvatarURL).then((image) => {
 				ctx.drawImage(image, 10, 10, 280, 280);
@@ -876,6 +881,27 @@ cs.addCommand('image', new CanvasGradientApplyCommand('bi',
 	'BI')
 	.setDescription('puts a bi flag over your (or someone else\'s) icon')
 	.addAlias('bioverlay')
+	.setGlobalCooldown(100)
+	.setUserCooldown(1000));
+
+cs.addCommand('image', new CanvasGradientApplyCommand('enby',
+	['rgba(255,244,51,0.6)',
+		'rgba(255,255,255,0.6)',
+		'rgba(155,89,208,0.6)',
+		'rgba(0,0,0,0.6)'],
+	'ENBY')
+	.setDescription('puts an enby flag over your (or someone else\'s) icon')
+	.addAlias('enbyoverlay')
+	.setGlobalCooldown(100)
+	.setUserCooldown(1000));
+
+cs.addCommand('image', new CanvasGradientApplyCommand('pan',
+	['rgba(255, 27, 141,0.6)',
+		'rgba(255, 218, 0,0.6)',
+		'rgba(27, 179, 255,0.6)'],
+	'PAN')
+	.setDescription('puts a pan flag over your (or someone else\'s) icon')
+	.addAlias('panoverlay')
 	.setGlobalCooldown(100)
 	.setUserCooldown(1000));
 
