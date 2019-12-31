@@ -30,6 +30,7 @@ import * as os from 'os';
 
 import { createCanvas, loadImage } from 'canvas';
 import * as ffmpeg from 'fluent-ffmpeg';
+import * as minesweeper from 'minesweeper';
 import YandexTranslate from 'yet-another-yandex-translate';
 const yandex_langs = { 'Azerbaijan': 'az', 'Malayalam': 'ml', 'Albanian': 'sq', 'Maltese': 'mt', 'Amharic': 'am', 'Macedonian': 'mk', 'English': 'en', 'Maori': 'mi', 'Arabic': 'ar', 'Marathi': 'mr', 'Armenian': 'hy', 'Mari': 'mhr', 'Afrikaans': 'af', 'Mongolian': 'mn', 'Basque': 'eu', 'German': 'de', 'Bashkir': 'ba', 'Nepali': 'ne', 'Belarusian': 'be', 'Norwegian': 'no', 'Bengali': 'bn', 'Punjabi': 'pa', 'Burmese': 'my', 'Papiamento': 'pap', 'Bulgarian': 'bg', 'Persian': 'fa', 'Bosnian': 'bs', 'Polish': 'pl', 'Welsh': 'cy', 'Portuguese': 'pt', 'Hungarian': 'hu', 'Romanian': 'ro', 'Vietnamese': 'vi', 'Russian': 'ru', 'Haitian_(Creole)': 'ht', 'Cebuano': 'ceb', 'Galician': 'gl', 'Serbian': 'sr', 'Dutch': 'nl', 'Sinhala': 'si', 'Hill_Mari': 'mrj', 'Slovakian': 'sk', 'Greek': 'el', 'Slovenian': 'sl', 'Georgian': 'ka', 'Swahili': 'sw', 'Gujarati': 'gu', 'Sundanese': 'su', 'Danish': 'da', 'Tajik': 'tg', 'Hebrew': 'he', 'Thai': 'th', 'Yiddish': 'yi', 'Tagalog': 'tl', 'Indonesian': 'id', 'Tamil': 'ta', 'Irish': 'ga', 'Tatar': 'tt', 'Italian': 'it', 'Telugu': 'te', 'Icelandic': 'is', 'Turkish': 'tr', 'Spanish': 'es', 'Udmurt': 'udm', 'Kazakh': 'kk', 'Uzbek': 'uz', 'Kannada': 'kn', 'Ukrainian': 'uk', 'Catalan': 'ca', 'Urdu': 'ur', 'Kyrgyz': 'ky', 'Finnish': 'fi', 'Chinese': 'zh', 'French': 'fr', 'Korean': 'ko', 'Hindi': 'hi', 'Xhosa': 'xh', 'Croatian': 'hr', 'Khmer': 'km', 'Czech': 'cs', 'Laotian': 'lo', 'Swedish': 'sv', 'Latin': 'la', 'Scottish': 'gd', 'Latvian': 'lv', 'Estonian': 'et', 'Lithuanian': 'lt', 'Esperanto': 'eo', 'Luxembourgish': 'lb', 'Javanese': 'jv', 'Malagasy': 'mg', 'Japanese': 'ja', 'Malay': 'ms' };
 
@@ -1072,7 +1073,7 @@ cs.addCommand('core', new cs.Command('listdependencies', (msg) => {
 	.addClientPermission('EMBED_LINKS')
 	.setDescription('list the dependencies boteline uses, and their versions'));
 
-cs.addCommand('moderation', new cs.Command('starboard', (msg : Discord.Message) => {
+cs.addCommand('moderating', new cs.Command('starboard', (msg : Discord.Message) => {
 	let params = util.getParams(msg);
 
 	let channel = msg.guild.channels.find(c => c.id === params[0].replace('<#','').replace('>',''));
@@ -1106,6 +1107,32 @@ cs.addCommand('moderation', new cs.Command('starboard', (msg : Discord.Message) 
 	.setDisplayUsage('(channel) (reacts needed) [emote]')
 	.setDescription('changes the starboard location, set reacts needed to 0 to remove')
 	.setGuildOnly());
+
+cs.addCommand('fun', new cs.SimpleCommand('minesweeper', (msg) => {
+	const params = util.getParams(msg);
+	const board = new minesweeper.Board(minesweeper.generateMineArray({
+		rows: Math.min(100, Number(params[0])),
+		cols: Math.min(100, Number(params[1])),
+		mines: params[2]
+	}));
+
+	let gridstring = '||' + board.grid()
+		.map(ar => ar.map(t => 
+			t.isMine ? ':bomb:' : `:${util.decimalToNumber(t.numAdjacentMines)}:`.replace(':zero:', ':white_large_square:')
+		).join('||||')
+		).join('||\n||') + '||';
+
+	if (gridstring.length >= 2000) {
+		return 'The grid is too large to put in a 2000 char message!';
+	}
+
+	return gridstring;
+})
+	.addAlias('msw')
+	.addExample('10 10 6')
+	.setUsage('(number) (number) (number)')
+	.setDisplayUsage('(width) (height) (mines)')
+	.setDescription('play minesweeper with discord spoilers'));
 
 foxConsole.info('starting...');
 
@@ -1263,7 +1290,7 @@ bot.on('messageDelete', (msg) => {
 			delete starboardBinds[msg.id];
 		}
 	}
-})
+});
 
 function handleReactions(reaction, user) {
 	if (reaction.message.guild !== null && guildSettings[reaction.message.guild.id] !== undefined && guildSettings[reaction.message.guild.id].starboard !== undefined) {
