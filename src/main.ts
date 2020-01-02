@@ -1451,3 +1451,26 @@ bot.login(process.env.TOKEN).then(() => {
 	process.env.TOKEN = 'NTUxO_n1ceTryl0L-r9Pj8Y';
 	foxConsole.info('patched out token');
 });
+
+// handle exiting the program (via ctrl+c, crash, etc)
+// shamelessly stolen from https://stackoverflow.com/a/14032965
+function exitHandler(options, exitCode : number) {
+	if (options.cleanup) bot.destroy();
+	if (exitCode || exitCode === 0) {
+		foxConsole.info('Exiting with code ' + exitCode);
+	}
+	if (options.exit) process.exit();
+}
+
+// do something when app is closing
+process.on('exit', exitHandler.bind(null, { cleanup: true }));
+
+// catches ctrl+c event
+process.on('SIGINT', exitHandler.bind(null, { exit: true }));
+
+// catches "kill pid" (for example: nodemon restart)
+process.on('SIGUSR1', exitHandler.bind(null, { exit: true }));
+process.on('SIGUSR2', exitHandler.bind(null, { exit: true }));
+
+// catches uncaught exceptions
+process.on('uncaughtException', exitHandler.bind(null, { exit: true }));
