@@ -1184,7 +1184,11 @@ cs.addCommand('utilities', new cs.Command('urban', msg => {
 })
 	.addAlias('urb')
 	.addAlias('urbandict')
-	.addExample('discord'));
+	.addExample('discord')
+	.setUsage('[string]')
+	.setDisplayUsage('[word]')
+	.setDescription('check the definition of a word on urban dictionary')
+	.addClientPermission('EMBED_LINKS'));
 
 foxConsole.info('starting...');
 
