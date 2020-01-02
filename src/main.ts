@@ -699,7 +699,7 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 		.setTitle(`${bot.user.username} stats`)
 		.setURL(packageJson.repository)
 		.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
-		.addField('Memory Usage', Math.round(process.memoryUsage().rss / 10000) / 100 + 'MB', true)
+		.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
 		.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 3)}%**\nLast 30 seconds: **${util.roundNumber(cpuUsage30sec, 3)}%**\nLast minute: **${util.roundNumber(cpuUsageMin, 3)}%**\nRuntime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
 		.addField('Uptime', `${Math.round(process.uptime() / 76800)}d ${Math.round(process.uptime() / 3200)%24}h ${Math.round(process.uptime() / 60)%60}m ${Math.round(process.uptime())%60}s`, true));
 })
@@ -707,12 +707,15 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 	.setDescription('get some info and stats about the bot'));
 
 cs.addCommand('core', new cs.Command('hoststats', (msg) => {
+	let memtotal = util.formatFileSize(os.totalmem());
+	let memused = util.formatFileSize(os.totalmem() - os.freemem());
+
 	msg.channel.send(new Discord.RichEmbed()
-		.setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()})`)
+		.setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()}) version ${os.release()}`)
 		.setTitle(`Host's stats - ${os.hostname()}`)
 		.setDescription('Stats for the bot\'s host')
 		.addField('Uptime', `${Math.round(os.uptime() / 76800)}d ${Math.round(os.uptime() / 3200)%24}h ${Math.round(os.uptime() / 60)%60}m ${Math.round(os.uptime())%60}s`, true)
-		.addField('Memory', `${util.roundNumber((os.totalmem()-os.freemem())/1000000, 3)}MB/${util.roundNumber(os.totalmem()/1000000, 3)}MB used`, true)
+		.addField('Memory', `${memused}/${memtotal} used`, true)
 		.addField('CPU', `${os.cpus()[0].model}`, true));
 })
 	.addAliases(['matstatsfoxedition', 'oatstats', 'host', 'neofetch'])
