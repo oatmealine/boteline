@@ -212,12 +212,35 @@ export function starboardEmbed(message : Discord.Message, starboardSettings, edi
 		}
 	}
 
-	return new Discord.RichEmbed()
+	let embed = new Discord.RichEmbed()
 		.setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
-		.setDescription(`[Original](${message.url})${edited ? ' (edited)' : ''}\n\n` + shortenStr(message.content, 900))
 		.setTimestamp(message.createdTimestamp)
 		.setFooter(`${reaction.count} ${reaction.emoji.name}s`, starboardSettings.guildEmote ? reaction.message.guild.emojis.find(em => em.id === reaction.emoji.id).url : undefined)
 		.setColor('FFFF00');
+
+	let msglink = `[Original](${message.url})`;
+
+	message.embeds.forEach(em => {
+		if (em.thumbnail && !embed.thumbnail) {
+			embed.setThumbnail(em.thumbnail.url);
+		}
+		if (em.image && !embed.image) {
+			embed.setImage(em.image.url);
+		}
+		if (em.provider) {
+			msglink = `This message seems to have an embed provided by [${em.provider.name}](${em.provider.url}). Click [here](${message.url}) to see the original message`;
+		} else {
+			msglink = `This message seems to have an embed. Click [here](${message.url}) to see the original message`;
+		}
+	});
+
+	if (message.attachments.size > 0) {
+		embed.addField('Attached files', message.attachments.map(at => `- [${at.filename}](${at.url}) (${formatFileSize(at.filesize)})`).join('\n'));
+	}
+
+	embed.setDescription(`${msglink}${edited ? ' (edited)' : ''}\n\n` + shortenStr(message.content, 900));
+
+	return embed;
 }
 
 export function decimalToNumber(num) : string {
@@ -240,4 +263,20 @@ export function decimalToNumber(num) : string {
 export function replaceUrbanLinks(str : string) {
 	// unimplemented
 	return str.split('[').join('').split(']').join('');
+}
+
+export function formatFileSize(bytes : number, si : boolean = false) {
+	let thresh = si ? 1000 : 1024;
+	if (Math.abs(bytes) < thresh) {
+		return bytes + ' B';
+	}
+	let units = si
+		? ['kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+		: ['KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];
+	let u = -1;
+	do {
+		bytes /= thresh;
+		++u;
+	} while (Math.abs(bytes) >= thresh && u < units.length - 1);
+	return bytes.toFixed(1) + ' ' + units[u];
 }
