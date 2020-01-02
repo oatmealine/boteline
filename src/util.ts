@@ -236,3 +236,8 @@ export function decimalToNumber(num) : string {
 
 	return 'zero';
 }
+
+export function replaceUrbanLinks(str : string) {
+	// unimplemented
+	return str.split('[').join('').split(']').join('');
+}

@@ -31,6 +31,7 @@ import * as os from 'os';
 import { createCanvas, loadImage } from 'canvas';
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as minesweeper from 'minesweeper';
+import * as urban from 'urban';
 import YandexTranslate from 'yet-another-yandex-translate';
 const yandex_langs = { 'Azerbaijan': 'az', 'Malayalam': 'ml', 'Albanian': 'sq', 'Maltese': 'mt', 'Amharic': 'am', 'Macedonian': 'mk', 'English': 'en', 'Maori': 'mi', 'Arabic': 'ar', 'Marathi': 'mr', 'Armenian': 'hy', 'Mari': 'mhr', 'Afrikaans': 'af', 'Mongolian': 'mn', 'Basque': 'eu', 'German': 'de', 'Bashkir': 'ba', 'Nepali': 'ne', 'Belarusian': 'be', 'Norwegian': 'no', 'Bengali': 'bn', 'Punjabi': 'pa', 'Burmese': 'my', 'Papiamento': 'pap', 'Bulgarian': 'bg', 'Persian': 'fa', 'Bosnian': 'bs', 'Polish': 'pl', 'Welsh': 'cy', 'Portuguese': 'pt', 'Hungarian': 'hu', 'Romanian': 'ro', 'Vietnamese': 'vi', 'Russian': 'ru', 'Haitian_(Creole)': 'ht', 'Cebuano': 'ceb', 'Galician': 'gl', 'Serbian': 'sr', 'Dutch': 'nl', 'Sinhala': 'si', 'Hill_Mari': 'mrj', 'Slovakian': 'sk', 'Greek': 'el', 'Slovenian': 'sl', 'Georgian': 'ka', 'Swahili': 'sw', 'Gujarati': 'gu', 'Sundanese': 'su', 'Danish': 'da', 'Tajik': 'tg', 'Hebrew': 'he', 'Thai': 'th', 'Yiddish': 'yi', 'Tagalog': 'tl', 'Indonesian': 'id', 'Tamil': 'ta', 'Irish': 'ga', 'Tatar': 'tt', 'Italian': 'it', 'Telugu': 'te', 'Icelandic': 'is', 'Turkish': 'tr', 'Spanish': 'es', 'Udmurt': 'udm', 'Kazakh': 'kk', 'Uzbek': 'uz', 'Kannada': 'kn', 'Ukrainian': 'uk', 'Catalan': 'ca', 'Urdu': 'ur', 'Kyrgyz': 'ky', 'Finnish': 'fi', 'Chinese': 'zh', 'French': 'fr', 'Korean': 'ko', 'Hindi': 'hi', 'Xhosa': 'xh', 'Croatian': 'hr', 'Khmer': 'km', 'Czech': 'cs', 'Laotian': 'lo', 'Swedish': 'sv', 'Latin': 'la', 'Scottish': 'gd', 'Latvian': 'lv', 'Estonian': 'et', 'Lithuanian': 'lt', 'Esperanto': 'eo', 'Luxembourgish': 'lb', 'Javanese': 'jv', 'Malagasy': 'mg', 'Japanese': 'ja', 'Malay': 'ms' };
 
@@ -1155,6 +1156,35 @@ cs.addCommand('fun', new cs.SimpleCommand('minesweeper', (msg) => {
 	.setUsage('(number) (number) (number)')
 	.setDisplayUsage('(width) (height) (mines)')
 	.setDescription('play minesweeper with discord spoilers'));
+
+cs.addCommand('utilities', new cs.Command('urban', msg => {
+	const params = util.getParams(msg);
+	let word = urban(params.join(' '));
+	if (!params[0]) word = urban.random();
+
+	word.first(json => {
+		if (json) {
+			if (json.example === '') {json.example = '(no example given)';}
+
+			let embed = new Discord.RichEmbed()
+				.setTitle(json.word)
+				.setURL(json.permalink)
+				// the written_on thing is like that because of the date format being:
+				// YYYY-mm-ddT00:00:00.000Z
+				// note that the last time is always 0:00
+				.setDescription(`written on ${json.written_on.slice(0, 10)} by ${json.author}\n${json.thumbs_up || '??'} :thumbsup: ${json.thumbs_down || '??'} :thumbsdown:`)
+				.addField('Defintion', util.shortenStr(util.replaceUrbanLinks(json.definition), 1021), true)
+				.addField('Example', util.shortenStr(util.replaceUrbanLinks(json.example), 1021), false);
+
+			msg.channel.send('', embed);
+		} else {
+			msg.channel.send('that word doesnt exist!');
+		}
+	});
+})
+	.addAlias('urb')
+	.addAlias('urbandict')
+	.addExample('discord'));
 
 foxConsole.info('starting...');
 
