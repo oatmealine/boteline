@@ -281,6 +281,8 @@ class CanvasGradientApplyCommand extends cs.Command {
 console.log(ch.red.bold(`boteline v${version}`));
 if (process.env.DEBUG) { console.debug(ch.grey('debug printing on')); }
 
+process.title = `Starting Boteline v${version}`;
+
 // i KNOW this is messy but like ,,, how else would you do this
 console.log(ch.bold(`
 
@@ -1441,6 +1443,7 @@ bot.on('ready', () => {
 
 	foxConsole.success('ready!');
 	firedReady = true;
+	process.title = `Boteline v${version}`;
 });
 
 foxConsole.info('logging in...');
