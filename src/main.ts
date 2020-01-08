@@ -33,6 +33,7 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import * as minesweeper from 'minesweeper';
 import * as urban from 'urban';
 import YandexTranslate from 'yet-another-yandex-translate';
+import * as rq from 'request';
 const yandex_langs = { 'Azerbaijan': 'az', 'Malayalam': 'ml', 'Albanian': 'sq', 'Maltese': 'mt', 'Amharic': 'am', 'Macedonian': 'mk', 'English': 'en', 'Maori': 'mi', 'Arabic': 'ar', 'Marathi': 'mr', 'Armenian': 'hy', 'Mari': 'mhr', 'Afrikaans': 'af', 'Mongolian': 'mn', 'Basque': 'eu', 'German': 'de', 'Bashkir': 'ba', 'Nepali': 'ne', 'Belarusian': 'be', 'Norwegian': 'no', 'Bengali': 'bn', 'Punjabi': 'pa', 'Burmese': 'my', 'Papiamento': 'pap', 'Bulgarian': 'bg', 'Persian': 'fa', 'Bosnian': 'bs', 'Polish': 'pl', 'Welsh': 'cy', 'Portuguese': 'pt', 'Hungarian': 'hu', 'Romanian': 'ro', 'Vietnamese': 'vi', 'Russian': 'ru', 'Haitian_(Creole)': 'ht', 'Cebuano': 'ceb', 'Galician': 'gl', 'Serbian': 'sr', 'Dutch': 'nl', 'Sinhala': 'si', 'Hill_Mari': 'mrj', 'Slovakian': 'sk', 'Greek': 'el', 'Slovenian': 'sl', 'Georgian': 'ka', 'Swahili': 'sw', 'Gujarati': 'gu', 'Sundanese': 'su', 'Danish': 'da', 'Tajik': 'tg', 'Hebrew': 'he', 'Thai': 'th', 'Yiddish': 'yi', 'Tagalog': 'tl', 'Indonesian': 'id', 'Tamil': 'ta', 'Irish': 'ga', 'Tatar': 'tt', 'Italian': 'it', 'Telugu': 'te', 'Icelandic': 'is', 'Turkish': 'tr', 'Spanish': 'es', 'Udmurt': 'udm', 'Kazakh': 'kk', 'Uzbek': 'uz', 'Kannada': 'kn', 'Ukrainian': 'uk', 'Catalan': 'ca', 'Urdu': 'ur', 'Kyrgyz': 'ky', 'Finnish': 'fi', 'Chinese': 'zh', 'French': 'fr', 'Korean': 'ko', 'Hindi': 'hi', 'Xhosa': 'xh', 'Croatian': 'hr', 'Khmer': 'km', 'Czech': 'cs', 'Laotian': 'lo', 'Swedish': 'sv', 'Latin': 'la', 'Scottish': 'gd', 'Latvian': 'lv', 'Estonian': 'et', 'Lithuanian': 'lt', 'Esperanto': 'eo', 'Luxembourgish': 'lb', 'Javanese': 'jv', 'Malagasy': 'mg', 'Japanese': 'ja', 'Malay': 'ms' };
 
 let pm2;
@@ -1194,6 +1195,21 @@ cs.addCommand('utilities', new cs.Command('urban', msg => {
 	.setDisplayUsage('[word]')
 	.setDescription('check the definition of a word on urban dictionary')
 	.addClientPermission('EMBED_LINKS'));
+
+cs.addCommand('fun', new cs.Command('inspirobot', msg => {
+	msg.channel.startTyping();
+	rq('http://inspirobot.me/api?generate=true', (err, res, body) => {
+		if (res && res.statusCode == 200) {
+			msg.channel.send({files: [body]}).then(() => {
+				msg.channel.stopTyping();
+			});
+		}
+	});
+})
+	.addClientPermission('ATTACH_FILES')
+	.setGlobalCooldown(1000)
+	.setDescription('fetch an inspiring ai-generated quote from [inspirobot](http://inspirobot.me/)')
+	.addAlias('insp'));
 
 foxConsole.info('starting...');
 
