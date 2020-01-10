@@ -372,7 +372,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
 	const params = util.getParams(message);
 	return `${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`;
 })
-	.addAliases(['farenheit', 'farenheight', 'fairenheight', 'fairenheit', 'fahrenheight', 'americancelcius', 'stupidunit', 'notcelsius', 'notcelcius', 'weirdformulaunit', 'multiplyby1.8andadd32'])
+	.addAliases(['farenheit', 'farenheight', 'fairenheight', 'fairenheit', 'fahrenheight', 'americancelcius', 'stupidunit', 'notcelsius', 'notcelcius', 'weirdformulaunit', 'multiplyby1.8andadd32', '華氏', 'farandheight', 'westcelcius', 'unitusedbyonecountry', 'multiplybythesquarerootof3.24andadd8multipliedby4', 'multiplyby16.8minus6dividedby6andaddthesquarerootof1089minus1', 'solveaina=x*1.8+32ifx=', 'train1ismovingat1.8xthespeedoftrain2,howfarawayfromthestartinmetersistrain1ifitstarted32metersfurtherawaythantrain2andtrain2sdistancefromthestartinmetersis'])
 	.setUsage('(number)')
 	.setDescription('convert celsius to fahrenheit')
 	.addExample('15'));
@@ -623,17 +623,19 @@ cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
 
 cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 	const params = util.getParams(msg);
-	let thingToRate = params.join(' ');
+	let thingToRate = params.join(' ').toLowerCase().split(' ').join('');
 
-	if (thingToRate.toLowerCase().startsWith('me') || thingToRate.toLowerCase().startsWith('my')) {
+	if (thingToRate.startsWith('me') || thingToRate.startsWith('my')) {
 		// rate the user, not the string
-		thingToRate += util.hashCode(msg.author.id.toString());
-	} else if (thingToRate.toLowerCase().startsWith('this server') || thingToRate.toLowerCase().startsWith('this discord')) {
+		thingToRate += util.hashCode(msg.author.id);
+	} else if (thingToRate.startsWith('thisserver') || thingToRate.startsWith('thisdiscord')) {
 		// rate the server, not the string
-		thingToRate = thingToRate + util.hashCode(msg.guild.id.toString());
+		thingToRate += util.hashCode(msg.guild.id);
 	}
-	const rating = util.seedAndRate(thingToRate.toLowerCase().split(' ').join(''));
-	return `I'd give ${params.join(' ')} a **${rating}/10**`;
+
+	const rating = util.seedAndRate(thingToRate);
+
+	return `I'd give ${params.join(' ').replace('me', 'you').replace('my', 'your')} a **${rating}/10**`;
 })
 	.setDescription('rates something')
 	.setUsage('(string)')
@@ -642,23 +644,23 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 	const params = util.getParams(msg);
 
-	let thingToRate1: string = params[0];
-	let thingToRate2: string = params[1];
+	let thingToRate1: string = params[0].toLowerCase();
+	let thingToRate2: string = params[1].toLowerCase();
 
-	if (thingToRate1.toLowerCase().startsWith('me') || thingToRate1.toLowerCase().startsWith('my')) {
-		thingToRate1 = thingToRate1 + util.hashCode(msg.author.id.toString());
-	} else if (thingToRate1.toLowerCase().startsWith('this server') || thingToRate1.toLowerCase().startsWith('this discord')) {
-		thingToRate1 = thingToRate1 + util.hashCode(msg.guild.id.toString());
+	if (thingToRate1.startsWith('me') || thingToRate1.startsWith('my')) {
+		thingToRate1 = thingToRate1 + util.hashCode(msg.author.id);
+	} else if (thingToRate1.startsWith('thisserver') || thingToRate1.startsWith('thisdiscord')) {
+		thingToRate1 = thingToRate1 + util.hashCode(msg.guild.id);
 	}
 
-	if (thingToRate2.toLowerCase().startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
-		thingToRate2 = thingToRate2 + util.hashCode(msg.author.id.toString());
-	} else if (thingToRate2.toLowerCase().startsWith('this server') || thingToRate2.toLowerCase().startsWith('this discord')) {
-		thingToRate2 = thingToRate2 + util.hashCode(msg.guild.id.toString());
+	if (thingToRate2.startsWith('me') || thingToRate2.toLowerCase().startsWith('my')) {
+		thingToRate2 = thingToRate2 + util.hashCode(msg.author.id);
+	} else if (thingToRate2.startsWith('thisserver') || thingToRate2.startsWith('thisdiscord')) {
+		thingToRate2 = thingToRate2 + util.hashCode(msg.guild.id);
 	}
 
-	const rating1 = util.seedAndRate(thingToRate1.toLowerCase().split(' ').join(''));
-	const rating2 = util.seedAndRate(thingToRate2.toLowerCase().split(' ').join(''));
+	const rating1 = util.seedAndRate(thingToRate1);
+	const rating2 = util.seedAndRate(thingToRate2);
 	return `Out of ${params[0]} and ${params[1]}, I'd pick **${rating1 === rating2 ? 'neither' : (rating1 > rating2 ? thingToRate1 : thingToRate2)}**`;
 })
 	.addAlias('choose')
@@ -667,8 +669,12 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 	.addExample('njs python'));
 
 cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
-	const thingToRate = util.getParams(msg).join(' ').toLowerCase();
-	return `> ${util.getParams(msg).join(' ')}\n${['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'][Math.round((1 - util.normalDistribution((Math.abs(util.hashCode(thingToRate)) / 10) % 2 - 1)) / 2 * 8)]}`;
+	const params = util.getParams(msg);
+	const thingToRate = params.join(' ').toLowerCase();
+	const options = ['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'];
+	let rating = Math.round((1 - util.normalDistribution((Math.abs(util.hashCode(thingToRate)) / 10) % 2 - 1)) / 2 * 8);
+
+	return `> ${params.join(' ')}\n${options[rating]}`;
 })
 	.setDescription('ask the bot a question')
 	.setUsage('(string)')
@@ -703,8 +709,11 @@ cs.addCommand('core', new cs.Command('info', (msg) => {
 		.setURL(packageJson.repository)
 		.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
 		.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
-		.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 3)}%**\nLast 30 seconds: **${util.roundNumber(cpuUsage30sec, 3)}%**\nLast minute: **${util.roundNumber(cpuUsageMin, 3)}%**\nRuntime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
-		.addField('Uptime', `${Math.round(process.uptime() / 76800)}d ${Math.round(process.uptime() / 3200)%24}h ${Math.round(process.uptime() / 60)%60}m ${Math.round(process.uptime())%60}s`, true));
+		.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 3)}%**
+Last 30 seconds: **${util.roundNumber(cpuUsage30sec, 3)}%**
+Last minute: **${util.roundNumber(cpuUsageMin, 3)}%**
+Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
+		.addField('Uptime', util.formatMiliseconds(process.uptime()), true));
 })
 	.addAlias('stats')
 	.setDescription('get some info and stats about the bot'));
@@ -717,11 +726,11 @@ cs.addCommand('core', new cs.Command('hoststats', (msg) => {
 		.setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()}) version ${os.release()}`)
 		.setTitle(`Host's stats - ${os.hostname()}`)
 		.setDescription('Stats for the bot\'s host')
-		.addField('Uptime', `${Math.round(os.uptime() / 76800)}d ${Math.round(os.uptime() / 3200)%24}h ${Math.round(os.uptime() / 60)%60}m ${Math.round(os.uptime())%60}s`, true)
+		.addField('Uptime', util.formatMiliseconds(os.uptime()), true)
 		.addField('Memory', `${memused}/${memtotal} used`, true)
 		.addField('CPU', `${os.cpus()[0].model}`, true));
 })
-	.addAliases(['matstatsfoxedition', 'oatstats', 'host', 'neofetch'])
+	.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])
 	.setDescription('get some info and stats about the bot'));
 
 cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
@@ -764,16 +773,16 @@ cs.addCommand('utilities', new cs.Command('splatoon', (msg) => {
 			.setTitle('Splatoon 2 Map Schedules')
 			.addField(regularemote+'Regular Battle',
 				`${data.regular[0].stage_a.name}, ${data.regular[0].stage_b.name}
-		${data.regular[0].rule.name}`)
+${data.regular[0].rule.name}`)
 			.addField(rankedemote+'Ranked Battle',
 				`${data.gachi[0].stage_a.name}, ${data.gachi[0].stage_b.name}
-		${data.gachi[0].rule.name}`)
+${data.gachi[0].rule.name}`)
 			.addField(leagueemote+'League Battle',
 				`${data.league[0].stage_a.name}, ${data.league[0].stage_b.name}
-		${data.league[0].rule.name}`)
+${data.league[0].rule.name}`)
 			.setColor('22FF22')
 			.setDescription(`${util.formatTime(new Date(data.league[0].start_time*1000))} - ${util.formatTime(new Date(data.league[0].end_time*1000))}
-		${Math.floor(timeLeft/60/60)%24}h ${Math.floor(timeLeft/60)%60}m ${timeLeft%60}s left`)
+${Math.floor(timeLeft/60/60)%24}h ${Math.floor(timeLeft/60)%60}m ${timeLeft%60}s left`)
 			.setURL('https://splatoon2.ink/')
 			.setImage('https://splatoon2.ink/assets/splatnet'+data.regular[0].stage_a.image)
 			.setFooter('Data last fetched '+obj.timer.toDateString()+', '+util.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
@@ -829,8 +838,8 @@ cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
 	const biOverride = [];
 	const aceOverride = ['catte'];
 
-	let ratedHash = util.hashCode(params.join(' ').toLowerCase());
-	let ratedHashUpper = util.hashCode(params.join(' ').toUpperCase());
+	let ratedHash = util.hashCode(ratingThing);
+	let ratedHashUpper = util.hashCode(ratingThing);
 
 	let isGay = (ratedHash % 3) === 0 || gayOverride.includes(ratingThing);
 	let isBi = (ratedHashUpper % 4) === 0 || biOverride.includes(ratingThing);
@@ -843,7 +852,7 @@ cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
 	if (isBi) sexuality = 'bi';
 	if (isAce) sexuality = 'asexual';
 
-	return `**${ratingThing}** is ${sexuality !== '' ? sexuality : (isTrans || isEnby ? '' : 'not gay')}${(sexuality !== '' && (isTrans || isEnby)) ? ' and ' : ''}${(isTrans || isEnby ? (isEnby ? 'non-binary' : 'trans') : '')}!`;
+	return `**${params.join(' ')}** is ${sexuality !== '' ? sexuality : (isTrans || isEnby ? '' : 'not gay')}${(sexuality !== '' && (isTrans || isEnby)) ? ' and ' : ''}${(isTrans || isEnby ? (isEnby ? 'non-binary' : 'trans') : '')}!`;
 })
 	.addAlias('istrans')
 	.addAlias('isenby')

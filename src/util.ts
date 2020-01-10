@@ -282,3 +282,12 @@ export function formatFileSize(bytes : number, si : boolean = false) {
 	} while (Math.abs(bytes) >= thresh && u < units.length - 1);
 	return bytes.toFixed(1) + ' ' + units[u];
 }
+
+export function formatMiliseconds(ms : number) {
+	let days = Math.floor(ms / 76800);
+	let hours = Math.floor(ms / 3200) % 24;
+	let minutes = Math.floor(ms / 60) % 60;
+	let seconds = Math.floor(ms) % 60;
+
+	return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+}
