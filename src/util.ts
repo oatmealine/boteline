@@ -261,8 +261,10 @@ export function decimalToNumber(num) : string {
 }
 
 export function replaceUrbanLinks(str : string) {
-	// unimplemented
-	return str.split('[').join('').split(']').join('');
+	let pat = /\[(.+?)\]/g;
+	return str.replace(pat, (_, link) => {
+		return `[${link}](https://www.urbandictionary.com/define.php?term=${encodeURI(link)})`;
+	});
 }
 
 export function formatFileSize(bytes : number, si : boolean = false) {
