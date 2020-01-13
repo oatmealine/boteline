@@ -603,24 +603,6 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 	.addExample('make aabbbbppffffkkkkkkkk')
 	.setDescription('search up drinks, and make some drinks, va11halla style!\nbasically a text-based replica of the drink making part of va11halla'));
 
-cs.addCommand('fun', new cs.SimpleCommand('nwordpass', (msg) => {
-	const params = util.getParams(msg);
-
-	if (params[0] === 'toggle') {
-		userData[msg.author.id].nworddisable = !userData[msg.author.id].nworddisable;
-		return `the system is now **${userData[msg.author.id].nworddisable ? 'OFF' : 'ON'}**`;
-	} else {
-		return `You have:
-	**${userData[msg.author.id].nwordpasses}** N-Word passes [**${userData[msg.author.id].nworddisable ? 'OFF' : 'ON'}**] (Use m=nwordpass toggle to disable/enable)
-	You are: **\`[${util.progress(userData[msg.author.id].nwordpassxp, userData[msg.author.id].nwordpassxpneeded)}]\`** this close to getting another N-Word pass`;
-	}
-})
-	.addAlias('nword')
-	.addAlias('nwordpasses')
-	.setDescription('see your amount of nwordpasses, or toggle the system')
-	.setUsage('[toggle]')
-	.addExample('toggle'));
-
 cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 	const params = util.getParams(msg);
 	let thingToRate = params.join(' ').toLowerCase().split(' ').join('');
@@ -1248,45 +1230,6 @@ foxConsole.info('starting...');
 bot.on('message', (msg) => {
 	let content: string = msg.content;
 	const author: Discord.User = msg.author;
-
-	if (userData[author.id] === undefined) {
-		userData[author.id] = {
-			nwordpasses: 1,
-			nwordpassxp: 0,
-			nwordpassxpneeded: 100,
-			nextpass: 0,
-			nworddisable: true,
-		};
-	}
-	if (!userData[author.id].nworddisable && !content.startsWith(prefix)) {
-		// patch for old accounts
-		if (!userData[author.id].nwordpassxpneeded) {
-			userData[author.id].nwordpassxpneeded = 100 + userData[author.id].nwordpasses * 50;
-		}
-
-		const count: number = (msg.content.toLowerCase().replace(' ', '').match(/nigg/g) || []).length;
-
-		if (count === 0 && Date.now() > userData[author.id].nextpass) {
-			userData[author.id].nwordpassxp += Math.floor(Math.random() * 10 + 5);
-			userData[author.id].nextpass = Date.now() + 120000;
-
-			if (userData[author.id].nwordpassxp > userData[author.id].nwordpassxpneeded) {
-				userData[author.id].nwordpassxp -= 100;
-				userData[author.id].nwordpasses += 1;
-				userData[author.id].nwordpassxpneeded = 100 + userData[author.id].nwordpasses * 50;
-				msg.channel.send(`**${author.username}#${author.discriminator}** recieved an N-Word pass!`);
-			}
-		} else {
-			if (count > userData[author.id].nwordpasses) {
-				if (msg.deletable) { msg.delete(); }
-				msg.reply('you don\'t have enough N-Word passes!');
-			} else if (count !== 0) {
-				userData[author.id].nwordpasses -= count;
-				msg.channel.send(`:bangbang: ${msg.author.toString()} used ${count} N-Word ${count === 1 ? 'pass' : 'passes'}`);
-				userData[author.id].nwordpassxpneeded = 100 + userData[author.id].nwordpasses * 50;
-			}
-		}
-	}
 
 	let thisPrefix: string = prefix;
 
