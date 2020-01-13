@@ -1225,6 +1225,30 @@ cs.addCommand('fun', new cs.Command('inspirobot', msg => {
 	.setDescription('fetch an inspiring ai-generated quote from [inspirobot](http://inspirobot.me/)')
 	.addAlias('insp'));
 
+cs.addCommand('moderating', new cs.SimpleCommand('blacklistuser', msg => {
+	const params = util.getParams(msg);
+	let blacklistcmds = [];
+
+	if (params[0] === process.env.OWNER) return 'you can\'t blacklist the owner!';
+	if (params[1]) blacklistcmds = params.slice(1);
+	if (!userData[params[0]]) userData[msg.author] = {};
+
+	if (blacklistcmds.length > 0) {
+		userData[params[0]].blacklist = blacklistcmds;
+		if (blacklistcmds.includes('.')) return `ok, blacklisted userid ${params[0]} from any commands`;
+		return `ok, blacklisted userid ${params[0]} from accessing commands \`${blacklistcmds.join(', ')}\``;
+	} else {
+		userData[params[0]].blacklist = [];
+		return `ok, removed blacklist from userid ${params[0]}`;
+	}
+})
+	.addExample('209765088196821012 .')
+	.addExample('209765088196821012 translate autotranslate masstranslate')
+	.setOwnerOnly()
+	.setDescription('prevent a user from accessing commands (set to . for all commands, provide no second argument for remove)')
+	.setUsage('(number) [string]')
+	.setDisplayUsage('(userid) [command]..'));
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
@@ -1248,10 +1272,18 @@ bot.on('message', (msg) => {
 
 		Object.values(cs.commands).forEach((cat) => {
 			Object.values(cat).forEach((command) => {
-				if ((command['name'] === cmd || command['aliases'].includes(cmd)) && 
-				((msg.content.startsWith(thisPrefix) || (msg.content.startsWith(prefix) && command['ignorePrefix'])) || (thisPrefix == prefix)) && 
-				(!command['debugOnly'] || process.env.DEBUG == 'true')) {
-					command['runCommand'](msg, bot);
+				if ((command['name'] === cmd || command['aliases'].includes(cmd))) {
+
+					// check if user is blacklisted
+					if (userData[msg.author.id] && userData[msg.author.id].blacklist) {
+						let blacklist = userData[msg.author.id].blacklist;
+						if (blacklist.includes(command.name) || blacklist.includes('.')) return;
+					}
+					
+					if (((msg.content.startsWith(thisPrefix) || (msg.content.startsWith(prefix) && command['ignorePrefix'])) || (thisPrefix == prefix)) &&
+						(!command['debugOnly'] || process.env.DEBUG == 'true')) {
+						command['runCommand'](msg, bot);
+					}
 				}
 			}); 
 		});
