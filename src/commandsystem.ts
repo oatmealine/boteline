@@ -11,9 +11,12 @@ function grammar(str: string) : string {
 let client : Discord.Client;
 let prefix = 'm=';
 
+/**
+ * represents a command the bot can run (for example, a help command)be ran in a server
+ */
 export class Command {
 	public name: string;
-	public function: Function;
+	public cfunc: (message: Discord.Message, client: Discord.Client) => any | undefined;
 	public description: string;
 
 	public usage: string;
@@ -39,9 +42,14 @@ export class Command {
 	private globalCooldowns : number = 0;
 	private userCooldowns : Object = {};
 
-	constructor(name : string, cfunction : Function) {
+	/**
+	 * create a command
+	 * @param {string} name the name, also what invokes the command
+	 * @param {function} cfunction the function to run after the command is ran
+	 */
+	constructor(name : string, cfunction : (message: Discord.Message, client: Discord.Client) => any | null) {
 		this.name = name;
-		this.function = cfunction;
+		this.cfunc = cfunction;
 		this.usage = '';
 		this.displayUsage = '';
 		this.clientPermissions = [];
@@ -65,32 +73,58 @@ export class Command {
 		return this;
 	}
 
-	public setName(name) {
+	/**
+	 * change the command name
+	 * @param {string} name the name to use for the command
+	 */
+	public setName(name : string) {
 		this.name = name;
 		return this;
 	}
 
+	/**
+	 * changes the usage for parsing the command
+	 * ex. usage: (string) (number) [any]
+	 * @param {string} usage the usage, use () for necessary and [] for optional arguments
+	 */
 	public setUsage(usage : string) {
 		this.usage = usage;
 		this.displayUsage = usage;
 		return this;
 	}
 
+	/**
+	 * changes the usage in the help command. isnt parsed
+	 * @param {string} usage the usage
+	 */
 	public setDisplayUsage(usage : string) {
 		this.displayUsage = usage;
 		return this;
 	}
 
+	/**
+	 * add an example usage to the command
+	 * ex: 20 text
+	 * @param {string} example an example usage of the command
+	 */
 	public addExample(example : string) {
 		this.examples.push(example);
 		return this;
 	}
 
+	/**
+	 * adds an alias which the command can be invoked with
+	 * @param {string} alias the name of the alias
+	 */
 	public addAlias(alias : string) {
 		this.aliases.push(alias);
 		return this;
 	}
 
+	/**
+	 * adds aliases which the command can be invoked with
+	 * @param {string[]} aliases an array of alias names
+	 */
 	public addAliases(aliases : string[]) {
 		aliases.forEach((alias) => {
 			this.addAlias(alias);
@@ -98,41 +132,73 @@ export class Command {
 		return this;
 	}
 
+	/**
+	 * sets the command's decription, display only
+	 * @param {string} desc the description, leave empty to remove
+	 */
 	public setDescription(desc? : string) {
 		this.description = desc === undefined ? 'No description provided' : desc;
 		return this;
 	}
 
+	/**
+	 * change the command's visibility in the help command
+	 * @param {boolean} hide
+	 */
 	public setHidden(hide? : boolean) {
 		this.hidden = hide === undefined ? true : hide;
 		return this;
 	}
 
+	/**
+	 * set the command to be ran as owner only
+	 * @param {boolean} owner 
+	 */
 	public setOwnerOnly(owner? : boolean) {
 		this.ownerOnly = owner === undefined ? true : owner;
 		return this;
 	}
 
+	/**
+	 * set whether the command is able to be ran outside dms or not
+	 * @param {boolean} needs 
+	 */
 	public setDMOnly(needs?: boolean) {
 		this.needsDM = needs === undefined ? true : needs;
 		return this;
 	}
 
+	/**
+	 * set whether the command is able to be ran outside servers or not
+	 * @param {boolean} needs 
+	 */
 	public setGuildOnly(needs?: boolean) {
 		this.needsGuild = needs === undefined ? true : needs;
 		return this;
 	}
 
+	/**
+	 * set whether the command is able to be ran outside debug mode
+	 * @param {boolean} needs 
+	 */
 	public setDebugOnly(needs?: boolean) {
 		this.debugOnly = needs === undefined ? true : needs;
 		return this;
 	}
 
+	/**
+	 * set whether the command ignores any given custom prefixes (only really useful for commands that change the prefix)
+	 * @param {boolean} needs
+	 */
 	public setIgnorePrefix(needs?: boolean) {
 		this.ignorePrefix = needs === undefined ? true : needs;
 		return this;
 	}
 
+	/**
+	 * add a permission required for the client to run the command
+	 * @param {Discord.PermissionResolvable} perm the permission to add
+	 */
 	public addClientPermission(perm) {
 		if (Object.keys(Discord.Permissions.FLAGS).includes(perm)) {
 			this.clientPermissions.push(perm);
@@ -142,6 +208,10 @@ export class Command {
 		return this;
 	}
 
+	/**
+	 * add a permission required for the user to invoke the command
+	 * @param {Discord.PermissionResolvable} perm the permission to add
+	 */
 	public addUserPermission(perm) {
 		if (Object.keys(Discord.Permissions.FLAGS).includes(perm)) {
 			this.userPermissions.push(perm);
@@ -151,6 +221,10 @@ export class Command {
 		return this;
 	}
 
+	/**
+	 * add multiple permissions required for the client to run the command
+	 * @param {Discord.PermissionResolvable[]} perms an array of permissions to add
+	 */
 	public addClientPermissions(perms : string[]) {
 		perms.forEach((string) => {
 			this.addClientPermission(string);
@@ -159,6 +233,10 @@ export class Command {
 		return this;
 	}
 
+	/**
+	 * add multiple permissions required for the user to invoke the command
+	 * @param {Discord.PermissionResolvable[]} perms an array of permissions to add
+	 */
 	public addUserPermissions(perms : string[]) {
 		perms.forEach((string) => {
 			this.addUserPermission(string);
@@ -167,16 +245,29 @@ export class Command {
 		return this;
 	}
 
+	/**
+	 * set a per-user cooldown on the command to prevent it from being spammed
+	 * @param {number} time the cooldown in ms
+	 */
 	public setUserCooldown(time : number) {
 		this.userCooldown = time;
 		return this;
 	}
 
+	/**
+	 * set a global cooldown on the command to prevent it from being spammed
+	 * @param {number} time the cooldown in ms
+	 */
 	public setGlobalCooldown(time : number) {
 		this.globalCooldown = time;
 		return this;
 	}
 
+	/**
+	 * check if you can run the command with a message, and if so run it
+	 * @param {Discord.Message} message the message that invoked the command
+	 * @param {Discord.Client} client the client of the bot that recieved the command
+	 */
 	public runCommand(message: Discord.Message, client: Discord.Client) {
 		const params = util.getParams(message);
 
@@ -270,36 +361,47 @@ export class Command {
 			}
 		}
 
-		return this.function(message, client);
+		return this.cfunc(message, client);
 	}
 }
 
+/**
+ * a command the function of which returns the message to sent back
+ * @extends Command
+ */
 export class SimpleCommand extends Command {
-	constructor(name : string, cfunction : Function) {
+		/**
+	 * create a command
+	 * @param {string} name the name, also what invokes the command
+	 * @param {Function} cfunction the function to run after the command is ran, returns a string that will be sent back to the user
+	 */
+	constructor(name : string, cfunction : (message: Discord.Message, client: Discord.Client) => any | undefined) {
 		super(name, cfunction);
 
-		this.function = (message, client) => {
+		this.cfunc = (message, client) => {
 			const returned: any  = cfunction(message, client);
 
 			if (!returned) {
 				foxConsole.warning('SimpleCommand returned nothing, please use Command class instead');
-				return;
+				return null;
 			}
 
 			if (returned.then) { // check if its a promise or not
-				returned.then((messageResult) => {
+				returned.then(messageResult => {
 					return message.channel.send(messageResult);
 				});
 			} else {
 				return message.channel.send(returned);
 			}
+
+			return null;
 		};
 	}
 }
 
 export const commands = {};
 
-export function addCommand(category, command : Command): void {
+export function addCommand(category : string, command : Command): void {
 	foxConsole.debug('+ '+command.name);
 	if (!module.exports.commands[category]) {
 		module.exports.commands[category] = [];
@@ -316,7 +418,7 @@ export function setPrefix(prefixSet : string) {
 	prefix = prefixSet;
 }
 
-addCommand('core', new SimpleCommand('help', (message) => {
+addCommand('core', new SimpleCommand('help', (message : Discord.Message) => {
 	const params = message.content.split(' ');
 
 	if (params[1]) {
@@ -405,7 +507,8 @@ addCommand('core', new SimpleCommand('help', (message) => {
 addCommand('core', new Command('ping', (message, bot) => {
 	const dateStart = Date.now();
 	message.channel.send('hol up').then((m) => {
-		m.edit(`Message latency: ${Date.now() - dateStart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
+		if (m instanceof Discord.Message)
+			m.edit(`Message latency: ${Date.now() - dateStart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
 	});
 })
 	.setDescription('ping the bot'));

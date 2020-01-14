@@ -110,7 +110,7 @@ class FFMpegCommand extends cs.Command {
 		this.inputOptions = inputOptions;
 		this.outputOptions = outputOptions;
 
-		this.function = async (msg) => {
+		this.cfunc = async (msg) => {
 			const params = util.getParams(msg);
 			const attachments = [];
 
@@ -147,7 +147,8 @@ class FFMpegCommand extends cs.Command {
 					let lastEdit = 0; // to avoid ratelimiting
 
 					msg.channel.send('ok, downloading...').then((m) => {
-						progMessage = m;
+						if (m instanceof Discord.Message)
+							progMessage = m;
 					});
 					msg.channel.startTyping();
 
@@ -226,7 +227,7 @@ class CanvasGradientApplyCommand extends cs.Command {
 		this.addClientPermission('ATTACH_FILES');
 		this.setUsage('[user]');
 
-		this.function = (msg : Discord.Message) => {
+		this.cfunc = (msg : Discord.Message) => {
 			msg.channel.startTyping();
 			let params = util.getParams(msg);
 
@@ -325,17 +326,17 @@ cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	.setDescription('get the bot\'s invite')
 	.addAlias('invitelink'));
 
-cs.addCommand('moderating', new cs.SimpleCommand('ban', (message) => {
-	const params = util.getParams(message);
-	const banMember = message.guild.members.get(util.parseUser(bot, params[0], message.guild).id);
+cs.addCommand('moderating', new cs.SimpleCommand('ban', (msg) => {
+	const params = util.getParams(msg);
+	const banMember = msg.guild.members.get(util.parseUser(bot, params[0], msg.guild).id);
 
 	if (banMember !== undefined) {
-		if (banMember.id === message.user.id) {
+		if (banMember.id === msg.author.id) {
 			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
 		}
 
 		if (banMember.bannable) {
-			banMember.ban();
+			banMember.ban();	
 			return '✓ Banned ' + banMember.user.username;
 		} else {
 			return 'member ' + banMember.user.username + ' isn\'t bannable';
@@ -479,21 +480,22 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	const insideHamger: string = params[0] ? params.join(' ') : hamger2;
 
 	msg.channel.send(eat + hamger1 + insideHamger + hamger3).then((m) => {
-		bot.setTimeout(() => {
-			m.edit(eat + insideHamger + hamger3).then((m) => {
-				bot.setTimeout(() => {
-					m.edit(eat + hamger3).then((m) => {
-						bot.setTimeout(() => {
-							m.edit(eat).then((m) => {
-								bot.setTimeout(() => {
-									m.delete();
-								}, 2000);
-							});
-						}, 1000);
-					});
-				}, 1000);
-			});
-		}, 1000);
+		if (m instanceof Discord.Message)
+			bot.setTimeout(() => {
+				m.edit(eat + insideHamger + hamger3).then((m) => {
+					bot.setTimeout(() => {
+						m.edit(eat + hamger3).then((m) => {
+							bot.setTimeout(() => {
+								m.edit(eat).then((m) => {
+									bot.setTimeout(() => {
+										m.delete();
+									}, 2000);
+								});
+							}, 1000);
+						});
+					}, 1000);
+				});
+			}, 1000);
 	});
 })
 	.setDescription('eat the Burger')
@@ -598,13 +600,14 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 		});
 
 		msg.channel.send(':timer: **Making drink...**').then((editmsg) => {
-			bot.setTimeout(() => {
-				if (drink === undefined) {
-					editmsg.edit('Failed to make drink!');
-				} else {
-					editmsg.edit('Successfully made drink!' + (drinkBig ? ' (its big too, woah)' : ''), util.makeDrinkEmbed(drink));
-				}
-			}, blended ? 7000 : 3000);
+			if (editmsg instanceof Discord.Message)
+				bot.setTimeout(() => {
+					if (drink === undefined) {
+						editmsg.edit('Failed to make drink!');
+					} else {
+						editmsg.edit('Successfully made drink!' + (drinkBig ? ' (its big too, woah)' : ''), util.makeDrinkEmbed(drink));
+					}
+				}, blended ? 7000 : 3000);
 		});
 	}
 })
@@ -1244,7 +1247,7 @@ cs.addCommand('moderating', new cs.SimpleCommand('blacklistuser', msg => {
 
 	if (params[0] === process.env.OWNER) return 'you can\'t blacklist the owner!';
 	if (params[1]) blacklistcmds = params.slice(1);
-	if (!userData[params[0]]) userData[msg.author] = {};
+	if (!userData[params[0]]) userData[msg.author.id] = {};
 
 	if (blacklistcmds.length > 0) {
 		userData[params[0]].blacklist = blacklistcmds;
