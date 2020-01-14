@@ -405,6 +405,7 @@ cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
 	return `${params[0]}°C is ${Number(params[0]) < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
 })
 	.setUsage('(number)')
+	.addAlias('kevin')
 	.setDescription('convert celsius to kelvin')
 	.addExample('15'));
 
