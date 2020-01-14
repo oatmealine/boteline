@@ -309,9 +309,15 @@ if (process.env.YANDEXTRANSLATETOKEN) {
 }
 
 // wikimedia api
-const wiki = new Wikiapi('en');
-const wikimc = new Wikiapi('https://minecraft.gamepedia.com/api.php');
-const wikiterraria = new Wikiapi('https://terraria.gamepedia.com/api.php');
+let wiki, wikimc, wikiterraria;
+
+try {
+	wiki = new Wikiapi('en');
+	wikimc = new Wikiapi('https://minecraft.gamepedia.com/api.php');
+	wikiterraria = new Wikiapi('https://terraria.gamepedia.com/api.php');
+} catch(err) {
+	foxConsole.warning('wikiapi returned error: '+err);
+}
 
 cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
@@ -1255,55 +1261,60 @@ cs.addCommand('moderating', new cs.SimpleCommand('blacklistuser', msg => {
 	.setDescription('prevent a user from accessing commands (set to . for all commands, provide no second argument for remove)')
 	.setUsage('(number) [string]')
 	.setDisplayUsage('(userid) [command]..'));
+if (wiki) {
+	cs.addCommand('wiki', new cs.Command('wiki', async msg => {
+		const params = util.getParams(msg);
+		let page_data = await wiki.page(params.join(' '));
 
-cs.addCommand('wiki', new cs.Command('wiki', async msg => {
-	const params = util.getParams(msg);
-	let page_data = await wiki.page(params.join(' '));
+		if (page_data.wikitext < 0) {
+			msg.channel.send('page not found!');
+		} else {
+			msg.channel.send(`https://en.wikipedia.org/wiki/${encodeURI(page_data.title.split(' ').join('_'))}`);
+		}
+	})
+		.addExample('Cock and ball torture')
+		.setDescription('looks up an article in Wikipedia')
+		.setUsage('(string)')
+		.setDisplayUsage('(artcle)')
+		.setGlobalCooldown(500)
+		.addAlias('wikipedia'));
+}
 
-	if (page_data.wikitext < 0) {
-		msg.channel.send('page not found!');
-	} else {
-		msg.channel.send(`https://en.wikipedia.org/wiki/${encodeURI(page_data.title.split(' ').join('_'))}`);
-	}
-})
-	.addExample('Cock and ball torture')
-	.setDescription('looks up an article in Wikipedia')
-	.setUsage('(string)')
-	.setDisplayUsage('(artcle)')
-	.setGlobalCooldown(500)
-	.addAlias('wikipedia'));
+if (wikimc) {
+	cs.addCommand('wiki', new cs.Command('mcwiki', async msg => {
+		const params = util.getParams(msg);
+		let page_data = await wikimc.page(params.join(' '));
 
-cs.addCommand('wiki', new cs.Command('mcwiki', async msg => {
-	const params = util.getParams(msg);
-	let page_data = await wikimc.page(params.join(' '));
+		if (page_data.wikitext < 0) {
+			msg.channel.send('page not found!');
+		} else {
+			msg.channel.send(`https://minecraft.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
+		}
+	})
+		.addExample('Bee')
+		.setDescription('looks up an article in the minecraft gamepedia')
+		.setUsage('(string)')
+		.setDisplayUsage('(artcle)')
+		.setGlobalCooldown(500));	
+}
 
-	if (page_data.wikitext < 0) {
-		msg.channel.send('page not found!');
-	} else {
-		msg.channel.send(`https://minecraft.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
-	}
-})
-	.addExample('Bee')
-	.setDescription('looks up an article in the minecraft gamepedia')
-	.setUsage('(string)')
-	.setDisplayUsage('(artcle)')
-	.setGlobalCooldown(500));
+if (wikiterraria) {
+	cs.addCommand('wiki', new cs.Command('terrariawiki', async msg => {
+		const params = util.getParams(msg);
+		let page_data = await wikiterraria.page(params.join(' '));
 
-cs.addCommand('wiki', new cs.Command('terrariawiki', async msg => {
-	const params = util.getParams(msg);
-	let page_data = await wikiterraria.page(params.join(' '));
-
-	if (page_data.wikitext < 0) {
-		msg.channel.send('page not found!');
-	} else {
-		msg.channel.send(`https://terraria.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
-	}
-})
-	.addExample('Slime')
-	.setDescription('looks up an article in the terraria gamepedia')
-	.setUsage('(string)')
-	.setDisplayUsage('(artcle)')
-	.setGlobalCooldown(500));
+		if (page_data.wikitext < 0) {
+			msg.channel.send('page not found!');
+		} else {
+			msg.channel.send(`https://terraria.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
+		}
+	})
+		.addExample('Slime')
+		.setDescription('looks up an article in the terraria gamepedia')
+		.setUsage('(string)')
+		.setDisplayUsage('(artcle)')
+		.setGlobalCooldown(500));
+}
 
 foxConsole.info('starting...');
 
