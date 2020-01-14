@@ -1320,6 +1320,12 @@ if (wikiterraria) {
 		.setGlobalCooldown(500));
 }
 
+cs.addCommand('fun', new cs.Command('hi', msg => {
+	msg.channel.send('', {files: ['assets/hi.png']});
+})
+	.setDescription('hi')
+	.setHidden());
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
