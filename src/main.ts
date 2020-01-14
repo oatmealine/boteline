@@ -28,8 +28,6 @@ import * as fs from 'fs';
 
 import * as os from 'os';
 
-import * as Wikiapi from 'wikiapi';
-
 import { createCanvas, loadImage } from 'canvas';
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as minesweeper from 'minesweeper';
@@ -312,6 +310,8 @@ if (process.env.YANDEXTRANSLATETOKEN) {
 let wiki, wikimc, wikiterraria;
 
 try {
+	let Wikiapi = require('wikiapi');
+
 	wiki = new Wikiapi('en');
 	wikimc = new Wikiapi('https://minecraft.gamepedia.com/api.php');
 	wikiterraria = new Wikiapi('https://terraria.gamepedia.com/api.php');
