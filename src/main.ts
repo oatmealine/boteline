@@ -55,8 +55,8 @@ const packageJson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf
 const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
 
 const userData = JSON.parse(util.readIfExists('./data/userdata.json', {encoding: 'utf8'}, '{}'));
-
 const guildSettings = JSON.parse(util.readIfExists('./data/guildsettings.json', {encoding: 'utf8'}, '{}'));
+const coinValue = JSON.parse(util.readIfExists('./data/coinvalue.json', { encoding: 'utf8' }, '{"value": 3, "direction": "up", "strength": 0.2, "speed": 2, "remaining": 4, "pastvalues": []}'));
 
 const valhallaDrinks = JSON.parse(fs.readFileSync('./src/valhalla.json', {encoding: 'utf8'}));
 
@@ -305,6 +305,72 @@ if (process.env.YANDEXTRANSLATETOKEN) {
 	yt = new YandexTranslate(process.env.YANDEXTRANSLATETOKEN);
 } else {
 	yt = null;
+}
+
+function updateCoins() {
+	foxConsole.info('updating coin values');
+
+	/*
+		 sample coin data:
+		 {
+			 "value": 3,
+			 "direction": "up",
+			 "strength": 0.25,
+			 "speed": 0.2
+			 "remaining": 4,
+			 "pastvalues": []
+		 }
+
+		 value is the value of the coin in USD
+		 direction is where the chart is currently moving, a string equal to either 'up' or 'down'
+		 strength is a value from 0 to 1 determening how likely the chart is to go in the opposite direction each update
+		 speed is by how much the value will increase each update
+		 remaining is how much guaranteed updates are left before the graph switches direction
+		 pastvalues is an array of the past 10 values
+		*/
+
+	coinValue.pastvalues.push(coinValue.value);
+	if (coinValue.pastvalues.length > 10)
+		coinValue.pastvalues.shift();
+
+	let oppositeDir = (dir) => {
+		if (dir === 'up') return 'down';
+		return 'up';
+	};
+
+	let direction = Math.random() < coinValue.strength ? oppositeDir(coinValue.direction) : coinValue.direction; // if the strength is low enough, the higher the chance itll go the opposite direction
+		
+	let speed = coinValue.speed;
+	if (direction !== coinValue.direction) // randomize the speed if its going in an incorrect way
+		speed = util.roundNumber(Math.random() / 3 + 0.1, 2);
+
+	let increaseAmount = speed * (direction === 'up' ? 1 : -1); // the final calculated amount to increase the coin by
+
+	coinValue.value += increaseAmount;
+	coinValue.remaining--;
+
+	coinValue.value = util.roundNumber(coinValue.value, 4);
+
+	if (coinValue.remaining <= 0) {
+		coinValue.remaining = Math.ceil(Math.random() * 4);
+		coinValue.direction = Math.random() >= 0.5 ? 'up' : 'down';
+		coinValue.speed = util.roundNumber(Math.random() + 0.2, 2);
+	}
+
+	if (coinValue.value < 0) { // just incase this ever DOES happen
+		coinValue.value = Math.abs(coinValue.value);
+		coinValue.remaining = 3;
+		coinValue.direction = 'up';
+	}
+
+	if (coinValue.value > 20000) // i hope this never happens but i mean you never know
+		coinValue.direction = 'down';
+
+	fs.writeFile('./data/coinvalue.json', JSON.stringify(coinValue), (err) => {
+		if (err) {
+			foxConsole.error('failed saving coinvalue: ' + err);
+		}
+	});
 }
 
 // wikimedia api
@@ -1326,6 +1392,93 @@ cs.addCommand('fun', new cs.Command('hi', msg => {
 	.setDescription('hi')
 	.setHidden());
 
+// economy stuff
+cs.addCommand('coin', new cs.SimpleCommand('cinit', msg => {
+	if (!userData[msg.author.id]) userData[msg.author.id] = {};
+
+	userData[msg.author.id].invest = {
+		balance: 100,
+		invested: 0, // how much the user has invested
+		investdate: 0, // the date of said investment
+		investstartval: 0 // how much coins were worth back then
+	};
+
+	return 'created/reset an account for you!';
+})
+	.setDescription('create an account for investment commands'));
+
+cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
+	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
+	let user = userData[msg.author.id].invest;
+	let returnstring = '';
+
+	returnstring += `Your balance is: ${util.roundNumber(user.balance, 3)}$\n`;
+	if (user.invested === 0) {
+		returnstring += 'You havent made an investment yet';
+	} else {
+		returnstring += `You made an investment worth ${user.invested}bc at ${util.formatDate(new Date(user.investdate))}\n`;
+		let profit = util.roundNumber((coinValue.value - user.investstartval) / user.investstartval * 100, 2);
+		let profitusd = util.roundNumber(coinValue.value - user.investstartval, 1);
+
+		returnstring += `You've gained ${profit}% back (a profit worth ${profitusd}$)`;
+	}
+
+	return returnstring;
+})
+	.setDescription('check your balance and investment status'));
+
+cs.addCommand('coin', new cs.SimpleCommand('cval', () => {
+	return `1bc is currently worth ${util.roundNumber(coinValue.value, 2)}$ (boteline coins are not a real currency/cryptocurrency!)`;
+})
+	.setDescription('check the boteline coin value'));
+
+cs.addCommand('coin', new cs.SimpleCommand('cinvest', msg => {
+	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
+	let user = userData[msg.author.id].invest;
+	const params = util.getParams(msg);
+
+	if (user.invested != 0) return `you already have an active investment worth ${user.invested}c!`;
+	if (user.balance <= 0) return 'you have no money in your account! create a new one with `cinit` (bankrupt fuck)';
+	if (user.balance < Number(params[0])) return 'you dont have enough money in your account!';
+	if (Number(params[0]) <= 1) return 'you cant invest that little!';
+
+	user = {
+		balance: user.balance - Number(params[0]),
+		invested: util.roundNumber(Number(params[0]) / coinValue.value, 2),
+		investdate: Date.now(),
+		investstartval: coinValue.value
+	};
+	
+	userData[msg.author.id].invest = user;
+	return `invested ${Number(params[0])}$ (${user.invested}bc)`;
+})
+	.setDescription('invest an amount of money into boteline coins')
+	.setUsage('(number)')
+	.setDisplayUsage('(investment amount in usd)')
+	.addAlias('cinv'));
+
+cs.addCommand('coin', new cs.SimpleCommand('cfinishinvest', msg => {
+	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
+	let user = userData[msg.author.id].invest;
+
+	if (user.invested === 0) return 'you havent made an investment yet!';
+	if (Date.now() - user.investdate < 180000) return 'you must wait at least 3 minutes before you finish your investment!';
+	
+	let profit = user.invested * coinValue.value;
+
+	user = {
+		balance: user.balance + profit,
+		invested: 0,
+		investdate: 0,
+		investstartval: 0
+	};
+
+	userData[msg.author.id].invest = user;
+	return `you made a profit of ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(user.balance, 2)}$`;
+})
+	.setDescription('finish an investment into boteline coins')
+	.addAlias('cfinishinv'));
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
@@ -1538,6 +1691,9 @@ bot.on('ready', () => {
 			}
 		});
 	}, 120000);
+
+	// update boteline coin stuff
+	bot.setInterval(updateCoins, 180000);
 
 	cs.setClient(bot);
 

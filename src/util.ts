@@ -146,6 +146,14 @@ export function formatTime(date : Date) : string {
 	return `${hours < 10 ? '0' : ''}${hours}:${minutes < 10 ? '0' : ''}${minutes} UTC`;
 }
 
+export function formatDate(date : Date) : string {
+	let day = date.getUTCDate();
+	let month = date.getUTCMonth();
+	let year = date.getUTCFullYear();
+
+	return `${day}/${month+1}/${year} ${formatTime(date)}`;
+}
+
 export function readIfExists(path : fs.PathLike, options? : {encoding?: string | null, flag?: string}, ifNonExistant? : any) {
 	if (fs.existsSync(path)) {
 		return fs.readFileSync(path, options);
