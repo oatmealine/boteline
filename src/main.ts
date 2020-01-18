@@ -288,13 +288,13 @@ process.title = `Starting Boteline v${version}`;
 // i KNOW this is messy but like ,,, how else would you do this
 console.log(ch.bold(`
 
-	 ${ch.bgRed('              ')}
+   ${ch.bgRed('              ')}
  ${ch.bgRed('                  ')}
  ${ch.bgRed('        ')}${ch.bgYellow('        ')}${ch.bgRed('  ')}
  ${ch.bgRed('      ')}${ch.white.bgYellow('  ██    ██')}${ch.bgRed('  ')}
-	 ${ch.bgRed('    ')}${ch.bgYellow('          ')}
-		 ${ch.bgRed('  ')}${ch.bgGreen('        ')}
-			 ${ch.bgWhite('  ')}    ${ch.bgWhite('  ')}
+   ${ch.bgRed('    ')}${ch.bgYellow('          ')}
+     ${ch.bgRed('  ')}${ch.bgGreen('        ')}
+       ${ch.bgWhite('  ')}    ${ch.bgWhite('  ')}
 
 `));
 foxConsole.info('adding commands...');
