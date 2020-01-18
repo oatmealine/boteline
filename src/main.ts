@@ -1417,8 +1417,9 @@ cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 	} else {
 		returnstring += `You have ${user.invested}bc (= ${util.roundNumber(user.invested * coinValue.value, 2)}$)\n`;
 		let profit = util.roundNumber((coinValue.value - user.investstartval) / user.investstartval * 100, 2);
+		let profitusd = util.roundNumber((coinValue.value - user.investstartval) * user.invested, 2)
 
-		returnstring += `The value has gone up by ${profit}% since you last bought BC`;
+		returnstring += `The value has gone up by ${profit}% since you last bought BC (profited ${profitusd}$)`;
 	}
 
 	return returnstring;
@@ -1469,22 +1470,24 @@ cs.addCommand('coin', new cs.SimpleCommand('csell', msg => {
 	let user = userData[msg.author.id].invest;
 
 	if (user.invested === 0) return 'you havent bought any coins yet!';
+	if (params[0] === 'all') params[0] = String(user.invested);
+	if (isNaN(Number(params[0]))) return 'that isn\'t a number!';
 	if (Number(params[0]) > user.invested) return 'you dont have that much coins!';
 	if (Number(params[0]) <= 0) return 'you can\'t sell that little!';
 	
-	let profit = user.invested * coinValue.value;
+	let profit = Number(params[0]) * coinValue.value;
 
 	user = {
 		balance: user.balance + profit,
-		invested: 0,
+		invested: user.invested - Number(params[0]),
 		investstartval: 0
 	};
 
 	userData[msg.author.id].invest = user;
 	return `you sold ${params[0]}bc for ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(user.balance, 2)}$`;
 })
-	.setDescription('sell your boteline coins')
-	.setUsage('(number)')
+	.setDescription('sell your boteline coins, use `all` to sell every single one you have')
+	.setUsage('(string)')
 	.setDisplayUsage('(coins)'));
 
 cs.addCommand('coin', new cs.Command('cchart', msg => {
