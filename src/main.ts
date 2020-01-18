@@ -1487,6 +1487,46 @@ cs.addCommand('coin', new cs.SimpleCommand('csell', msg => {
 	.setUsage('(number)')
 	.setDisplayUsage('(coins)'));
 
+cs.addCommand('coin', new cs.Command('cchart', msg => {
+	msg.channel.startTyping();
+	
+	let bcchartdata = {
+		type: 'line',
+		data: {
+			labels: Array(coinValue.pastvalues.length).fill(''),
+			datasets: [
+				{
+					label: 'BC',
+					data: coinValue.pastvalues,
+					fill: false,
+					borderColor: 'blue'
+				}
+			]
+		},
+		options: {
+			title: {
+				display: true,
+				text: 'Boteline Coin',
+				fontColor: 'red',
+				fontSize: 32
+			},
+			legend: {
+				position: 'bottom'
+			}
+		}
+	};
+
+	msg.channel.send({
+		files: [{
+			attachment: 'https://quickchart.io/chart?bkg=white&c='+encodeURI(JSON.stringify(bcchartdata)),
+			name: 'look-at-this-graph.png'
+		}]
+	}).then(m => {if (m instanceof Discord.Message) m.channel.stopTyping();});
+})
+	.setDescription('view boteline coin history via a chart')
+	.addClientPermission('ATTACH_FILES')
+	.setGlobalCooldown(1500));
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
