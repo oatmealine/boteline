@@ -370,7 +370,7 @@ export class Command {
  * @extends Command
  */
 export class SimpleCommand extends Command {
-		/**
+	/**
 	 * create a command
 	 * @param {string} name the name, also what invokes the command
 	 * @param {Function} cfunction the function to run after the command is ran, returns a string that will be sent back to the user

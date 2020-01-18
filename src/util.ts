@@ -299,3 +299,11 @@ export function formatMiliseconds(ms : number) {
 
 	return `${days}d ${hours}h ${minutes}m ${seconds}s`;
 }
+
+export function objectFlip(obj) : Object {
+	const ret = {};
+	Object.keys(obj).forEach(key => {
+		ret[obj[key]] = key;
+	});
+	return ret;
+}

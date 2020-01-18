@@ -1020,7 +1020,7 @@ if (yt !== null) {
 		yt.translate(params.join(' '), {to: lang, format: 'plain'}).then(translated => {
 			let translateEmbed = new Discord.RichEmbed()
 				.setDescription(translated)
-				.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated to ${lang} will be...`)
+				.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated to ${util.objectFlip(yandex_langs)[lang]} will be...`)
 				.setFooter('Powered by Yandex.Translate')
 				.setColor('#FF0000');
 			msg.channel.send('', {embed: translateEmbed});
@@ -1052,7 +1052,7 @@ if (yt !== null) {
 		yt.translate(params.join(' '), {from: langfrom, to: langto, format: 'plain'}).then(translated => {
 			let translateEmbed = new Discord.RichEmbed()
 				.setDescription(translated)
-				.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${langfrom} to ${langto} will be...`)
+				.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${util.objectFlip(yandex_langs)[langfrom]} to ${util.objectFlip(yandex_langs)[langto]} will be...`)
 				.setFooter('Powered by Yandex.Translate')
 				.setColor('#FF0000');
 			msg.channel.send('', {embed: translateEmbed});
@@ -1177,7 +1177,7 @@ modes are normal, hard, curated, (langname), legacy`)
 		.setUserCooldown(3000));
 
 	cs.addCommand('utilities', new cs.Command('langs', (msg : Discord.Message) => {
-		msg.channel.send('The supported languages for '+prefix+'translate are:\n`' + Object.values(yandex_langs).join('`, `') + '`');
+		msg.channel.send('The supported languages for '+prefix+'translate are:\n' + Object.keys(yandex_langs).map(k => k + ' (' + yandex_langs[k] + ')').join(', '));
 	})
 		.setDescription('get the available languages for '+prefix+'translate'));
 }
