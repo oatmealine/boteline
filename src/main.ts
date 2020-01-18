@@ -1527,6 +1527,29 @@ cs.addCommand('coin', new cs.Command('cchart', msg => {
 	.addClientPermission('ATTACH_FILES')
 	.setGlobalCooldown(1500));
 
+cs.addCommand('coin', new cs.Command('ctop', msg => {
+	let leaderboard = Object.keys(userData)
+		.filter(a => userData[a].invest)
+		.sort(
+			(a, b) =>
+				userData[b].invest.balance -
+      	userData[a].invest.balance
+		)
+		.slice(0, 9)
+		.map((u,i) =>
+			`${i + 1}. ${bot.users.get(u) || '???'} - ${util.roundNumber(userData[u].invest.balance, 2)}$`
+		)
+		.join('\n');
+
+	let embed = new Discord.RichEmbed()
+		.setTitle('rich leaderboards')
+		.setFooter('rich fucks')
+		.setColor('FFFF00')
+		.setDescription(leaderboard);
+
+	msg.channel.send(embed);
+}));
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
