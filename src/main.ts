@@ -1417,7 +1417,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 	} else {
 		returnstring += `You have ${user.invested}bc (= ${util.roundNumber(user.invested * coinValue.value, 2)}$)\n`;
 		let profit = util.roundNumber((coinValue.value - user.investstartval) / user.investstartval * 100, 2);
-		let profitusd = util.roundNumber((coinValue.value - user.investstartval) * user.invested, 2)
+		let profitusd = util.roundNumber((coinValue.value - user.investstartval) * user.invested, 2);
 
 		returnstring += `The value has gone up by ${profit}% since you last bought BC (profited ${profitusd}$)`;
 	}
