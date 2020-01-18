@@ -330,7 +330,7 @@ function updateCoins() {
 		*/
 
 	coinValue.pastvalues.push(coinValue.value);
-	if (coinValue.pastvalues.length > 10)
+	if (coinValue.pastvalues.length > 40)
 		coinValue.pastvalues.shift();
 
 	let oppositeDir = (dir) => {
