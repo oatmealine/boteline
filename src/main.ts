@@ -342,19 +342,17 @@ function updateCoins() {
 		
 	let speed = coinValue.speed;
 	if (direction !== coinValue.direction) // randomize the speed if its going in an incorrect way
-		speed = util.roundNumber(Math.random() / 3 + 0.1, 2);
+		speed = Math.random() / 3 + 0.1;
 
 	let increaseAmount = speed * (direction === 'up' ? 1 : -1); // the final calculated amount to increase the coin by
 
 	coinValue.value += increaseAmount;
 	coinValue.remaining--;
 
-	coinValue.value = util.roundNumber(coinValue.value, 4);
-
 	if (coinValue.remaining <= 0) {
 		coinValue.remaining = Math.ceil(Math.random() * 4);
 		coinValue.direction = Math.random() >= 0.5 ? 'up' : 'down';
-		coinValue.speed = util.roundNumber(Math.random() + 0.2, 2);
+		coinValue.speed = Math.random() + 0.2, 2;
 	}
 
 	if (coinValue.value < 0) { // just incase this ever DOES happen
@@ -1453,7 +1451,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuy', msg => {
 
 	user = {
 		balance: user.balance - invmoney,
-		invested: user.invested + util.roundNumber(invmoney / coinValue.value, 2),
+		invested: user.invested + invmoney / coinValue.value,
 		investstartval: coinValue.value
 	};
 	
