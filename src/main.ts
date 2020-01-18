@@ -57,6 +57,7 @@ const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding:
 const userData = JSON.parse(util.readIfExists('./data/userdata.json', {encoding: 'utf8'}, '{}'));
 const guildSettings = JSON.parse(util.readIfExists('./data/guildsettings.json', {encoding: 'utf8'}, '{}'));
 const coinValue = JSON.parse(util.readIfExists('./data/coinvalue.json', { encoding: 'utf8' }, '{"value": 3, "direction": "up", "strength": 0.2, "speed": 2, "remaining": 4, "pastvalues": []}'));
+const schlattCoinValue = JSON.parse(util.readIfExists('./data/schlattcoinvalue.json', { encoding: 'utf8' }, '{"value": 3, "direction": "up", "strength": 0.2, "speed": 2, "remaining": 4, "pastvalues": []}'));
 
 const valhallaDrinks = JSON.parse(fs.readFileSync('./src/valhalla.json', {encoding: 'utf8'}));
 
@@ -329,6 +330,7 @@ function updateCoins() {
 		 pastvalues is an array of the past 10 values
 		*/
 
+	// boteline coins
 	coinValue.pastvalues.push(coinValue.value);
 	if (coinValue.pastvalues.length > 40)
 		coinValue.pastvalues.shift();
@@ -342,7 +344,7 @@ function updateCoins() {
 		
 	let speed = coinValue.speed;
 	if (direction !== coinValue.direction) // randomize the speed if its going in an incorrect way
-		speed = Math.random() / 3 + 0.1;
+		speed = Math.random() + 0.1;
 
 	let increaseAmount = speed * (direction === 'up' ? 1 : -1); // the final calculated amount to increase the coin by
 
@@ -352,7 +354,7 @@ function updateCoins() {
 	if (coinValue.remaining <= 0) {
 		coinValue.remaining = Math.ceil(Math.random() * 4);
 		coinValue.direction = Math.random() >= 0.5 ? 'up' : 'down';
-		coinValue.speed = Math.random() + 0.2, 2;
+		coinValue.speed = Math.random() * 2 + 0.2;
 	}
 
 	if (coinValue.value < 0) { // just incase this ever DOES happen
@@ -364,7 +366,47 @@ function updateCoins() {
 	if (coinValue.value > 20000) // i hope this never happens but i mean you never know
 		coinValue.direction = 'down';
 
+	// schlatt coins
+	schlattCoinValue.pastvalues.push(schlattCoinValue.value);
+	if (schlattCoinValue.pastvalues.length > 40)
+		schlattCoinValue.pastvalues.shift();
+
+	direction = Math.random() < schlattCoinValue.strength ? oppositeDir(schlattCoinValue.direction) : schlattCoinValue.direction; // if the strength is low enough, the higher the chance itll go the opposite direction
+
+	speed = schlattCoinValue.speed;
+	if (direction !== schlattCoinValue.direction) // randomize the speed if its going in an incorrect way
+		speed = Math.random() * 10 + 5;
+
+	increaseAmount = speed * (direction === 'up' ? 1 : -1); // the final calculated amount to increase the coin by
+
+	schlattCoinValue.value += increaseAmount;
+	schlattCoinValue.remaining--;
+
+	if (schlattCoinValue.remaining <= 0) {
+		schlattCoinValue.remaining = Math.ceil(Math.random() * 7);
+		schlattCoinValue.direction = Math.random() >= 0.55 ? 'up' : 'down';
+		schlattCoinValue.speed = Math.random() * 10 + 5;
+		schlattCoinValue.strength = Math.random();
+	}
+
+	if (schlattCoinValue.value < 0) { // just incase this ever DOES happen
+		schlattCoinValue.value = Math.abs(schlattCoinValue.value);
+		schlattCoinValue.remaining = 2;
+		schlattCoinValue.direction = 'up';
+	}
+
+	if (schlattCoinValue.value > 20000) // i hope this never happens but i mean you never know
+		schlattCoinValue.direction = 'down';
+
+	schlattCoinValue.value = util.roundNumber(schlattCoinValue.value, 5);
+	coinValue.value = util.roundNumber(coinValue.value, 5);
+
 	fs.writeFile('./data/coinvalue.json', JSON.stringify(coinValue), (err) => {
+		if (err) {
+			foxConsole.error('failed saving coinvalue: ' + err);
+		}
+	});
+	fs.writeFile('./data/schlattcoinvalue.json', JSON.stringify(schlattCoinValue), (err) => {
 		if (err) {
 			foxConsole.error('failed saving coinvalue: ' + err);
 		}
@@ -1397,7 +1439,9 @@ cs.addCommand('coin', new cs.SimpleCommand('cinit', msg => {
 	userData[msg.author.id].invest = {
 		balance: 100,
 		invested: 0, // how much the user has invested
-		investstartval: 0 // how much coins were worth back then
+		investstartval: 0, // how much coins were worth back then
+		investeds: 0, // schlattcoin
+		investstartvals: 0
 	};
 
 	return 'created/reset an account for you!';
@@ -1409,15 +1453,25 @@ cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 	let user = userData[msg.author.id].invest;
 	let returnstring = '';
 
-	returnstring += `Your balance is: ${util.roundNumber(user.balance, 3)}$ (= ${util.roundNumber(user.balance / coinValue.value, 2)}BC)\n`;
+	returnstring += `Your balance is: ${util.roundNumber(user.balance, 3)}$ (= ${util.roundNumber(user.balance / coinValue.value, 2)}BC = ${util.roundNumber(user.balance / schlattCoinValue.value, 2)}SC)\n`;
 	if (user.invested === 0) {
-		returnstring += 'You don\'t have any boteline coins!';
+		returnstring += 'You don\'t have any boteline coins!\n';
 	} else {
-		returnstring += `You have ${user.invested}bc (= ${util.roundNumber(user.invested * coinValue.value, 2)}$)\n`;
+		returnstring += `You have ${util.roundNumber(user.invested, 4)}BC (= ${util.roundNumber(user.invested * coinValue.value, 2)}$)\n`;
 		let profit = util.roundNumber((coinValue.value - user.investstartval) / user.investstartval * 100, 2);
 		let profitusd = util.roundNumber((coinValue.value - user.investstartval) * user.invested, 2);
 
-		returnstring += `The value has gone up by ${profit}% since you last bought BC (profited ${profitusd}$)`;
+		returnstring += `The value has gone up by ${profit}% since you last bought BC (profited ${profitusd}$)\n`;
+	}
+
+	if (user.investeds === 0 || !user.investeds) {
+		returnstring += 'You don\'t have any schlattcoin!\n';
+	} else {
+		returnstring += `You have ${util.roundNumber(user.investeds, 4)}SC (= ${util.roundNumber(user.investeds * schlattCoinValue.value, 2)}$)\n`;
+		let profit = util.roundNumber((schlattCoinValue.value - user.investstartvals) / user.investstartvals * 100, 2);
+		let profitusd = util.roundNumber((schlattCoinValue.value - user.investstartvals) * user.investeds, 2);
+
+		returnstring += `The value has gone up by ${profit}% since you last bought SC (profited ${profitusd}$)\n`;
 	}
 
 	return returnstring;
@@ -1426,9 +1480,12 @@ cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 
 cs.addCommand('coin', new cs.SimpleCommand('cval', () => {
 	let chartem = coinValue.value > coinValue.pastvalues[coinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
-	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ ${chartem} (boteline coins are not a real currency/cryptocurrency!)`;
+	let chartemsch = schlattCoinValue.value > schlattCoinValue.pastvalues[schlattCoinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
+	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ ${chartem}
+1SC is currently worth ${util.roundNumber(schlattCoinValue.value, 2)}$ ${chartemsch}
+(boteline coins/schlattcoin are not a real currency/cryptocurrency!)`;
 })
-	.setDescription('check the boteline coin value'));
+	.setDescription('check the coin values'));
 
 cs.addCommand('coin', new cs.SimpleCommand('cbuy', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
@@ -1449,13 +1506,10 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuy', msg => {
 	if (user.balance < invmoney) return 'you dont have enough money in your account!';
 	if (invmoney <= 0) return 'you cant buy that little!';
 
-	user = {
-		balance: user.balance - invmoney,
-		invested: user.invested + invmoney / coinValue.value,
-		investstartval: coinValue.value
-	};
-	
-	userData[msg.author.id].invest = user;
+	userData[msg.author.id].invest.balance = user.balance - invmoney;
+	userData[msg.author.id].invest.investeds = user.invested + invmoney / coinValue.value;
+	userData[msg.author.id].invest.investstartvals = coinValue.value;
+
 	return `bought ${util.roundNumber(invmoney / coinValue.value, 2)}BC (${util.roundNumber(invmoney, 2)}$)`;
 })
 	.setDescription('buy an amount of boteline coins, use `all` to buy as many as possible')
@@ -1476,16 +1530,65 @@ cs.addCommand('coin', new cs.SimpleCommand('csell', msg => {
 	
 	let profit = Number(params[0]) * coinValue.value;
 
-	user = {
-		balance: user.balance + profit,
-		invested: user.invested - Number(params[0]),
-		investstartval: 0
-	};
+	userData[msg.author.id].invest.balance = user.balance + profit;
+	userData[msg.author.id].invest.invested = user.invested - Number(params[0]);
 
-	userData[msg.author.id].invest = user;
-	return `you sold ${params[0]}bc for ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(user.balance, 2)}$`;
+	return `you sold ${params[0]}bc for ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(userData[msg.author.id].invest.balance, 2)}$`;
 })
 	.setDescription('sell your boteline coins, use `all` to sell every single one you have')
+	.setUsage('(string)')
+	.setDisplayUsage('(coins)'));
+
+
+cs.addCommand('coin', new cs.SimpleCommand('cbuys', msg => {
+	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
+	let user = userData[msg.author.id].invest;
+	const params = util.getParams(msg);
+	let invmoney = Number(params[0]) * schlattCoinValue.value;
+
+	if (user.balance <= 0) return 'you have no money in your account! create a new one with `cinit` (bankrupt fuck)';
+	if (params[0] === 'all') {
+		params[0] = String(user.balance);
+		invmoney = user.balance;
+	}
+	if (Number(params[0]) != Number(params[0].replace('$', ''))) {
+		params[0] = params[0].replace('$', '');
+		invmoney = Number(params[0]);
+	}
+	if (isNaN(Number(params[0])) && isNaN(invmoney)) return 'that isn\'t a number!';
+	if (user.balance < invmoney) return 'you dont have enough money in your account!';
+	if (invmoney <= 0) return 'you cant buy that little!';
+
+	userData[msg.author.id].invest.balance = user.balance - invmoney;
+	userData[msg.author.id].invest.investeds = user.invested + invmoney / schlattCoinValue.value;
+	userData[msg.author.id].invest.investstartvals = schlattCoinValue.value;
+
+	return `bought ${util.roundNumber(invmoney / schlattCoinValue.value, 2)}SC (${util.roundNumber(invmoney, 2)}$)`;
+})
+	.setDescription('buy an amount of schlattcoin, use `all` to buy as many as possible')
+	.setUsage('(string)')
+	.setDisplayUsage('(coin amount, or dollars)')
+	.addAlias('cinv'));
+
+cs.addCommand('coin', new cs.SimpleCommand('csells', msg => {
+	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
+	const params = util.getParams(msg);
+	let user = userData[msg.author.id].invest;
+
+	if (user.investeds === 0) return 'you havent bought any coins yet!';
+	if (params[0] === 'all') params[0] = String(user.investeds);
+	if (isNaN(Number(params[0]))) return 'that isn\'t a number!';
+	if (Number(params[0]) > user.investeds) return 'you dont have that much coins!';
+	if (Number(params[0]) <= 0) return 'you can\'t sell that little!';
+
+	let profit = Number(params[0]) * schlattCoinValue.value;
+
+	userData[msg.author.id].invest.balance = user.balance + profit;
+	userData[msg.author.id].invest.investeds = user.investeds - Number(params[0]);
+
+	return `you sold ${params[0]}SC for ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(userData[msg.author.id].invest.balance, 2)}$`;
+})
+	.setDescription('sell your schlattcoin, use `all` to sell every single one you have')
 	.setUsage('(string)')
 	.setDisplayUsage('(coins)'));
 
@@ -1498,8 +1601,14 @@ cs.addCommand('coin', new cs.Command('cchart', msg => {
 			labels: Array(coinValue.pastvalues.length).fill(''),
 			datasets: [
 				{
-					label: 'BC',
+					label: 'Boteline Coins',
 					data: coinValue.pastvalues,
+					fill: false,
+					borderColor: 'red'
+				},
+				{
+					label: 'Schlattcoin',
+					data: schlattCoinValue.pastvalues,
 					fill: false,
 					borderColor: 'blue'
 				}
@@ -1508,8 +1617,8 @@ cs.addCommand('coin', new cs.Command('cchart', msg => {
 		options: {
 			title: {
 				display: true,
-				text: 'Boteline Coin',
-				fontColor: 'red',
+				text: 'Coin Values',
+				fontColor: 'black',
 				fontSize: 32
 			},
 			legend: {
@@ -1525,7 +1634,7 @@ cs.addCommand('coin', new cs.Command('cchart', msg => {
 		}]
 	}).then(m => {if (m instanceof Discord.Message) m.channel.stopTyping();});
 })
-	.setDescription('view boteline coin history via a chart')
+	.setDescription('view coin history via a chart')
 	.addClientPermission('ATTACH_FILES')
 	.setGlobalCooldown(1500));
 
