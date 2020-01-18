@@ -1399,85 +1399,93 @@ cs.addCommand('coin', new cs.SimpleCommand('cinit', msg => {
 	userData[msg.author.id].invest = {
 		balance: 100,
 		invested: 0, // how much the user has invested
-		investdate: 0, // the date of said investment
 		investstartval: 0 // how much coins were worth back then
 	};
 
 	return 'created/reset an account for you!';
 })
-	.setDescription('create an account for investment commands'));
+	.setDescription('create an account for boteline coin commands'));
 
 cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	let user = userData[msg.author.id].invest;
 	let returnstring = '';
 
-	returnstring += `Your balance is: ${util.roundNumber(user.balance, 3)}$\n`;
+	returnstring += `Your balance is: ${util.roundNumber(user.balance, 3)}$ (= ${util.roundNumber(user.balance / coinValue.value, 2)}BC)\n`;
 	if (user.invested === 0) {
-		returnstring += 'You havent made an investment yet';
+		returnstring += 'You don\'t have any boteline coins!';
 	} else {
-		returnstring += `You made an investment worth ${user.invested}bc at ${util.formatDate(new Date(user.investdate))}\n`;
+		returnstring += `You have ${user.invested}bc (= ${util.roundNumber(user.invested * coinValue.value, 2)}$)\n`;
 		let profit = util.roundNumber((coinValue.value - user.investstartval) / user.investstartval * 100, 2);
-		let profitusd = util.roundNumber(coinValue.value - user.investstartval, 1);
 
-		returnstring += `You've gained ${profit}% back (a profit worth ${profitusd}$)`;
+		returnstring += `The value has gone up by ${profit}% since you last bought BC`;
 	}
 
 	return returnstring;
 })
-	.setDescription('check your balance and investment status'));
+	.setDescription('check your balance'));
 
 cs.addCommand('coin', new cs.SimpleCommand('cval', () => {
-	return `1bc is currently worth ${util.roundNumber(coinValue.value, 2)}$ (boteline coins are not a real currency/cryptocurrency!)`;
+	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ (boteline coins are not a real currency/cryptocurrency!)`;
 })
 	.setDescription('check the boteline coin value'));
 
-cs.addCommand('coin', new cs.SimpleCommand('cinvest', msg => {
+cs.addCommand('coin', new cs.SimpleCommand('cbuy', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	let user = userData[msg.author.id].invest;
 	const params = util.getParams(msg);
+	let invmoney = Number(params[0]) * coinValue.value;
 
-	if (user.invested != 0) return `you already have an active investment worth ${user.invested}c!`;
 	if (user.balance <= 0) return 'you have no money in your account! create a new one with `cinit` (bankrupt fuck)';
-	if (user.balance < Number(params[0])) return 'you dont have enough money in your account!';
-	if (Number(params[0]) <= 1) return 'you cant invest that little!';
+	if (params[0] === 'all') {
+		params[0] = String(user.balance);
+		invmoney = user.balance;
+	}
+	if (Number(params[0]) != Number(params[0].replace('$', ''))) {
+		params[0] = params[0].replace('$', '');
+		invmoney = Number(params[0]);
+	}
+	if (isNaN(Number(params[0])) && isNaN(invmoney)) return 'that isn\'t a number!';
+	if (user.balance < invmoney) return 'you dont have enough money in your account!';
+	if (invmoney <= 0) return 'you cant buy that little!';
 
 	user = {
-		balance: user.balance - Number(params[0]),
-		invested: util.roundNumber(Number(params[0]) / coinValue.value, 2),
-		investdate: Date.now(),
+		balance: user.balance - invmoney,
+		invested: user.invested + util.roundNumber(invmoney / coinValue.value, 2),
 		investstartval: coinValue.value
 	};
 	
 	userData[msg.author.id].invest = user;
-	return `invested ${Number(params[0])}$ (${user.invested}bc)`;
+	return `bought ${util.roundNumber(invmoney / coinValue.value, 2)}BC (${util.roundNumber(invmoney, 2)}$)`;
 })
-	.setDescription('invest an amount of money into boteline coins')
-	.setUsage('(number)')
-	.setDisplayUsage('(investment amount in usd)')
+	.setDescription('buy an amount of boteline coins, use `all` to buy as many as possible')
+	.setUsage('(string)')
+	.setDisplayUsage('(coin amount, or dollars)')
 	.addAlias('cinv'));
 
-cs.addCommand('coin', new cs.SimpleCommand('cfinishinvest', msg => {
+cs.addCommand('coin', new cs.SimpleCommand('csell', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
+	const params = util.getParams(msg);
 	let user = userData[msg.author.id].invest;
 
-	if (user.invested === 0) return 'you havent made an investment yet!';
-	if (Date.now() - user.investdate < 180000) return 'you must wait at least 3 minutes before you finish your investment!';
+	if (user.invested === 0) return 'you havent bought any coins yet!';
+	if (Number(params[0]) > user.invested) return 'you dont have that much coins!';
+	if (Number(params[0]) <= 0) return 'you can\'t sell that little!';
 	
 	let profit = user.invested * coinValue.value;
 
 	user = {
 		balance: user.balance + profit,
 		invested: 0,
-		investdate: 0,
 		investstartval: 0
 	};
 
 	userData[msg.author.id].invest = user;
-	return `you made a profit of ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(user.balance, 2)}$`;
+	return `you sold ${params[0]}bc for ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(user.balance, 2)}$`;
 })
-	.setDescription('finish an investment into boteline coins')
-	.addAlias('cfinishinv'));
+	.setDescription('sell your boteline coins')
+	.setUsage('(number)')
+	.setDisplayUsage('(coins)'));
 
 foxConsole.info('starting...');
 
