@@ -1427,7 +1427,8 @@ cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 	.setDescription('check your balance'));
 
 cs.addCommand('coin', new cs.SimpleCommand('cval', () => {
-	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ (boteline coins are not a real currency/cryptocurrency!)`;
+	let chartem = coinValue.value > coinValue.pastvalues[coinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
+	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ ${chartem} (boteline coins are not a real currency/cryptocurrency!)`;
 })
 	.setDescription('check the boteline coin value'));
 
