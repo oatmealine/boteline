@@ -344,7 +344,7 @@ function updateCoins() {
 		
 	let speed = coinValue.speed;
 	if (direction !== coinValue.direction) // randomize the speed if its going in an incorrect way
-		speed = Math.random() + 0.1;
+		speed = Math.random() * 3 + 1;
 
 	let increaseAmount = speed * (direction === 'up' ? 1 : -1); // the final calculated amount to increase the coin by
 
@@ -352,9 +352,10 @@ function updateCoins() {
 	coinValue.remaining--;
 
 	if (coinValue.remaining <= 0) {
-		coinValue.remaining = Math.ceil(Math.random() * 4);
+		coinValue.remaining = Math.ceil(Math.random() * 4) + 2;
 		coinValue.direction = Math.random() >= 0.5 ? 'up' : 'down';
-		coinValue.speed = Math.random() * 2 + 0.2;
+		coinValue.speed = Math.random() * 3 + 1;
+		coinValue.strength = Math.random() * 0.4 + 0.1;
 	}
 
 	if (coinValue.value < 0) { // just incase this ever DOES happen
@@ -375,7 +376,7 @@ function updateCoins() {
 
 	speed = schlattCoinValue.speed;
 	if (direction !== schlattCoinValue.direction) // randomize the speed if its going in an incorrect way
-		speed = Math.random() * 10 + 5;
+		speed = Math.random() * 30 + 10;
 
 	increaseAmount = speed * (direction === 'up' ? 1 : -1); // the final calculated amount to increase the coin by
 
@@ -383,10 +384,10 @@ function updateCoins() {
 	schlattCoinValue.remaining--;
 
 	if (schlattCoinValue.remaining <= 0) {
-		schlattCoinValue.remaining = Math.ceil(Math.random() * 7);
+		schlattCoinValue.remaining = Math.ceil(Math.random() * 5) + 1;
 		schlattCoinValue.direction = Math.random() >= 0.55 ? 'up' : 'down';
-		schlattCoinValue.speed = Math.random() * 10 + 5;
-		schlattCoinValue.strength = Math.random();
+		schlattCoinValue.speed = Math.random() * 30 + 12;
+		schlattCoinValue.strength = Math.random() * 0.6 + 0.2;
 	}
 
 	if (schlattCoinValue.value < 0) { // just incase this ever DOES happen
@@ -395,7 +396,21 @@ function updateCoins() {
 		schlattCoinValue.direction = 'up';
 	}
 
-	if (schlattCoinValue.value > 20000) // i hope this never happens but i mean you never know
+	if (Math.random() > 0.95) { // the economy has a really rare chance of crashing! :o
+		schlattCoinValue.direction = 'down';
+		schlattCoinValue.remaining = 5;
+		schlattCoinValue.strength = 0.1;
+		schlattCoinValue.speed = Math.random() * 50 + 60;
+	}
+
+	if (Math.random() > 0.98) { // and a really rare chance of rising to heck
+		schlattCoinValue.direction = 'up';
+		schlattCoinValue.remaining = 2;
+		schlattCoinValue.strength = 0.1;
+		schlattCoinValue.speed = Math.random() * 30 + 30;
+	}
+
+	if (schlattCoinValue.value > 30000) // i hope this never happens but i mean you never know
 		schlattCoinValue.direction = 'down';
 
 	schlattCoinValue.value = util.roundNumber(schlattCoinValue.value, 5);
