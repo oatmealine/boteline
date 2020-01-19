@@ -1494,8 +1494,8 @@ cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 	.setDescription('check your balance'));
 
 cs.addCommand('coin', new cs.SimpleCommand('cval', () => {
-	let chartem = coinValue.value > coinValue.pastvalues[coinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
-	let chartemsch = schlattCoinValue.value > schlattCoinValue.pastvalues[schlattCoinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
+	let chartem = coinValue.value < coinValue.pastvalues[coinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
+	let chartemsch = schlattCoinValue.value < schlattCoinValue.pastvalues[schlattCoinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
 	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ ${chartem}
 1SC is currently worth ${util.roundNumber(schlattCoinValue.value, 2)}$ ${chartemsch}
 (boteline coins/schlattcoin are not a real currency/cryptocurrency!)`;
