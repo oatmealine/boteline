@@ -1507,8 +1507,8 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuy', msg => {
 	if (invmoney <= 0) return 'you cant buy that little!';
 
 	userData[msg.author.id].invest.balance = user.balance - invmoney;
-	userData[msg.author.id].invest.investeds = user.invested + invmoney / coinValue.value;
-	userData[msg.author.id].invest.investstartvals = coinValue.value;
+	userData[msg.author.id].invest.invested = user.invested + invmoney / coinValue.value;
+	userData[msg.author.id].invest.investstartval = coinValue.value;
 
 	return `bought ${util.roundNumber(invmoney / coinValue.value, 2)}BC (${util.roundNumber(invmoney, 2)}$)`;
 })
