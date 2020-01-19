@@ -1560,7 +1560,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuys', msg => {
 	if (invmoney <= 0) return 'you cant buy that little!';
 
 	userData[msg.author.id].invest.balance = user.balance - invmoney;
-	userData[msg.author.id].invest.investeds = user.invested + invmoney / schlattCoinValue.value;
+	userData[msg.author.id].invest.investeds = user.investeds + invmoney / schlattCoinValue.value;
 	userData[msg.author.id].invest.investstartvals = schlattCoinValue.value;
 
 	return `bought ${util.roundNumber(invmoney / schlattCoinValue.value, 2)}SC (${util.roundNumber(invmoney, 2)}$)`;
@@ -1598,17 +1598,17 @@ cs.addCommand('coin', new cs.Command('cchart', msg => {
 	let bcchartdata = {
 		type: 'line',
 		data: {
-			labels: Array(coinValue.pastvalues.length).fill(''),
+			labels: Array(coinValue.pastvalues.length + 1).fill(''),
 			datasets: [
 				{
 					label: 'Boteline Coins',
-					data: coinValue.pastvalues,
+					data: coinValue.pastvalues.concat([coinValue.value]),
 					fill: false,
 					borderColor: 'red'
 				},
 				{
 					label: 'Schlattcoin',
-					data: schlattCoinValue.pastvalues,
+					data: schlattCoinValue.pastvalues.concat([schlattCoinValue.value]),
 					fill: false,
 					borderColor: 'blue'
 				}
