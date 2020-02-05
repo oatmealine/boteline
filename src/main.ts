@@ -17,7 +17,7 @@ const bot = new Discord.Client({
 	]
 });
 
-import * as cs from './commandsystem.js';
+let cs = require('./commandsystem');
 
 import * as foxConsole from './foxconsole.js';
 
@@ -26,16 +26,20 @@ import * as util from './util.js';
 import {exec} from 'child_process';
 import * as fs from 'fs';
 
-import * as os from 'os';
-
-import { createCanvas, loadImage } from 'canvas';
-import * as ffmpeg from 'fluent-ffmpeg';
 import * as minesweeper from 'minesweeper';
 import * as urban from 'urban';
-import YandexTranslate from 'yet-another-yandex-translate';
 import * as rq from 'request';
+
+// modules
+import * as cv from './convert';
+import * as md from './moderation';
+import * as sp from './splatoon';
+import * as gay from './gay';
+import * as translate from './translate';
+import * as wiki from './wiki';
+import * as video from './video';
+
 // hardcoded, but cant do anything about it
-const yandex_langs = {'Afrikaans': 'af', 'Albanian': 'sq', 'Amharic': 'am', 'Arabic': 'ar', 'Armenian': 'hy', 'Azerbaijan': 'az', 'Bashkir': 'ba', 'Basque': 'eu', 'Belarusian': 'be', 'Bengali': 'bn', 'Bosnian': 'bs', 'Bulgarian': 'bg', 'Burmese': 'my', 'Catalan': 'ca', 'Cebuano': 'ceb', 'Chinese': 'zh', 'Croatian': 'hr', 'Czech': 'cs', 'Danish': 'da', 'Dutch': 'nl', 'English': 'en', 'Esperanto': 'eo', 'Estonian': 'et', 'Finnish': 'fi', 'French': 'fr', 'Galician': 'gl', 'Georgian': 'ka', 'German': 'de', 'Greek': 'el', 'Gujarati': 'gu', 'Haitian (Creole)': 'ht', 'Hebrew': 'he', 'Hill Mari': 'mrj', 'Hindi': 'hi', 'Hungarian': 'hu', 'Icelandic': 'is', 'Indonesian': 'id', 'Irish': 'ga', 'Italian': 'it', 'Japanese': 'ja', 'Javanese': 'jv', 'Kannada': 'kn', 'Kazakh': 'kk', 'Khmer': 'km', 'Korean': 'ko', 'Kyrgyz': 'ky', 'Laotian': 'lo', 'Latin': 'la', 'Latvian': 'lv', 'Lithuanian': 'lt', 'Luxembourgish': 'lb', 'Macedonian': 'mk', 'Malagasy': 'mg', 'Malay': 'ms', 'Malayalam': 'ml', 'Maltese': 'mt', 'Maori': 'mi', 'Marathi': 'mr', 'Mari': 'mhr', 'Mongolian': 'mn', 'Nepali': 'ne', 'Norwegian': 'no', 'Papiamento': 'pap', 'Persian': 'fa', 'Polish': 'pl', 'Portuguese': 'pt', 'Punjabi': 'pa', 'Romanian': 'ro', 'Russian': 'ru', 'Scottish': 'gd', 'Serbian': 'sr', 'Sinhala': 'si', 'Slovakian': 'sk', 'Slovenian': 'sl', 'Spanish': 'es', 'Sundanese': 'su', 'Swahili': 'sw', 'Swedish': 'sv', 'Tagalog': 'tl', 'Tajik': 'tg', 'Tamil': 'ta', 'Tatar': 'tt', 'Telugu': 'te', 'Thai': 'th', 'Turkish': 'tr', 'Udmurt': 'udm', 'Ukrainian': 'uk', 'Urdu': 'ur', 'Uzbek': 'uz', 'Vietnamese': 'vi', 'Welsh': 'cy', 'Xhosa': 'xh', 'Yiddish': 'yi'};
 let pm2;
 
 try {
@@ -52,7 +56,6 @@ const ch = require('chalk');
 // files
 
 const packageJson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
-const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
 
 const userData = JSON.parse(util.readIfExists('./data/userdata.json', {encoding: 'utf8'}, '{}'));
 const guildSettings = JSON.parse(util.readIfExists('./data/guildsettings.json', {encoding: 'utf8'}, '{}'));
@@ -75,212 +78,6 @@ let application: Discord.OAuth2Application;
 
 let starboardBinds = {};
 
-// statistics
-
-let cpuUsageMin: number = 0;
-let cpuUsage30sec: number = 0;
-let cpuUsage1sec: number = 0;
-
-let cpuUsageMinOld = process.cpuUsage();
-let cpuUsage30secOld = process.cpuUsage();
-let cpuUsage1secOld = process.cpuUsage();
-
-setInterval(() => {
-	const usage = process.cpuUsage(cpuUsage1secOld);
-	cpuUsage1sec = 100 * (usage.user + usage.system) / 1000000;
-	cpuUsage1secOld = process.cpuUsage();
-}, 1000);
-setInterval(() => {
-	const usage = process.cpuUsage(cpuUsage30secOld);
-	cpuUsage30sec = 100 * (usage.user + usage.system) / 30000000;
-	cpuUsage30secOld = process.cpuUsage();
-}, 30000);
-setInterval(() => {
-	const usage = process.cpuUsage(cpuUsageMinOld);
-	cpuUsageMin = 100 * (usage.user + usage.system) / 60000000;
-	cpuUsageMinOld = process.cpuUsage();
-}, 60000);
-
-class FFMpegCommand extends cs.Command {
-	public inputOptions: Function
-	public outputOptions: Function
-
-	constructor(name : string, inputOptions, outputOptions) {
-		super(name, null);
-
-		this.inputOptions = inputOptions;
-		this.outputOptions = outputOptions;
-
-		this.cfunc = async (msg) => {
-			const params = util.getParams(msg);
-			const attachments = [];
-
-			if (msg.attachments.size === 0) {
-				await msg.channel.fetchMessages({limit: 20}).then((msges) => {
-					msges.array().forEach((m : Discord.Message) => {
-						if (m.attachments.size > 0) {
-							m.attachments.array().forEach((att) => {
-								attachments.push(att);
-							});
-						}
-					});
-				});
-			} else {
-				attachments.push(msg.attachments.first());
-			}
-
-			if (attachments.length > 0) {
-				let videoAttach : Discord.MessageAttachment;
-
-				attachments.forEach((attachment) => {
-					if (videoAttach || !attachment) { return; }
-
-					const filetype = attachment.filename.split('.').pop();
-					const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
-
-					if (acceptedFiletypes.includes(filetype.toLowerCase())) {
-						videoAttach = attachment;
-					}
-				});
-
-				if (videoAttach) {
-					let progMessage : Discord.Message;
-					let lastEdit = 0; // to avoid ratelimiting
-
-					msg.channel.send('ok, downloading...').then((m) => {
-						if (m instanceof Discord.Message)
-							progMessage = m;
-					});
-					msg.channel.startTyping();
-
-					if (params[0]) {
-						if (params[0].startsWith('.') || params[0].startsWith('/') || params[0].startsWith('~')) {
-							if (progMessage) {
-								progMessage.edit('i know exactly what you\'re doing there bud');
-							} else {
-								msg.channel.send('i know exactly what you\'re doing there bud');
-							}
-						}
-					}
-
-					ffmpeg(videoAttach.url)
-						.inputOptions(this.inputOptions(msg))
-						.outputOptions(this.outputOptions(msg))
-						.on('start', (commandLine) => {
-							foxConsole.info('started ffmpeg with command: ' + commandLine);
-							if (progMessage) {
-								progMessage.edit('processing: 0% (0s) done');
-							}
-						})
-						.on('stderr', (stderrLine) => {
-							foxConsole.debug('ffmpeg: ' + stderrLine);
-						})
-						.on('progress', (progress) => {
-							if (lastEdit + 2000 < Date.now() && progMessage) {
-								lastEdit = Date.now();
-								progMessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
-							}
-						})
-						.on('error', (err) => {
-							msg.channel.stopTyping();
-							foxConsole.warning('ffmpeg failed!');
-							foxConsole.warning(err);
-							if (progMessage) {
-								progMessage.edit(`processing: error! \`${err}\``);
-							} else {
-								msg.channel.send(`An error has occured!: \`${err}\``);
-							}
-						})
-						.on('end', () => {
-							msg.channel.stopTyping();
-							if (progMessage) {
-								progMessage.edit('processing: done! uploading');
-							}
-							msg.channel.send('ok, done', {files: ['./temp/temp.mp4']}).then(() => {
-								if (progMessage) {
-									progMessage.delete();
-								}
-							});
-						})
-					// .pipe(stream);
-						.save('./temp/temp.mp4');
-				} else {
-					msg.channel.send('No video attachments found');
-				}
-			} else {
-				msg.channel.send('No attachments found');
-			}
-		};
-		return this;
-	}
-}
-
-class CanvasGradientApplyCommand extends cs.Command {
-	public gradient : string[];
-	public bottomstring : string;
-
-	constructor(name : string, gradient : string[], bottomstring : string) {
-		super(name, null);
-
-		this.bottomstring = bottomstring;
-		this.gradient = gradient;
-		
-		this.addClientPermission('ATTACH_FILES');
-		this.setUsage('[user]');
-
-		this.cfunc = (msg : Discord.Message) => {
-			msg.channel.startTyping();
-			let params = util.getParams(msg);
-
-			const canvas = createCanvas(300, 390);
-			const ctx = canvas.getContext('2d');
-			
-			let user = params.length === 0 ? msg.author : util.parseUser(bot, params[0], msg.guild);
-			
-			if (user === null) {
-				msg.channel.send('User not found');
-				return;
-			}
-
-			ctx.fillStyle = 'black';
-			ctx.fillRect(0, 0, 300, 390);
-
-			let displayname = user.username;
-			if (msg.guild && msg.guild.members.get(user.id)) {
-				displayname = msg.guild.members.get(user.id).displayName;
-			}
-			
-			ctx.font = '30px Impact';
-			ctx.fillStyle = 'white';
-			ctx.textAlign = 'center'; 
-			ctx.fillText(displayname.toUpperCase() + ' is ' + bottomstring, 150, 340 + 15);
-				
-			loadImage(user.displayAvatarURL).then((image) => {
-				ctx.drawImage(image, 10, 10, 280, 280);
-
-				ctx.strokeStyle = 'white';
-				ctx.lineWidth = 4;
-				ctx.strokeRect(10, 10, 280, 280);
-			
-				let ctxGradient = ctx.createLinearGradient(0, 10, 0, 290);
-
-				gradient.forEach((clr,i,arr) => {
-					ctxGradient.addColorStop(i / (arr.length - 1), clr);
-				});
-				
-				ctx.fillStyle = ctxGradient;
-			
-				ctx.fillRect(10,10,280,280);
-				
-				msg.channel.send('', {files: [canvas.toBuffer()]}).then(() => {
-					msg.channel.stopTyping();
-				});
-			});
-		};
-		return this;
-	}
-}
-
 console.log(ch.red.bold(`boteline v${version}`));
 if (process.env.DEBUG) { console.debug(ch.grey('debug printing on')); }
 
@@ -299,14 +96,6 @@ console.log(ch.bold(`
 
 `));
 foxConsole.info('adding commands...');
-
-// yandex translate api
-let yt : YandexTranslate | null;
-if (process.env.YANDEXTRANSLATETOKEN) {
-	yt = new YandexTranslate(process.env.YANDEXTRANSLATETOKEN);
-} else {
-	yt = null;
-}
 
 function updateCoins() {
 	foxConsole.info('updating coin values');
@@ -428,124 +217,19 @@ function updateCoins() {
 	});
 }
 
-// wikimedia api
-let wiki, wikimc, wikiterraria;
-
-try {
-	let Wikiapi = require('wikiapi');
-
-	wiki = new Wikiapi('en');
-	wikimc = new Wikiapi('https://minecraft.gamepedia.com/api.php');
-	wikiterraria = new Wikiapi('https://terraria.gamepedia.com/api.php');
-} catch(err) {
-	foxConsole.warning('wikiapi returned error: '+err);
-}
-
 cs.addCommand('core', new cs.SimpleCommand('invite', () => {
 	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
 })
 	.setDescription('get the bot\'s invite')
 	.addAlias('invitelink'));
 
-cs.addCommand('moderating', new cs.SimpleCommand('ban', (msg) => {
-	const params = util.getParams(msg);
-	const banMember = msg.guild.members.get(util.parseUser(bot, params[0], msg.guild).id);
-
-	if (banMember !== undefined) {
-		if (banMember.id === msg.author.id) {
-			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
-		}
-
-		if (banMember.bannable) {
-			banMember.ban();	
-			return '✓ Banned ' + banMember.user.username;
-		} else {
-			return 'member ' + banMember.user.username + ' isn\'t bannable';
-		}
-	} else {
-		return 'i don\'t know that person!';
-	}
-})
-	.setUsage('(user)')
-	.setDescription('ban a user')
-	.addAlias('banuser')
-	.addAlias('banmember')
-	.addExample('360111651602825216')
-	.addClientPermission('BAN_MEMBERS')
-	.addUserPermission('BAN_MEMBERS')
-	.setGuildOnly());
-
-cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
-	const params = message.content.split(' ').slice(1, message.content.length);
-	const banMember = message.guild.members.get(util.parseUser(bot, params[0], message.guild).id);
-
-	if (banMember !== undefined) {
-		if (banMember.id === message.member.id) {
-			return 'hedgeberg#7337 is now b&. :thumbsup:'; // https://hedgeproofing.tech
-		}
-
-		if (banMember.kickable) {
-			banMember.ban();
-			return '✓ Kicked ' + banMember.user.username;
-		} else {
-			return 'member ' + banMember.user.username + ' isn\'t kickable';
-		}
-	} else {
-		return 'i don\'t know that person!';
-	}
-})
-	.setUsage('(user)')
-	.addAlias('kickuser')
-	.addAlias('kickmember')
-	.setDescription('kick a user')
-	.addExample('360111651602825216')
-	.addClientPermission('KICK_MEMBERS')
-	.addUserPermission('KICK_MEMBERS')
-	.setGuildOnly());
-
-cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {
-	const params = util.getParams(message);
-	return `${params[0]}°C is **${Math.round(((Number(params[0]) * 9 / 5) + 32) * 100) / 100}°F**`;
-})
-	.addAliases(['farenheit', 'farenheight', 'fairenheight', 'fairenheit', 'fahrenheight', 'americancelcius', 'stupidunit', 'notcelsius', 'notcelcius', 'weirdformulaunit', 'multiplyby1.8andadd32', '華氏', 'farandheight', 'westcelcius', 'unitusedbyonecountry', 'multiplybythesquarerootof3.24andadd8multipliedby4', 'multiplyby16.8minus6dividedby6andaddthesquarerootof1089minus1', 'solveaina=x*1.8+32ifx=', 'train1ismovingat1.8xthespeedoftrain2,howfarawayfromthestartinmetersistrain1ifitstarted32metersfurtherawaythantrain2andtrain2sdistancefromthestartinmetersis'])
-	.setUsage('(number)')
-	.setDescription('convert celsius to fahrenheit')
-	.addExample('15'));
-
-cs.addCommand('utilities', new cs.SimpleCommand('celsius', (message) => {
-	const params = util.getParams(message);
-	return `${params[0]}°F is **${Math.round(((Number(params[0]) - 32) * 5 / 9) * 100) / 100}°C**`;
-})
-	.setUsage('(number)')
-	.addAlias('celcius')
-	.setDescription('convert fahrenheit to celsius')
-	.addExample('59'));
-
-cs.addCommand('utilities', new cs.SimpleCommand('kelvin', (message) => {
-	const params = util.getParams(message);
-	return `${params[0]}°C is ${Number(params[0]) < -273.15 ? `**physically impossible** ~~(buut would be **${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**)~~` : `**${Math.round((Number(params[0]) + 273.15) * 100) / 100}K**`}`;
-})
-	.setUsage('(number)')
-	.addAlias('kevin')
-	.setDescription('convert celsius to kelvin')
-	.addExample('15'));
-
-cs.addCommand('utilities', new cs.SimpleCommand('mbs', (message) => {
-	const params = util.getParams(message);
-	return `${params[0]}Mbps is **${Math.round((Number(params[0])) / 8 * 100) / 100}MB/s**`;
-})
-	.setUsage('(number)')
-	.addAlias('mb/s')
-	.setDescription('convert mbps to mb/s')
-	.addExample('8'));
-
-cs.addCommand('utilities', new cs.SimpleCommand('mbps', (message) => {
-	const params = util.getParams(message);
-	return `${params[0]}MB/s is **${Math.round((Number(params[0])) * 800) / 100}Mbps**`;
-})
-	.setUsage('(number)')
-	.setDescription('convert mb/s to mbps')
-	.addExample('1'));
+md.addCommands(cs, bot);
+cv.addCommands(cs);
+sp.addCommands(cs, bot);
+gay.addCommands(cs, bot);
+translate.addCommands(cs);
+wiki.addCommands(cs);
+video.addCommands(cs);
 
 cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
@@ -578,18 +262,6 @@ cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 	.setHidden()
 	.addAlias('ква')
 	.setDescription('ква'));
-
-cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
-	const params = util.getParams(msg);
-	if (!params[0]) { params[0] = '20'; }
-	return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac'];
-})
-	.setDescription('compresses a video')
-	.addAlias('compression')
-	.setUsage('[number]')
-	.addClientPermission('ATTACH_FILES')
-	.setGlobalCooldown(1000)
-	.setUserCooldown(5000));
 
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	const params = util.getParams(msg);
@@ -822,37 +494,6 @@ cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
 	.addClientPermissions(['MANAGE_MESSAGES', 'BAN_MEMBERS'])
 	.addAlias('permtestingalias'));
 
-cs.addCommand('core', new cs.Command('info', (msg) => {
-	msg.channel.send(new Discord.RichEmbed()
-		.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.displayAvatarURL)
-		.setTitle(`${bot.user.username} stats`)
-		.setURL(packageJson.repository)
-		.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
-		.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
-		.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 3)}%**
-Last 30 seconds: **${util.roundNumber(cpuUsage30sec, 3)}%**
-Last minute: **${util.roundNumber(cpuUsageMin, 3)}%**
-Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
-		.addField('Uptime', util.formatMiliseconds(process.uptime()), true));
-})
-	.addAlias('stats')
-	.setDescription('get some info and stats about the bot'));
-
-cs.addCommand('core', new cs.Command('hoststats', (msg) => {
-	let memtotal = util.formatFileSize(os.totalmem());
-	let memused = util.formatFileSize(os.totalmem() - os.freemem());
-
-	msg.channel.send(new Discord.RichEmbed()
-		.setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()}) version ${os.release()}`)
-		.setTitle(`Host's stats - ${os.hostname()}`)
-		.setDescription('Stats for the bot\'s host')
-		.addField('Uptime', util.formatMiliseconds(os.uptime()), true)
-		.addField('Memory', `${memused}/${memtotal} used`, true)
-		.addField('CPU', `${os.cpus()[0].model}`, true));
-})
-	.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])
-	.setDescription('get some info and stats about the bot'));
-
 cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 	const params = util.getParams(msg);
 	if (!params[0]) { params[0] = prefix; }
@@ -878,75 +519,6 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 	.setDescription('set a custom prefix for boteline')
 	.setUsage('[string]')
 	.addUserPermission('MANAGE_GUILD'));
-
-cs.addCommand('utilities', new cs.Command('splatoon', (msg) => {
-	util.checkSplatoon().then(obj => {
-		let data = obj.data;
-
-		let timeLeft = Math.floor(data.league[0].end_time-Date.now()/1000);
-
-		const regularemote = bot.emojis.get('639188039503183907') !== undefined ? bot.emojis.get('639188039503183907').toString()+' ' : '';
-		const rankedemote = bot.emojis.get('639188039658242078') !== undefined ? bot.emojis.get('639188039658242078').toString()+' ' : '';
-		const leagueemote = bot.emojis.get('639188038089703452') !== undefined ? bot.emojis.get('639188038089703452').toString()+' ' : '';
-
-		let embed = new Discord.RichEmbed()
-			.setTitle('Splatoon 2 Map Schedules')
-			.addField(regularemote+'Regular Battle',
-				`${data.regular[0].stage_a.name}, ${data.regular[0].stage_b.name}
-${data.regular[0].rule.name}`)
-			.addField(rankedemote+'Ranked Battle',
-				`${data.gachi[0].stage_a.name}, ${data.gachi[0].stage_b.name}
-${data.gachi[0].rule.name}`)
-			.addField(leagueemote+'League Battle',
-				`${data.league[0].stage_a.name}, ${data.league[0].stage_b.name}
-${data.league[0].rule.name}`)
-			.setColor('22FF22')
-			.setDescription(`${util.formatTime(new Date(data.league[0].start_time*1000))} - ${util.formatTime(new Date(data.league[0].end_time*1000))}
-${Math.floor(timeLeft/60/60)%24}h ${Math.floor(timeLeft/60)%60}m ${timeLeft%60}s left`)
-			.setURL('https://splatoon2.ink/')
-			.setImage('https://splatoon2.ink/assets/splatnet'+data.regular[0].stage_a.image)
-			.setFooter('Data last fetched '+obj.timer.toDateString()+', '+util.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
-
-		msg.channel.send('', embed);
-	});
-})
-	.addAlias('splatoonschedule')
-	.addAlias('splatoon2')
-	.setDescription('Check the schedule of the Splatoon 2 stage rotations')
-	.addClientPermission('EMBED_LINKS'));
-
-cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
-	util.checkSalmon().then(obj => {
-		let data = obj.data;
-
-		let timeLeftEnd = Math.floor(data.details[0].end_time-Date.now()/1000);
-		let timeLeftStart = Math.floor(data.details[0].start_time-Date.now()/1000);
-
-		let weapons = [];
-		data.details[0].weapons.forEach(w => {
-			weapons.push(w.weapon.name);
-		});
-
-		let embed = new Discord.RichEmbed()
-			.setTitle('Splatoon 2 Salmon Run Schedule')
-			.addField('Weapons',
-				`${weapons.join(', ')}`)
-			.addField('Map',
-				`${data.details[0].stage.name}`)
-			.setColor('FF9922')
-			.setDescription(`${new Date(data.details[0].start_time*1000).toUTCString()} - ${new Date(data.details[0].end_time*1000).toUTCString()}
-		${timeLeftStart < 0 ? `${Math.floor(timeLeftEnd/60/60)%24}h ${Math.floor(timeLeftEnd/60)%60}m ${timeLeftEnd%60}s left until end` : `${Math.floor(timeLeftStart/60/60)%24}h ${Math.floor(timeLeftStart/60)%60}m ${timeLeftStart%60}s left until start`}`)
-			.setURL('https://splatoon2.ink/')
-			.setImage('https://splatoon2.ink/assets/splatnet'+data.details[0].stage.image)
-			.setFooter('Data last fetched '+obj.timer.toDateString()+', '+util.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
-
-		msg.channel.send('', embed);
-	});
-})
-	.addAlias('salmon')
-	.addAlias('salmonschedule')
-	.setDescription('Check the schedule of the Splatoon 2 Salmon Run stage/weapon rotations')
-	.addClientPermission('EMBED_LINKS'));
 
 cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
 	let params = util.getParams(msg);
@@ -981,278 +553,6 @@ cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
 	.addExample('jill')
 	.setUsage('(string)')
 	.setDisplayUsage('(thing to test)'));
-
-cs.addCommand('image', new CanvasGradientApplyCommand('gay',
-	['rgba(255,0,0,0.5)',
-		'rgba(255,127,0,0.5)',
-		'rgba(255,255,0,0.5)',
-		'rgba(0,255,0,0.5)',
-		'rgba(0,255,255,0.5)',
-		'rgba(0,0,255,0.5)',
-		'rgba(255,0,255,0.5)'],
-	'GAY')
-	.setDescription('puts a gay (homosexual) flag over your (or someone else\'s) icon')
-	.addAlias('gayoverlay')
-	.setGlobalCooldown(100)
-	.setUserCooldown(1000));
-
-cs.addCommand('image', new CanvasGradientApplyCommand('trans',
-	['rgba(85,205,252,0.6)',
-		'rgba(247,168,184,0.6)',
-		'rgba(255,255,255,0.6)',
-		'rgba(247,168,184,0.6)',
-		'rgba(85,205,252,0.6)'],
-	'TRANS')
-	.setDescription('puts a trans (transgender) flag over your (or someone else\'s) icon')
-	.addAlias('transoverlay')
-	.setGlobalCooldown(100)
-	.setUserCooldown(1000));
-
-cs.addCommand('image', new CanvasGradientApplyCommand('bi',
-	['rgba(214,2,112,0.6)',
-		'rgba(214,2,112,0.6)',
-		'rgba(155,79,150,0.6)',
-		'rgba(0,56,168,0.6)',
-		'rgba(0,56,168,0.6)'],
-	'BI')
-	.setDescription('puts a bi (bisexual) flag over your (or someone else\'s) icon')
-	.addAlias('bioverlay')
-	.setGlobalCooldown(100)
-	.setUserCooldown(1000));
-
-cs.addCommand('image', new CanvasGradientApplyCommand('enby',
-	['rgba(255,244,51,0.6)',
-		'rgba(255,255,255,0.6)',
-		'rgba(155,89,208,0.6)',
-		'rgba(0,0,0,0.6)'],
-	'ENBY')
-	.setDescription('puts an enby (non-binary) flag over your (or someone else\'s) icon')
-	.addAlias('enbyoverlay')
-	.setGlobalCooldown(100)
-	.setUserCooldown(1000));
-
-cs.addCommand('image', new CanvasGradientApplyCommand('pan',
-	['rgba(255, 27, 141,0.6)',
-		'rgba(255, 218, 0,0.6)',
-		'rgba(27, 179, 255,0.6)'],
-	'PAN')
-	.setDescription('puts a pan (pansexual) flag over your (or someone else\'s) icon')
-	.addAlias('panoverlay')
-	.setGlobalCooldown(100)
-	.setUserCooldown(1000));
-
-cs.addCommand('image', new CanvasGradientApplyCommand('ace',
-	['rgba(0, 0, 0,0.6)',
-		'rgba(127, 127, 127,0.6)',
-		'rgba(255, 255, 255,0.6)',
-		'rgba(102, 0, 102,0.6)'],
-	'ASEXUAL')
-	.setDescription('puts a ace (asexual) flag over your (or someone else\'s) icon')
-	.addAlias('aceoverlay')
-	.setGlobalCooldown(100)
-	.setUserCooldown(1000));
-
-cs.addCommand('image', new CanvasGradientApplyCommand('lesbian',
-	['rgba(214, 41, 0,0.6)',
-		'rgba(255, 155, 85,0.6)',
-		'rgba(255, 255, 255,0.6)',
-		'rgba(212, 97, 166,0.6)',
-		'rgba(165, 0, 98,0.6)'],
-	'LESBIAN')
-	.setDescription('puts a lesbian flag over your (or someone else\'s) icon')
-	.addAlias('lesbianoverlay')
-	.setGlobalCooldown(100)
-	.setUserCooldown(1000));
-
-if (yt !== null) {
-	cs.addCommand('utilities', new cs.Command('autotranslate', (msg : Discord.Message) => {
-		let params = util.getParams(msg);
-		let lang = params[0];
-		params.shift();
-
-		msg.channel.startTyping();
-
-		yt.translate(params.join(' '), {to: lang, format: 'plain'}).then(translated => {
-			let translateEmbed = new Discord.RichEmbed()
-				.setDescription(translated)
-				.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated to ${util.objectFlip(yandex_langs)[lang]} will be...`)
-				.setFooter('Powered by Yandex.Translate')
-				.setColor('#FF0000');
-			msg.channel.send('', {embed: translateEmbed});
-			msg.channel.stopTyping();
-		})
-			.catch(err => {
-				msg.channel.send('An error occured! `'+err+'`\nThis is likely Yandex.Translate\'s fault, so blame them');
-				msg.channel.stopTyping();
-			});
-	})
-		.addClientPermission('EMBED_LINKS')
-		.setDescription(prefix + 'translate, but with the first language set to auto')
-		.addAlias('atransl')
-		.addAlias('atr')
-		.setUsage('(string) (string)')
-		.setDisplayUsage('(language to translate to) (text, language is autodetected)')
-		.addExample('en тестируем ботелине')
-		.setGlobalCooldown(500)
-		.setUserCooldown(1000));
-
-	cs.addCommand('utilities', new cs.Command('translate', (msg : Discord.Message) => {
-		let params = util.getParams(msg);
-		let langfrom = params[0];
-		let langto = params[1];
-		params.splice(0, 2);
-
-		msg.channel.startTyping();
-
-		yt.translate(params.join(' '), {from: langfrom, to: langto, format: 'plain'}).then(translated => {
-			let translateEmbed = new Discord.RichEmbed()
-				.setDescription(translated)
-				.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${util.objectFlip(yandex_langs)[langfrom]} to ${util.objectFlip(yandex_langs)[langto]} will be...`)
-				.setFooter('Powered by Yandex.Translate')
-				.setColor('#FF0000');
-			msg.channel.send('', {embed: translateEmbed});
-			msg.channel.stopTyping();
-		})
-			.catch(err => {
-				msg.channel.send('An error occured! `'+err+'`\nThis is likely Yandex.Translate\'s fault, so blame them');
-				msg.channel.stopTyping();
-			});
-	})
-		.addClientPermission('EMBED_LINKS')
-		.setDescription('translate some text, get accepted langs list with '+prefix+'langs')
-		.addAlias('transl')
-		.addAlias('tr')
-		.setUsage('(string) (string) (string)')
-		.setDisplayUsage('(language to translate from) (language to translate to) (text)')
-		.addExample('ru en тестируем ботелине')
-		.setGlobalCooldown(500)
-		.setUserCooldown(1000));
-
-	cs.addCommand('fun', new cs.Command('masstranslate', async (msg : Discord.Message) => {
-		let params = util.getParams(msg);
-		let times = Number(params[0]);
-
-		if (times > 25) {
-			msg.channel.send('count cannot be over 25');
-			return;
-		}
-
-		let forcelang : string = null;
-		let mode : number;
-		let cutoff = 2;
-		switch(params[1]) {
-		case 'curated':
-			mode = 0; break;
-		case 'normal':
-			mode = 1; break;
-		case 'auto':
-			mode = 2; break;
-		case 'hard':
-			mode = 3; break;
-		default:
-			if (Object.values(yandex_langs).includes(params[1])) {
-				mode = 4;
-				forcelang = params[1];
-			} else {
-				mode = 0;
-				cutoff = 1;
-			}
-			break;
-		case 'legacy':
-			mode = 5; break;
-		}
-
-		params.splice(0, cutoff);
-
-		// stupid hack . Im sorry in advance
-		let progMessage;
-		let progUpdateTimeout = 0;
-		await msg.channel.send(`getting languages... (mode ${mode})`).then(m => {
-			progMessage = m;
-		});
-
-		let langCodes = [];
-		if (mode === 0) {
-			langCodes = ['az', 'mt', 'hy', 'mhr', 'bs', 'cy', 'vi', 'ht', 'ceb', 'gl', 'mrj', 'el', 'da', 'gu', 'su', 'tg', 'th', 'he', 'ga', 'tt', 'tr', 'kk', 'uz', 'ur', 'xh', 'lv', 'lb', 'jv', 'ja'];
-		} else if (mode === 5) {
-			let langs = await yt.getLangs();
-
-			langs.dirs.forEach(l => {
-				l.split('-').forEach(lang => {
-					if (!langCodes.includes(lang)) langCodes.push(lang);
-				});
-			});
-		} else {
-			langCodes = Object.values(yandex_langs);
-		}
-
-		let text = params.join(' ');
-		let randLangs = [];
-		if (mode === 4) {
-			let origlang = await yt.detect(params.join(' '));
-			randLangs = Array(times).fill('').map((v,i) => (i%2 === 0) ? forcelang : origlang);
-		} else {
-			randLangs = Array(times).fill('').map(() => langCodes[Math.floor(Math.random()*langCodes.length)]);
-		}
-		
-		for(let i = 0; i < times; i++) {
-			let fromLang = randLangs[i-1];
-			if (mode === 2) fromLang = undefined;
-			if (mode === 3) fromLang = langCodes[Math.floor(Math.random()*langCodes.length)];
-
-			text = await yt.translate(text, {from: fromLang, to: randLangs[i], format: 'plain'});
-
-			if (progUpdateTimeout < Date.now() - 1000) {
-				progMessage.edit(`masstranslating using mode ${mode}... ${i+1}/${times} \`[${util.progress(i, times, 10)}]\`
-${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', ')}`);
-				progUpdateTimeout = Date.now() + 1000;
-			}
-		}
-
-		progMessage.edit('converting back to english...');
-		text = await yt.translate(text, {from: randLangs[times], to: 'en', format: 'plain'});
-
-		let translateEmbed = new Discord.RichEmbed()
-			.setDescription(text)
-			.setTitle(`\`${util.shortenStr(params.join(' '), 100).split('\n').join(' ')}\` translated ${times} times will be...`)
-			.setFooter('Powered by Yandex.Translate, mode '+mode)
-			.setColor('#FF0000');
-		progMessage.edit('', {embed: translateEmbed});
-	})
-		.addClientPermission('EMBED_LINKS')
-		.setDescription(`translate a piece of text back and forth a certain amount of times to random languages before translating it back to english. will mostly return gibberish if set to a high value
-modes are normal, hard, curated, (langname), legacy`)
-		.addAlias('masstransl')
-		.addAlias('mtr')
-		.setUsage('(number) (string) [string]')
-		.setDisplayUsage('(how many times to translate it) [mode] (text, language is autodetected)')
-		.addExample('5 this piece of text will likely come out as garbage! but fun garbage at that. try it out!')
-		.addExample('5 ja this text will be translated back and forth inbetween english and japanese')
-		.setGlobalCooldown(700)
-		.setUserCooldown(3000));
-
-	cs.addCommand('utilities', new cs.Command('langs', (msg : Discord.Message) => {
-		msg.channel.send('The supported languages for '+prefix+'translate are:\n' + Object.keys(yandex_langs).map(k => k + ' (' + yandex_langs[k] + ')').join(', '));
-	})
-		.setDescription('get the available languages for '+prefix+'translate'));
-}
-
-cs.addCommand('core', new cs.Command('listdependencies', (msg) => {
-	let dependencyEmbed = new Discord.RichEmbed()
-		.setTitle('Boteline Dependencies')
-		.setColor('#FFFF00')
-		.setDescription('Dependencies taken from package.json, dependency versions taken from package-lock.json');
-	
-	Object.keys(packageJson.dependencies).forEach((dependency : string) => {
-		if (!dependency.startsWith('@') && packageLock.dependencies[dependency] !== undefined) dependencyEmbed.addField(dependency, packageLock.dependencies[dependency].version, true);
-	});
-
-	msg.channel.send('', {embed: dependencyEmbed});
-})
-	.addAlias('dependencies')
-	.addAlias('depends')
-	.addClientPermission('EMBED_LINKS')
-	.setDescription('list the dependencies boteline uses, and their versions'));
 
 cs.addCommand('moderating', new cs.Command('starboard', (msg : Discord.Message) => {
 	let params = util.getParams(msg);
@@ -1369,7 +669,7 @@ cs.addCommand('moderating', new cs.SimpleCommand('blacklistuser', msg => {
 
 	if (params[0] === process.env.OWNER) return 'you can\'t blacklist the owner!';
 	if (params[1]) blacklistcmds = params.slice(1);
-	if (!userData[params[0]]) userData[msg.author.id] = {};
+	if (!userData[params[0]]) userData[params[0]] = {};
 
 	if (blacklistcmds.length > 0) {
 		userData[params[0]].blacklist = blacklistcmds;
@@ -1386,60 +686,6 @@ cs.addCommand('moderating', new cs.SimpleCommand('blacklistuser', msg => {
 	.setDescription('prevent a user from accessing commands (set to . for all commands, provide no second argument for remove)')
 	.setUsage('(number) [string]')
 	.setDisplayUsage('(userid) [command]..'));
-if (wiki) {
-	cs.addCommand('wiki', new cs.Command('wiki', async msg => {
-		const params = util.getParams(msg);
-		let page_data = await wiki.page(params.join(' '));
-
-		if (page_data.wikitext < 0) {
-			msg.channel.send('page not found!');
-		} else {
-			msg.channel.send(`https://en.wikipedia.org/wiki/${encodeURI(page_data.title.split(' ').join('_'))}`);
-		}
-	})
-		.addExample('Cock and ball torture')
-		.setDescription('looks up an article in Wikipedia')
-		.setUsage('(string)')
-		.setDisplayUsage('(artcle)')
-		.setGlobalCooldown(500)
-		.addAlias('wikipedia'));
-}
-
-if (wikimc) {
-	cs.addCommand('wiki', new cs.Command('mcwiki', async msg => {
-		const params = util.getParams(msg);
-		let page_data = await wikimc.page(params.join(' '));
-
-		if (page_data.wikitext < 0) {
-			msg.channel.send('page not found!');
-		} else {
-			msg.channel.send(`https://minecraft.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
-		}
-	})
-		.addExample('Bee')
-		.setDescription('looks up an article in the minecraft gamepedia')
-		.setUsage('(string)')
-		.setDisplayUsage('(artcle)')
-		.setGlobalCooldown(500));	
-}
-
-if (wikiterraria) {
-	cs.addCommand('wiki', new cs.Command('terrariawiki', async msg => {
-		const params = util.getParams(msg);
-		let page_data = await wikiterraria.page(params.join(' '));
-
-		if (page_data.wikitext < 0) {
-			msg.channel.send('page not found!');
-		} else {
-			msg.channel.send(`https://terraria.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
-		}
-	})
-		.addExample('Slime')
-		.setDescription('looks up an article in the terraria gamepedia')
-		.setUsage('(string)')
-		.setDisplayUsage('(artcle)')
-		.setGlobalCooldown(500));
-}
 
 cs.addCommand('fun', new cs.Command('hi', msg => {
 	msg.channel.send('', {files: ['assets/hi.png']});
