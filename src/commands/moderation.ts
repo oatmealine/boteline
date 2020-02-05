@@ -1,4 +1,4 @@
-import * as util from './util.js';
+import * as util from '../lib/util.js';
 import * as Discord from 'discord.js';
 
 Discord; // fuck you ts

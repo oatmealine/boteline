@@ -31,13 +31,13 @@ import * as urban from 'urban';
 import * as rq from 'request';
 
 // modules
-import * as cv from './convert';
-import * as md from './moderation';
-import * as sp from './splatoon';
-import * as gay from './gay';
-import * as translate from './translate';
-import * as wiki from './wiki';
-import * as video from './video';
+import * as cv from './commands/convert';
+import * as md from './commands/moderation';
+import * as sp from './commands/splatoon';
+import * as gay from './commands/gay';
+import * as translate from './commands/translate';
+import * as wiki from './commands/wiki';
+import * as video from './commands/video';
 
 // hardcoded, but cant do anything about it
 let pm2;

@@ -1,4 +1,4 @@
-import * as util from './util.js';
+import * as util from '../lib/util.js';
 
 export function addCommands(cs) {
 	cs.addCommand('utilities', new cs.SimpleCommand('fahrenheit', (message) => {

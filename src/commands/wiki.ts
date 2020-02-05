@@ -1,5 +1,5 @@
-import * as foxConsole from './lib/foxconsole';
-import * as util from './lib/util';
+import * as foxConsole from '../lib/foxconsole';
+import * as util from '../lib/util';
 
 // wikimedia api
 let wiki, wikimc, wikiterraria;

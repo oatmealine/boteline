@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import * as Discord from 'discord.js';
-import * as foxConsole from './lib/foxconsole';
-import * as util from './lib/util.js';
+import * as foxConsole from './foxconsole';
+import * as util from './util';
 
 function grammar(str: string) : string {
 	const newstring = str.slice(1, str.length);

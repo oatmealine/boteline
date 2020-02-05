@@ -1,6 +1,6 @@
-import * as util from './util.js';
+import * as util from '../lib/util.js';
 import * as Discord from 'discord.js';
-import * as cs from './commandsystem';
+import * as cs from '../lib/commandsystem';
 import { createCanvas, loadImage } from 'canvas';
 
 Discord;

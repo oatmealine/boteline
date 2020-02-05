@@ -1,7 +1,7 @@
 import * as Discord from 'discord.js';
 import * as os from 'os';
 import * as fs from 'fs';
-import * as util from './util';
+import * as util from '../lib/util';
 
 const packageJson = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }));
 const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', { encoding: 'utf8' }));

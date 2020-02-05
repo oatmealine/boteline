@@ -1,8 +1,8 @@
-import * as cs from './commandsystem';
+import * as cs from '../lib/commandsystem';
 import * as Discord from 'discord.js';
 import * as ffmpeg from 'fluent-ffmpeg';
-import * as util from './lib/util';
-import * as foxConsole from './lib/foxconsole';
+import * as util from '../lib/util';
+import * as foxConsole from '../lib/foxconsole';
 
 class FFMpegCommand extends cs.Command {
 	public inputOptions: Function

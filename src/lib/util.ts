@@ -1,6 +1,6 @@
 import * as rq from 'request';
 import * as Discord from 'discord.js';
-import * as foxconsole from './foxconsole.js';
+import * as foxconsole from './foxconsole';
 import * as fs from 'fs';
 
 const cache = {
