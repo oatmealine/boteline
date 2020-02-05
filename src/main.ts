@@ -19,9 +19,9 @@ const bot = new Discord.Client({
 
 let cs = require('./commandsystem');
 
-import * as foxConsole from './foxconsole.js';
+import * as foxConsole from './lib/foxconsole';
 
-import * as util from './util.js';
+import * as util from './lib/util.js';
 
 import {exec} from 'child_process';
 import * as fs from 'fs';
