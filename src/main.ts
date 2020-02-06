@@ -38,6 +38,7 @@ import * as gay from './commands/gay';
 import * as translate from './commands/translate';
 import * as wiki from './commands/wiki';
 import * as video from './commands/video';
+import * as info from './commands/info';
 
 // hardcoded, but cant do anything about it
 let pm2;
@@ -230,6 +231,7 @@ gay.addCommands(cs, bot);
 translate.addCommands(cs);
 wiki.addCommands(cs);
 video.addCommands(cs);
+info.addCommands(cs, bot);
 
 cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
