@@ -96,7 +96,7 @@ console.log(ch.bold(`
 `));
 foxConsole.info('adding commands...');
 
-function updateCoins() {
+function updateCoins(save = true) {
 	foxConsole.info('updating coin values');
 
 	/*
@@ -107,7 +107,8 @@ function updateCoins() {
 			 "strength": 0.25,
 			 "speed": 0.2
 			 "remaining": 4,
-			 "pastvalues": []
+			 "pastvalues": [],
+			 "weirdCrashing": false
 		 }
 
 		 value is the value of the coin in USD
@@ -116,12 +117,16 @@ function updateCoins() {
 		 speed is by how much the value will increase each update
 		 remaining is how much guaranteed updates are left before the graph switches direction
 		 pastvalues is an array of the past 10 values
+		 weirdcrashing is a schlattcoin-only value that determines if the value is crashing in a fucked-up way
 		*/
 
 	// boteline coins
 	coinValue.pastvalues.push(coinValue.value);
-	if (coinValue.pastvalues.length > 40)
+	if (coinValue.pastvalues.length > 80) {
 		coinValue.pastvalues.shift();
+	} else {
+		updateCoins(false);
+	}
 
 	let oppositeDir = (dir) => {
 		if (dir === 'up') return 'down';
@@ -140,25 +145,42 @@ function updateCoins() {
 	coinValue.remaining--;
 
 	if (coinValue.remaining <= 0) {
-		coinValue.remaining = Math.ceil(Math.random() * 4) + 2;
+		coinValue.remaining = Math.ceil(Math.random() * 4);
 		coinValue.direction = Math.random() >= 0.5 ? 'up' : 'down';
-		coinValue.speed = Math.random() * 3 + 1;
-		coinValue.strength = Math.random() * 0.4 + 0.1;
+		coinValue.speed = Math.random() * 23 + 10;
+		coinValue.strength = Math.random() * 0.3 + 0.1;
+	}
+
+	if (Math.random() > 0.998) { // the economy has a really rare chance of crashing! :o
+		schlattCoinValue.direction = 'down';
+		schlattCoinValue.remaining = 4;
+		schlattCoinValue.strength = 0.2;
+		schlattCoinValue.speed = Math.random() * 8 + 30;
+	}
+
+	if (Math.random() > 0.999) { // and a really rare chance of rising to heck
+		schlattCoinValue.direction = 'up';
+		schlattCoinValue.remaining = 3;
+		schlattCoinValue.strength = 0.2;
+		schlattCoinValue.speed = Math.random() * 7 + 30;
 	}
 
 	if (coinValue.value < 0) { // just incase this ever DOES happen
 		coinValue.value = Math.abs(coinValue.value);
-		coinValue.remaining = 3;
+		coinValue.remaining = 2;
 		coinValue.direction = 'up';
 	}
-
+	
 	if (coinValue.value > 20000) // i hope this never happens but i mean you never know
 		coinValue.direction = 'down';
 
 	// schlatt coins
 	schlattCoinValue.pastvalues.push(schlattCoinValue.value);
-	if (schlattCoinValue.pastvalues.length > 40)
+	if (schlattCoinValue.pastvalues.length > 80) {
 		schlattCoinValue.pastvalues.shift();
+	} else {
+		updateCoins(false);
+	}
 
 	direction = Math.random() < schlattCoinValue.strength ? oppositeDir(schlattCoinValue.direction) : schlattCoinValue.direction; // if the strength is low enough, the higher the chance itll go the opposite direction
 
@@ -171,31 +193,42 @@ function updateCoins() {
 	schlattCoinValue.value += increaseAmount;
 	schlattCoinValue.remaining--;
 
-	if (schlattCoinValue.remaining <= 0) {
+	if (schlattCoinValue.remaining <= 0 && !schlattCoinValue.weirdCrashing) {
 		schlattCoinValue.remaining = Math.ceil(Math.random() * 5) + 1;
 		schlattCoinValue.direction = Math.random() >= 0.55 ? 'up' : 'down';
 		schlattCoinValue.speed = Math.random() * 30 + 12;
 		schlattCoinValue.strength = Math.random() * 0.6 + 0.2;
 	}
 
-	if (schlattCoinValue.value < 0) { // just incase this ever DOES happen
-		schlattCoinValue.value = Math.abs(schlattCoinValue.value);
-		schlattCoinValue.remaining = 2;
-		schlattCoinValue.direction = 'up';
-	}
-
-	if (Math.random() > 0.95) { // the economy has a really rare chance of crashing! :o
+	if (Math.random() > 0.96) { // the economy has a really rare chance of crashing! :o
 		schlattCoinValue.direction = 'down';
 		schlattCoinValue.remaining = 5;
 		schlattCoinValue.strength = 0.1;
 		schlattCoinValue.speed = Math.random() * 50 + 60;
 	}
 
-	if (Math.random() > 0.98) { // and a really rare chance of rising to heck
+	if (Math.random() > 0.99) { // and a really rare chance of rising to heck
 		schlattCoinValue.direction = 'up';
 		schlattCoinValue.remaining = 2;
 		schlattCoinValue.strength = 0.1;
 		schlattCoinValue.speed = Math.random() * 30 + 30;
+	}
+
+	if (schlattCoinValue.value > 400 && Math.random() > 0.99) {
+		schlattCoinValue.weirdCrashing = true;
+		schlattCoinValue.remaining = Math.round(Math.random()) + 1;
+	}
+
+	if (schlattCoinValue.weirdCrashing) {
+		schlattCoinValue.speed = schlattCoinValue.value / 2 + 10;
+		schlattCoinValue.strength = 0;
+		schlattCoinValue.direction = 'down';
+
+		if (schlattCoinValue.value < 5 || schlattCoinValue.remaining <= 0) schlattCoinValue.weirdCrashing = false;
+	}
+
+	if (schlattCoinValue.value < 0) { // just incase this ever DOES happen
+		schlattCoinValue.value = Math.abs(schlattCoinValue.value);
 	}
 
 	if (schlattCoinValue.value > 30000) // i hope this never happens but i mean you never know
@@ -204,16 +237,18 @@ function updateCoins() {
 	schlattCoinValue.value = util.roundNumber(schlattCoinValue.value, 5);
 	coinValue.value = util.roundNumber(coinValue.value, 5);
 
-	fs.writeFile('./data/coinvalue.json', JSON.stringify(coinValue), (err) => {
-		if (err) {
-			foxConsole.error('failed saving coinvalue: ' + err);
-		}
-	});
-	fs.writeFile('./data/schlattcoinvalue.json', JSON.stringify(schlattCoinValue), (err) => {
-		if (err) {
-			foxConsole.error('failed saving coinvalue: ' + err);
-		}
-	});
+	if (save) {
+		fs.writeFile('./data/coinvalue.json', JSON.stringify(coinValue), (err) => {
+			if (err) {
+				foxConsole.error('failed saving coinvalue: ' + err);
+			}
+		});
+		fs.writeFile('./data/schlattcoinvalue.json', JSON.stringify(schlattCoinValue), (err) => {
+			if (err) {
+				foxConsole.error('failed saving coinvalue: ' + err);
+			}
+		});
+	}
 }
 
 cs.addCommand('core', new cs.SimpleCommand('invite', () => {
@@ -817,6 +852,10 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuys', msg => {
 		params[0] = params[0].replace('$', '');
 		invmoney = Number(params[0]);
 	}
+	if (Number(params[0]) != Number(params[0].replace('%', ''))) {
+		params[0] = params[0].replace('%', '');
+		invmoney = Number(params[0])/100 * user.balance;
+	}
 	if (isNaN(Number(params[0])) && isNaN(invmoney)) return 'that isn\'t a number!';
 	if (user.balance < invmoney) return 'you dont have enough money in your account!';
 	if (invmoney <= 0) return 'you cant buy that little!';
@@ -829,7 +868,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuys', msg => {
 })
 	.setDescription('buy an amount of schlattcoin, use `all` to buy as many as possible')
 	.setUsage('(string)')
-	.setDisplayUsage('(coin amount, or dollars)')
+	.setDisplayUsage('(coin amount, percentage, or dollars)')
 	.addAlias('cinv'));
 
 cs.addCommand('coin', new cs.SimpleCommand('csells', msg => {
@@ -866,13 +905,17 @@ cs.addCommand('coin', new cs.Command('cchart', msg => {
 					label: 'Boteline Coins',
 					data: coinValue.pastvalues.concat([coinValue.value]),
 					fill: false,
-					borderColor: 'red'
+					borderColor: 'red',
+					borderWidth: 3,
+					pointRadius: 0
 				},
 				{
 					label: 'Schlattcoin',
 					data: schlattCoinValue.pastvalues.concat([schlattCoinValue.value]),
 					fill: false,
-					borderColor: 'blue'
+					borderColor: 'blue',
+					borderWidth: 3,
+					pointRadius: 0
 				}
 			]
 		},
