@@ -122,7 +122,7 @@ function updateCoins(save = true) {
 
 	// boteline coins
 	coinValue.pastvalues.push(coinValue.value);
-	if (coinValue.pastvalues.length > 80) {
+	if (coinValue.pastvalues.length > 40) {
 		coinValue.pastvalues.shift();
 	} else {
 		updateCoins(false);
@@ -176,7 +176,7 @@ function updateCoins(save = true) {
 
 	// schlatt coins
 	schlattCoinValue.pastvalues.push(schlattCoinValue.value);
-	if (schlattCoinValue.pastvalues.length > 80) {
+	if (schlattCoinValue.pastvalues.length > 40) {
 		schlattCoinValue.pastvalues.shift();
 	} else {
 		updateCoins(false);
