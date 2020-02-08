@@ -1,9 +1,6 @@
 // libraries & modules
 import * as Discord from 'discord.js';
 const bot = new Discord.Client({
-	messageCacheMaxSize: 400,
-	messageCacheLifetime: 600,
-	messageSweepInterval: 100,
 	disableEveryone: true,
 	disabledEvents: ['RESUMED',
 		'GUILD_BAN_ADD',
