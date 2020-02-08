@@ -77,6 +77,8 @@ let application: Discord.OAuth2Application;
 
 let starboardBinds = {};
 
+let lastCoinUpdateDate = Date.now();
+
 console.log(ch.red.bold(`boteline v${version}`));
 if (process.env.DEBUG) { console.debug(ch.grey('debug printing on')); }
 
@@ -98,6 +100,8 @@ foxConsole.info('adding commands...');
 
 function updateCoins(save = true) {
 	foxConsole.info('updating coin values');
+
+	lastCoinUpdateDate = Date.now();
 
 	/*
 		 sample coin data:
@@ -780,7 +784,8 @@ cs.addCommand('coin', new cs.SimpleCommand('cval', () => {
 	let chartemsch = schlattCoinValue.value < schlattCoinValue.pastvalues[schlattCoinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
 	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ ${chartem}
 1SC is currently worth ${util.roundNumber(schlattCoinValue.value, 2)}$ ${chartemsch}
-(boteline coins/schlattcoin are not a real currency/cryptocurrency!)`;
+(boteline coins/schlattcoin are not a real currency/cryptocurrency!)
+The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastCoinUpdateDate)) / 1000, 1)}s`;
 })
 	.setDescription('check the coin values'));
 
@@ -1185,7 +1190,7 @@ bot.on('ready', () => {
 	}, 120000);
 
 	// update boteline coin stuff
-	bot.setInterval(updateCoins, 180000);
+	bot.setInterval(updateCoins, 110000);
 
 	cs.setClient(bot);
 
