@@ -1,6 +1,6 @@
 {
   "name": "boteline",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "a fun bot tm",
   "main": "main.js",
   "scripts": {
