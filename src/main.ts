@@ -17,7 +17,7 @@ const bot = new Discord.Client({
 	]
 });
 
-let cs = require('./commandsystem');
+let cs = require('./lib/commandsystem');
 
 import * as foxConsole from './lib/foxconsole';
 
@@ -981,12 +981,14 @@ bot.on('message', (msg) => {
 			switch (cmd) {
 			case 'eval':
 			case 'debug':
+			case 'seval':
+			case 'sdebug':
 				try {
 					const code = content.replace(cmd + ' ', '');
 					let evaled = eval(code);
 
 					if (typeof evaled !== 'string') {
-						evaled = require('util').inspect(evaled);
+						evaled = require('util').inspect(evaled, {depth: 1, maxArrayLength: null});
 					}
 
 					const embed = {
@@ -994,18 +996,18 @@ bot.on('message', (msg) => {
 						color: '990000',
 						fields: [{
 							name: 'Input',
-							value: '```xl\n' + code + '\n```',
+							value: '```xl\n' + util.shortenStr(code, 900) + '\n```',
 							inline: true,
 						},
 						{
 							name: 'Output',
-							value: '```xl\n' + clean(evaled) + '\n```',
+							value: '```xl\n' + util.shortenStr(clean(evaled), 900) + '\n```',
 							inline: true,
 						},
 						],
 					};
 
-					msg.channel.send('', { embed });
+					if (!msg.content.startsWith(prefix + 's')) msg.channel.send('', { embed });
 					msg.react('☑');
 				} catch (err) {
 					msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
@@ -1020,11 +1022,14 @@ bot.on('message', (msg) => {
 				}
 				break;
 			case 'exec':
+			case 'sexec':
 				exec(content.replace(cmd + ' ', ''), (err, stdout) => {
 					if (err) {
-						msg.channel.send('```' + err + '```');
+						if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + err + '```');
+						msg.react('❌');
 					} else {
-						msg.channel.send('```' + stdout + '```');
+						if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + stdout + '```');
+						msg.react('☑');
 					}
 				});
 			}
