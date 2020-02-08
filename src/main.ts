@@ -241,6 +241,26 @@ function updateCoins(save = true) {
 	schlattCoinValue.value = util.roundNumber(schlattCoinValue.value, 5);
 	coinValue.value = util.roundNumber(coinValue.value, 5);
 
+	Object.values(guildSettings).forEach((v : any) => {
+		if (v.watchChannel && bot.channels.get(v.watchChannel)) {
+			let channel = bot.channels.get(v.watchChannel);
+			if (channel instanceof Discord.TextChannel) {
+				cs.commands.coin.cchart.cfunc(new Discord.Message( // janky solution but it should work
+					channel,
+					{
+						content: prefix + 'cchart',
+						author: bot.user,
+						embeds: [],
+						attachments: new Discord.Collection(),
+						createdTimestamp: 0,
+						editedTimestamp: 0
+					},
+					bot
+				), bot);
+			}
+		}
+	});
+
 	if (save) {
 		fs.writeFile('./data/coinvalue.json', JSON.stringify(coinValue), (err) => {
 			if (err) {
@@ -841,7 +861,6 @@ cs.addCommand('coin', new cs.SimpleCommand('csell', msg => {
 	.setUsage('(string)')
 	.setDisplayUsage('(coins)'));
 
-
 cs.addCommand('coin', new cs.SimpleCommand('cbuys', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	let user = userData[msg.author.id].invest;
@@ -970,6 +989,28 @@ cs.addCommand('coin', new cs.Command('ctop', msg => {
 
 	msg.channel.send(embed);
 }));
+
+cs.addCommand('coin', new cs.SimpleCommand('cwatch', msg => {
+	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
+
+	guildSettings[msg.guild.id].watchChannel = msg.channel.id;
+	
+	return 'done, will now log all updates here';
+})
+	.setDescription('send all updates to the current channel, use unwatch to stop')
+	.setGlobalCooldown(5000)
+	.addUserPermission('MANAGE_CHANNELS'));
+
+cs.addCommand('coin', new cs.SimpleCommand('cunwatch', msg => {
+	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
+
+	delete guildSettings[msg.guild.id].watchChannel;
+
+	return 'done, will now stop loging all updates';
+})
+	.setDescription('stop sending all updates to this guild\'s update channel')
+	.setGlobalCooldown(2000)
+	.addUserPermission('MANAGE_CHANNELS'));
 
 foxConsole.info('starting...');
 
@@ -1207,9 +1248,10 @@ bot.login(process.env.TOKEN).then(() => {
 
 // handle exiting the program (via ctrl+c, crash, etc)
 // shamelessly stolen from https://stackoverflow.com/a/14032965
-function exitHandler(options, exitCode : number) {
+function exitHandler(options, exitCode) {
 	if (options.cleanup) bot.destroy();
 	if (exitCode || exitCode === 0) {
+		if (exitCode instanceof Error) console.log(exitCode);
 		foxConsole.info('Exiting with code ' + exitCode);
 	}
 	if (options.exit) process.exit();
