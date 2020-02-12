@@ -307,3 +307,70 @@ export function objectFlip(obj) : Object {
 	});
 	return ret;
 }
+
+export function replaceAll(str: string, match: string, replace = '') : string {
+	return str.split(match).join(replace);
+}
+
+export function formatMinecraftCode(str: string) : string {
+	// §
+	let splits = replaceAll(str, '\n', '§x').split('§'); // §x isnt real, and we use it as a newline here 
+	let newSplits = [];
+
+	let closeBy = [];
+
+	splits.forEach((v, i) => {
+		newSplits[i] = v;
+		if (i === 0) return;
+
+		switch (v[0]) {
+		case 'm':
+			if (closeBy.includes('~~')) return;
+			newSplits[i] = '~~' + v.slice(1);
+			closeBy.push('~~');
+			break;
+		case 'n':
+			if (closeBy.includes('__')) return;
+			newSplits[i] = '__' + v.slice(1);
+			closeBy.push('__');
+			break;
+		case 'l':
+			if (closeBy.includes('**')) return;
+			newSplits[i] = '**' + v.slice(1);
+			closeBy.push('**');
+			break;
+		case 'o':
+			if (closeBy.includes('*')) return;
+			newSplits[i] = '*' + v.slice(1);
+			closeBy.push('*');
+			break;
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+		case 'a':
+		case 'b':
+		case 'c':
+		case 'd':
+		case 'e':
+		case 'f':
+		case 'r':
+			newSplits[i] = closeBy.reverse().join('') + v.slice(1);
+			closeBy = []; 
+			break;
+		case 'x':
+			newSplits[i] = closeBy.reverse().join('') + '\n' + v.slice(1);
+			closeBy = []; 
+			break;
+		default:
+			newSplits[i] = v.slice(1);
+		}
+	});
+
+	return newSplits.join('') + closeBy.reverse().join('');
+}

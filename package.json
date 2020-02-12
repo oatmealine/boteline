@@ -1,6 +1,6 @@
 {
   "name": "boteline",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "a fun bot tm",
   "main": "main.js",
   "scripts": {
@@ -24,6 +24,7 @@
     "discord.js": "^11.5.1",
     "dotenv": "^8.0.0",
     "fluent-ffmpeg": "^2.1.2",
+    "minecraft-server-util": "^1.1.0",
     "minesweeper": "^1.0.5",
     "node-opus": "^0.3.3",
     "request": "^2.88.0",

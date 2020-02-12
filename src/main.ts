@@ -1012,6 +1012,38 @@ cs.addCommand('coin', new cs.SimpleCommand('cunwatch', msg => {
 	.setGlobalCooldown(2000)
 	.addUserPermission('MANAGE_CHANNELS'));
 
+cs.addCommand('utilities', new cs.Command('mcping', async (msg) => {
+	const params = util.getParams(msg);
+	await msg.channel.startTyping();
+	
+	require('minecraft-server-util')(params[0], params[1])
+		.then(res => {
+			msg.channel.stopTyping();
+
+			const embed = new Discord.RichEmbed()
+				.setTitle(res.host + ':' + res.port)
+				.setDescription(util.formatMinecraftCode(res.descriptionText))
+				.addField('Version', `${res.version} (protocol version: ${res.protocolVersion})`, true);
+			
+			if (res.samplePlayers !== null && res.samplePlayers.length > 0) {
+				embed.addField(`Players - ${res.onlinePlayers}/${res.maxPlayers}`, res.samplePlayers.map(pl => `- ${pl.name}`).join(''));
+			} else {
+				embed.setDescription(embed.description + `\n${res.onlinePlayers}/${res.maxPlayers} online`);
+			}
+
+			if (res.modList !== null && res.modList.length > 0) {
+				embed.addField('Mods', res.modList.map(mod => `- ${mod}`).join(''));
+			}
+			
+			msg.channel.send(embed);
+		})
+		.catch(err => {
+			msg.channel.stopTyping();
+
+			msg.channel.send(err.toString());
+		});
+}));
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
