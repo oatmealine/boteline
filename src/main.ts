@@ -2,8 +2,7 @@
 import * as Discord from 'discord.js';
 const bot = new Discord.Client({
 	disableEveryone: true,
-	disabledEvents: ['RESUMED',
-		'GUILD_BAN_ADD',
+	disabledEvents: ['GUILD_BAN_ADD',
 		'GUILD_BAN_REMOVE',
 		'VOICE_STATE_UPDATE',
 		'TYPING_START',
