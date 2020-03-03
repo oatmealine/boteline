@@ -1016,13 +1016,13 @@ cs.addCommand('utilities', new cs.Command('mcping', async (msg) => {
 				.addField('Version', `${res.version} (protocol version: ${res.protocolVersion})`, true);
 			
 			if (res.samplePlayers !== null && res.samplePlayers.length > 0) {
-				embed.addField(`Players - ${res.onlinePlayers}/${res.maxPlayers}`, res.samplePlayers.map(pl => `- ${pl.name}`).join(''));
+				embed.addField(`Players - ${res.onlinePlayers}/${res.maxPlayers}`, res.samplePlayers.map(pl => `- ${pl.name}`).join('\n'));
 			} else {
 				embed.setDescription(embed.description + `\n${res.onlinePlayers}/${res.maxPlayers} online`);
 			}
 
 			if (res.modList !== null && res.modList.length > 0) {
-				embed.addField('Mods', res.modList.map(mod => `- ${mod}`).join(''));
+				embed.addField('Mods', res.modList.map(mod => `- ${JSON.stringify(mod)}`).join('\n'));
 			}
 			
 			msg.channel.send(embed);
