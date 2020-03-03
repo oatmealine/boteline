@@ -10,11 +10,11 @@ export function addCommands(cs, bot: Discord.Client) {
 
 			let timeLeft = Math.floor(data.league[0].end_time - Date.now() / 1000);
 
-			const regularemote = bot.emojis.get('639188039503183907') !== undefined ? bot.emojis.get('639188039503183907').toString() + ' ' : '';
-			const rankedemote = bot.emojis.get('639188039658242078') !== undefined ? bot.emojis.get('639188039658242078').toString() + ' ' : '';
-			const leagueemote = bot.emojis.get('639188038089703452') !== undefined ? bot.emojis.get('639188038089703452').toString() + ' ' : '';
+			const regularemote = bot.emojis.cache.get('639188039503183907') !== undefined ? bot.emojis.cache.get('639188039503183907').toString() + ' ' : '';
+			const rankedemote = bot.emojis.cache.get('639188039658242078') !== undefined ? bot.emojis.cache.get('639188039658242078').toString() + ' ' : '';
+			const leagueemote = bot.emojis.cache.get('639188038089703452') !== undefined ? bot.emojis.cache.get('639188038089703452').toString() + ' ' : '';
 
-			let embed = new Discord.RichEmbed()
+			let embed = new Discord.MessageEmbed()
 				.setTitle('Splatoon 2 Map Schedules')
 				.addField(regularemote + 'Regular Battle',
 					`${data.regular[0].stage_a.name}, ${data.regular[0].stage_b.name}
@@ -52,7 +52,7 @@ ${Math.floor(timeLeft / 60 / 60) % 24}h ${Math.floor(timeLeft / 60) % 60}m ${tim
 				weapons.push(w.weapon.name);
 			});
 
-			let embed = new Discord.RichEmbed()
+			let embed = new Discord.MessageEmbed()
 				.setTitle('Splatoon 2 Salmon Run Schedule')
 				.addField('Weapons',
 					`${weapons.join(', ')}`)

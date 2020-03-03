@@ -35,11 +35,11 @@ setInterval(() => {
 export function addCommands(cs, bot : Discord.Client) {
 
 	cs.addCommand('core', new cs.Command('info', (msg) => {
-		msg.channel.send(new Discord.RichEmbed()
-			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.displayAvatarURL)
+		msg.channel.send(new Discord.MessageEmbed()
+			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.displayAvatarURL({dynamic: true}))
 			.setTitle(`${bot.user.username} stats`)
 			.setURL(packageJson.repository)
-			.setDescription(`Currently in ${bot.guilds.size} servers, with ${bot.channels.size} channels and ${bot.users.size} users`)
+			.setDescription(`Currently in ${bot.guilds.cache.size} servers, with ${bot.channels.cache.size} cached channels and ${bot.users.cache.size} cached users`)
 			.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
 			.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 3)}%**
 Last 30 seconds: **${util.roundNumber(cpuUsage30sec, 3)}%**
@@ -54,7 +54,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 		let memtotal = util.formatFileSize(os.totalmem());
 		let memused = util.formatFileSize(os.totalmem() - os.freemem());
 
-		msg.channel.send(new Discord.RichEmbed()
+		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()}) version ${os.release()}`)
 			.setTitle(`Host's stats - ${os.hostname()}`)
 			.setDescription('Stats for the bot\'s host')
@@ -67,7 +67,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 
 
 	cs.addCommand('core', new cs.Command('listdependencies', (msg) => {
-		let dependencyEmbed = new Discord.RichEmbed()
+		let dependencyEmbed = new Discord.MessageEmbed()
 			.setTitle('Boteline Dependencies')
 			.setColor('#FFFF00')
 			.setDescription('Dependencies taken from package.json, dependency versions taken from package-lock.json');

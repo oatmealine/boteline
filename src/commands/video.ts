@@ -19,7 +19,7 @@ class FFMpegCommand extends cs.Command {
 			const attachments = [];
 
 			if (msg.attachments.size === 0) {
-				await msg.channel.fetchMessages({ limit: 20 }).then((msges) => {
+				await msg.channel.messages.fetch({ limit: 20 }).then((msges) => {
 					msges.array().forEach((m: Discord.Message) => {
 						if (m.attachments.size > 0) {
 							m.attachments.array().forEach((att) => {

@@ -18,8 +18,8 @@ export function progress(prog: number, max: number, len: number = 10) : string {
 	return '█'.repeat(Math.floor((prog / max) * len)) + '_'.repeat(len - (prog / max) * len);
 }
 
-export function makeDrinkEmbed(drink: any) : Discord.RichEmbed {
-	const embed = new Discord.RichEmbed({
+export function makeDrinkEmbed(drink: any) : Discord.MessageEmbed {
+	const embed = new Discord.MessageEmbed({
 		title: drink.name,
 		fields: [
 			{
@@ -173,12 +173,12 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
 	}
 
 	if(!isNaN(Number(parse))) {
-		return bot.users.get(parse) === undefined ? null : bot.users.get(parse);
+		return bot.users.cache.get(parse) === undefined ? null : bot.users.cache.get(parse);
 	} else {
 		if (parse.split('#').length === 2) {
 			let name = parse.split('#')[0];
 			let discrim = parse.split('#')[1];
-			let users = bot.users.filter(u => u.username === name && u.discriminator === discrim);
+			let users = bot.users.cache.filter(u => u.username === name && u.discriminator === discrim);
 	
 			if (users.size === 1) {
 				return users.first();
@@ -186,22 +186,22 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
 		}
 
 		if (guild) {
-			let users = guild.members.filter(u => u.nickname !== null && u.nickname.toLowerCase().startsWith(parse.toLowerCase()));
+			let users = guild.members.cache.filter(u => u.nickname !== null && u.nickname.toLowerCase().startsWith(parse.toLowerCase()));
 			if (users.size > 0) {
 				return users.first().user;
 			}
 
-			users = guild.members.filter(u => u.nickname !== null && u.nickname.toLowerCase() === parse.toLowerCase());
+			users = guild.members.cache.filter(u => u.nickname !== null && u.nickname.toLowerCase() === parse.toLowerCase());
 			if (users.size > 0) {
 				return users.first().user;
 			}
 
-			users = guild.members.filter(u => u.user.username.toLowerCase() === parse.toLowerCase());
+			users = guild.members.cache.filter(u => u.user.username.toLowerCase() === parse.toLowerCase());
 			if (users.size > 0) {
 				return users.first().user;
 			}
 
-			users = guild.members.filter(u => u.user.username.toLowerCase().startsWith(parse.toLowerCase()));
+			users = guild.members.cache.filter(u => u.user.username.toLowerCase().startsWith(parse.toLowerCase()));
 			if (users.size > 0) {
 				return users.first().user;
 			}
@@ -211,19 +211,19 @@ export function parseUser(bot : Discord.Client, parse : string, guild? : Discord
 	}
 }
 
-export function starboardEmbed(message : Discord.Message, starboardSettings, edited = false, reaction? : Discord.MessageReaction) {
+export function starboardEmbed(message : Discord.Message | Discord.PartialMessage, starboardSettings, edited = false, reaction? : Discord.MessageReaction) {
 	if (!reaction) {
 		if (starboardSettings.guildEmote) {
-			reaction = message.reactions.find(reac => reac.emoji.id === starboardSettings.emote);
+			reaction = message.reactions.cache.find(reac => reac.emoji.id === starboardSettings.emote);
 		} else {
-			reaction = message.reactions.find(reac => reac.emoji.toString() === starboardSettings.emote);
+			reaction = message.reactions.cache.find(reac => reac.emoji.toString() === starboardSettings.emote);
 		}
 	}
 
-	let embed = new Discord.RichEmbed()
-		.setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL)
+	let embed = new Discord.MessageEmbed()
+		.setAuthor(message.author.username + '#' + message.author.discriminator, message.author.avatarURL({dynamic: true}))
 		.setTimestamp(message.createdTimestamp)
-		.setFooter(`${reaction.count} ${reaction.emoji.name}s`, starboardSettings.guildEmote ? reaction.message.guild.emojis.find(em => em.id === reaction.emoji.id).url : undefined)
+		.setFooter(`${reaction.count} ${reaction.emoji.name}s`, starboardSettings.guildEmote ? reaction.message.guild.emojis.cache.find(em => em.id === reaction.emoji.id).url : undefined)
 		.setColor('FFFF00');
 
 	let msglink = `[Original](${message.url})`;
@@ -243,7 +243,7 @@ export function starboardEmbed(message : Discord.Message, starboardSettings, edi
 	});
 
 	if (message.attachments.size > 0) {
-		embed.addField('Attached files', message.attachments.map(at => `- [${at.filename}](${at.url}) (${formatFileSize(at.filesize)})`).join('\n'));
+		embed.addField('Attached files', message.attachments.map(at => `- [${at.name}](${at.url}) (${formatFileSize(at.size)})`).join('\n'));
 	}
 
 	embed.setDescription(`${msglink}${edited ? ' (edited)' : ''}\n\n` + shortenStr(message.content, 900));

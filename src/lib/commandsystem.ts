@@ -317,7 +317,7 @@ export class Command {
 						argumentsValid[i] = !isNaN(Number(params[i]));
 						break;
 					case 'id':
-						argumentsValid[i] = client ? Boolean((client.guilds.get(params[i]) || client.users.get(params[i]) || client.channels.get(params[i]))) : true;
+						argumentsValid[i] = client ? Boolean((client.guilds.cache.get(params[i]) || client.users.cache.get(params[i]) || client.channels.cache.get(params[i]))) : true;
 					}
 				} else {
 					argumentsValid[i] = arg.startsWith('[') && arg.endsWith(']');
@@ -438,7 +438,7 @@ addCommand('core', new SimpleCommand('help', (message : Discord.Message) => {
 		});
 
 		if (command) {
-			let embed = new Discord.RichEmbed()
+			let embed = new Discord.MessageEmbed()
 				.setTitle(`**${grammar(command.name)}** (${grammar(categoryName)})`)
 				.addField('Usage', prefix+command.name+' '+command.displayUsage)
 				.setDescription(command.description)
@@ -462,7 +462,7 @@ addCommand('core', new SimpleCommand('help', (message : Discord.Message) => {
 			});
 
 			if (category) {
-				const embed: Discord.RichEmbed = new Discord.RichEmbed()
+				const embed = new Discord.MessageEmbed()
 					.setTitle(`**${grammar(categoryName)}** [${Object.keys(category).length}]`)
 					.setColor(Math.floor(Math.random() * 16777215));
 
@@ -480,7 +480,7 @@ addCommand('core', new SimpleCommand('help', (message : Discord.Message) => {
 			}
 		}
 	} else {
-		const embed = new Discord.RichEmbed()
+		const embed = new Discord.MessageEmbed()
 			.setTitle('**All Boteline Commands**')
 			.setColor(Math.floor(Math.random() * 16777215))
 			.setFooter('Do help (category) to get all commands for a category!');
@@ -508,7 +508,7 @@ addCommand('core', new Command('ping', (message, bot) => {
 	const dateStart = Date.now();
 	message.channel.send('hol up').then((m) => {
 		if (m instanceof Discord.Message)
-			m.edit(`Message latency: ${Date.now() - dateStart}ms\nWebsocket ping: ${Math.round(bot.ping)}ms`);
+			m.edit(`Message latency: ${Date.now() - dateStart}ms`);
 	});
 })
 	.setDescription('ping the bot'));

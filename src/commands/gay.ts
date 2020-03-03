@@ -36,8 +36,8 @@ class CanvasGradientApplyCommand extends cs.Command {
 			ctx.fillRect(0, 0, 300, 390);
 
 			let displayname = user.username;
-			if (msg.guild && msg.guild.members.get(user.id)) {
-				displayname = msg.guild.members.get(user.id).displayName;
+			if (msg.guild && msg.guild.members.cache.get(user.id)) {
+				displayname = msg.guild.members.cache.get(user.id).displayName;
 			}
 
 			ctx.font = '30px Impact';
@@ -45,7 +45,7 @@ class CanvasGradientApplyCommand extends cs.Command {
 			ctx.textAlign = 'center';
 			ctx.fillText(displayname.toUpperCase() + ' is ' + bottomstring, 150, 340 + 15);
 
-			loadImage(user.displayAvatarURL).then((image) => {
+			loadImage(user.displayAvatarURL()).then((image) => {
 				ctx.drawImage(image, 10, 10, 280, 280);
 
 				ctx.strokeStyle = 'white';

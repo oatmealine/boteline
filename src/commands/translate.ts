@@ -27,7 +27,7 @@ export function addCommands(cs) {
 			msg.channel.startTyping();
 
 			yt.translate(params.join(' '), { to: lang, format: 'plain' }).then(translated => {
-				let translateEmbed = new Discord.RichEmbed()
+				let translateEmbed = new Discord.MessageEmbed()
 					.setDescription(translated)
 					.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated to ${util.objectFlip(yandex_langs)[lang]} will be...`)
 					.setFooter('Powered by Yandex.Translate')
@@ -59,7 +59,7 @@ export function addCommands(cs) {
 			msg.channel.startTyping();
 
 			yt.translate(params.join(' '), { from: langfrom, to: langto, format: 'plain' }).then(translated => {
-				let translateEmbed = new Discord.RichEmbed()
+				let translateEmbed = new Discord.MessageEmbed()
 					.setDescription(translated)
 					.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${util.objectFlip(yandex_langs)[langfrom]} to ${util.objectFlip(yandex_langs)[langto]} will be...`)
 					.setFooter('Powered by Yandex.Translate')
@@ -166,7 +166,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 			progMessage.edit('converting back to english...');
 			text = await yt.translate(text, { from: randLangs[times], to: 'en', format: 'plain' });
 
-			let translateEmbed = new Discord.RichEmbed()
+			let translateEmbed = new Discord.MessageEmbed()
 				.setDescription(text)
 				.setTitle(`\`${util.shortenStr(params.join(' '), 100).split('\n').join(' ')}\` translated ${times} times will be...`)
 				.setFooter('Powered by Yandex.Translate, mode ' + mode)

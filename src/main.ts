@@ -1,16 +1,7 @@
 // libraries & modules
 import * as Discord from 'discord.js';
 const bot = new Discord.Client({
-	disableEveryone: true,
-	disabledEvents: ['GUILD_BAN_ADD',
-		'GUILD_BAN_REMOVE',
-		'VOICE_STATE_UPDATE',
-		'TYPING_START',
-		'VOICE_SERVER_UPDATE',
-		'RELATIONSHIP_ADD',
-		'RELATIONSHIP_REMOVE',
-		'WEBHOOKS_UPDATE'
-	]
+	disableMentions: 'everyone'
 });
 
 let cs = require('./lib/commandsystem');
@@ -72,7 +63,7 @@ cs.setPrefix(prefix);
 
 const version : string = packageJson.version + ' alpha';
 
-let application: Discord.OAuth2Application;
+let application: Discord.ClientApplication;
 
 let starboardBinds = {};
 
@@ -241,11 +232,11 @@ function updateCoins(save = true) {
 	coinValue.value = util.roundNumber(coinValue.value, 5);
 
 	Object.values(guildSettings).forEach((v : any) => {
-		if (v.watchChannel && bot.channels.get(v.watchChannel)) {
-			let channel = bot.channels.get(v.watchChannel);
+		if (v.watchChannel && bot.channels.cache.get(v.watchChannel)) {
+			let channel = bot.channels.cache.get(v.watchChannel);
 			if (channel instanceof Discord.TextChannel) {
 				cs.commands.coin.cchart.cfunc(new Discord.Message( // janky solution but it should work
-					channel,
+					bot,
 					{
 						content: prefix + 'cchart',
 						author: bot.user,
@@ -254,7 +245,7 @@ function updateCoins(save = true) {
 						createdTimestamp: 0,
 						editedTimestamp: 0
 					},
-					bot
+					channel
 				), bot);
 			}
 		}
@@ -325,10 +316,10 @@ cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
 cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	const params = util.getParams(msg);
 
-	const eat = bot.emojis.get('612360473928663040').toString();
-	const hamger1 = bot.emojis.get('612360474293567500').toString();
-	const hamger2 = bot.emojis.get('612360473987252278').toString();
-	const hamger3 = bot.emojis.get('612360473974931458').toString();
+	const eat = bot.emojis.cache.get('612360473928663040').toString();
+	const hamger1 = bot.emojis.cache.get('612360474293567500').toString();
+	const hamger2 = bot.emojis.cache.get('612360473987252278').toString();
+	const hamger3 = bot.emojis.cache.get('612360473974931458').toString();
 
 	const insideHamger: string = params[0] ? params.join(' ') : hamger2;
 
@@ -616,24 +607,24 @@ cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
 cs.addCommand('moderating', new cs.Command('starboard', (msg : Discord.Message) => {
 	let params = util.getParams(msg);
 
-	let channel = msg.guild.channels.find(c => c.id === params[0].replace('<#','').replace('>',''));
+	let channel = msg.guild.channels.cache.find(c => c.id === params[0].replace('<#','').replace('>',''));
 	if(!channel) {
 		return msg.channel.send('channel doesnt exist!');
 	} else {
-		if(!channel.memberPermissions(msg.guild.me).hasPermission('SEND_MESSAGES')) return msg.channel.send('i cant send messages there!');
-		if(!channel.memberPermissions(msg.guild.me).hasPermission('EMBED_LINKS')) return msg.channel.send('i cant add embeds there!');
+		if(!channel.permissionsFor(msg.guild.me).has('SEND_MESSAGES')) return msg.channel.send('i cant send messages there!');
+		if(!channel.permissionsFor(msg.guild.me).has('EMBED_LINKS')) return msg.channel.send('i cant add embeds there!');
 	}
 
 	if (!params[2]) params[2] = '⭐';
-	let emote = msg.guild.emojis.find(em => em.id === params[2].slice(-19,-1));
+	let emote = msg.guild.emojis.cache.find(em => em.id === params[2].slice(-19,-1));
 
 	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
 
 	if (params[1] !== '0') {
-		guildSettings[msg.guild.id].starboard = {channel: channel.id, starsNeeded: Number(params[1]), emote: emote ? emote.id : params[2], guildEmote: emote !== null};
+		guildSettings[msg.guild.id].starboard = {channel: channel.id, starsNeeded: Number(params[1]), emote: emote ? emote.id : params[2], guildEmote: emote !== undefined};
 
 		let starSettings = guildSettings[msg.guild.id].starboard;
-		return msg.channel.send(`gotcha! all messages with ${starSettings.starsNeeded} ${starSettings.guildEmote ? msg.guild.emojis.get(starSettings.emote).toString() : starSettings.emote} reactions will be quoted in <#${starSettings.channel}>`);
+		return msg.channel.send(`gotcha! all messages with ${starSettings.starsNeeded} ${starSettings.guildEmote ? msg.guild.emojis.cache.get(starSettings.emote).toString() : starSettings.emote} reactions will be quoted in <#${starSettings.channel}>`);
 	} else {
 		delete guildSettings[msg.guild.id].starboard;
 		return msg.channel.send('removed starboard from server!');
@@ -683,7 +674,7 @@ cs.addCommand('utilities', new cs.Command('urban', msg => {
 		if (json) {
 			if (json.example === '') {json.example = '(no example given)';}
 
-			let embed = new Discord.RichEmbed()
+			let embed = new Discord.MessageEmbed()
 				.setTitle(json.word)
 				.setURL(json.permalink)
 				// the written_on thing is like that because of the date format being:
@@ -976,11 +967,11 @@ cs.addCommand('coin', new cs.Command('ctop', msg => {
 		)
 		.slice(0, 9)
 		.map((u,i) =>
-			`${i + 1}. ${bot.users.get(u) || '???'} - ${util.roundNumber(userData[u].invest.balance, 2)}$`
+			`${i + 1}. ${bot.users.cache.get(u) || '???'} - ${util.roundNumber(userData[u].invest.balance, 2)}$`
 		)
 		.join('\n');
 
-	let embed = new Discord.RichEmbed()
+	let embed = new Discord.MessageEmbed()
 		.setTitle('rich leaderboards')
 		.setFooter('rich fucks')
 		.setColor('FFFF00')
@@ -1019,7 +1010,7 @@ cs.addCommand('utilities', new cs.Command('mcping', async (msg) => {
 		.then(res => {
 			msg.channel.stopTyping();
 
-			const embed = new Discord.RichEmbed()
+			const embed = new Discord.MessageEmbed()
 				.setTitle(res.host + ':' + res.port)
 				.setDescription(util.formatMinecraftCode(res.descriptionText))
 				.addField('Version', `${res.version} (protocol version: ${res.protocolVersion})`, true);
@@ -1191,7 +1182,7 @@ function handleReactions(reaction, user) {
 		}
 
 		if (reaction.count >= starboardSettings.starsNeeded) {
-			let channel = reaction.message.guild.channels.find(ch => ch.id === starboardSettings.channel);
+			let channel = reaction.message.guild.channels.cache.find(ch => ch.id === starboardSettings.channel);
 
 			if (channel) {
 				let embed = util.starboardEmbed(reaction.message, starboardSettings, false, reaction);
@@ -1239,11 +1230,11 @@ bot.on('ready', () => {
 	const presences: [string, Discord.ActivityType][] = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`, 'STREAMING']];
 
 	bot.setInterval(() => {
-		presences.push([`${bot.guilds.size} servers`, 'WATCHING']);
-		presences.push([`with ${bot.users.size} users`, 'PLAYING']);
+		presences.push([`${bot.guilds.cache.size} servers`, 'WATCHING']);
+		presences.push([`with ${bot.users.cache.size} users`, 'PLAYING']);
 
 		const presence : [string, Discord.ActivityType] = presences[Math.floor(Math.random() * presences.length)];
-		bot.user.setPresence({ status: 'dnd', game: { name: presence[0], type: presence[1] } });
+		bot.user.setPresence({status: 'dnd', activity: {name: presence[0], type: presence[1]}});
 	}, 30000);
 
 	bot.setInterval(() => {
