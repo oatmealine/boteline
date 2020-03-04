@@ -508,7 +508,7 @@ addCommand('core', new Command('ping', (message, bot) => {
 	const dateStart = Date.now();
 	message.channel.send('hol up').then((m) => {
 		if (m instanceof Discord.Message)
-			m.edit(`Message latency: ${Date.now() - dateStart}ms`);
+			m.edit(`Message latency: ${Date.now() - dateStart}ms\nWebsocket ping: ${bot.ws.ping}ms`);
 	});
 })
 	.setDescription('ping the bot'));
