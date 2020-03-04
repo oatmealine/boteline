@@ -27,6 +27,7 @@ import * as wiki from './commands/wiki';
 import * as video from './commands/video';
 import * as info from './commands/info';
 import * as color from './commands/color';
+import * as weather from './commands/weather';
 
 // hardcoded, but cant do anything about it
 let pm2;
@@ -280,6 +281,7 @@ wiki.addCommands(cs);
 video.addCommands(cs);
 info.addCommands(cs, bot);
 color.addCommands(cs);
+weather.addCommands(cs);
 
 cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });

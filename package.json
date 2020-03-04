@@ -26,6 +26,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "minecraft-server-util": "^1.1.0",
     "minesweeper": "^1.0.5",
+    "openweather-apis": "^4.2.0",
     "request": "^2.88.0",
     "typescript": "^3.6.4",
     "urban": "^0.3.2",
