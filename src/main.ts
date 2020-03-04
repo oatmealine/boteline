@@ -570,7 +570,8 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 	.addAlias('customprefix')
 	.setDescription('set a custom prefix for boteline')
 	.setUsage('[string]')
-	.addUserPermission('MANAGE_GUILD'));
+	.addUserPermission('MANAGE_GUILD')
+	.setGuildOnly());
 
 cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
 	let params = util.getParams(msg);
