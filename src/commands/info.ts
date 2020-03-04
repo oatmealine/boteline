@@ -37,7 +37,7 @@ export function addCommands(cs, bot : Discord.Client) {
 	cs.addCommand('core', new cs.Command('info', (msg) => {
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, bot.user.displayAvatarURL({dynamic: true}))
-			.setTitle(`${bot.user.username} stats`)
+			.setTitle(`${bot.user.username} v${packageJson.version} stats`)
 			.setURL(packageJson.repository)
 			.setDescription(`Currently in ${bot.guilds.cache.size} servers, with ${bot.channels.cache.size} cached channels and ${bot.users.cache.size} cached users`)
 			.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
