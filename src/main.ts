@@ -1002,9 +1002,9 @@ cs.addCommand('coin', new cs.SimpleCommand('cunwatch', msg => {
 	.setGlobalCooldown(2000)
 	.addUserPermission('MANAGE_CHANNELS'));
 
-cs.addCommand('utilities', new cs.Command('mcping', async (msg) => {
+cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
 	const params = util.getParams(msg);
-	await msg.channel.startTyping();
+	msg.channel.startTyping();
 	
 	require('minecraft-server-util')(params[0], params[1])
 		.then(res => {
@@ -1016,13 +1016,20 @@ cs.addCommand('utilities', new cs.Command('mcping', async (msg) => {
 				.addField('Version', `${res.version} (protocol version: ${res.protocolVersion})`, true);
 			
 			if (res.samplePlayers !== null && res.samplePlayers.length > 0) {
-				embed.addField(`Players - ${res.onlinePlayers}/${res.maxPlayers}`, res.samplePlayers.map(pl => `- ${pl.name}`).join('\n'));
+				embed.addField(`Players - ${res.onlinePlayers}/${res.maxPlayers}`, 
+					util.shortenStr(
+						res.samplePlayers.map(pl => `- ${pl.name}`)
+						.join('\n'), 1024)
+				);
 			} else {
 				embed.setDescription(embed.description + `\n${res.onlinePlayers}/${res.maxPlayers} online`);
 			}
 
 			if (res.modList !== null && res.modList.length > 0) {
-				embed.addField('Mods', res.modList.map(mod => `- ${JSON.stringify(mod)}`).join('\n'));
+				embed.addField('Mods', util.shortenStr(
+					res.modList.map(mod => `- ${mod.modid} v${mod.version}`)
+					.join('\n'), 1000)
+				);
 			}
 			
 			msg.channel.send(embed);
