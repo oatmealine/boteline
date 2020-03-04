@@ -1045,6 +1045,46 @@ cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
 		});
 }));
 
+cs.addCommand('core', new cs.Command('latencymeasure', async (msg) => {
+	// testing
+	let testingMessageSentAt = Date.now();
+	const testingMessage: Discord.Message = await msg.channel.send('Measuring... 1/4');
+
+	const sendMessageDelay = Date.now() - testingMessageSentAt;
+	
+	let messageEditedAt = Date.now();
+	await testingMessage.edit('Measuring... 2/4');
+
+	const editMessageDelay = Date.now() - messageEditedAt;
+
+	let messageReactedAt = Date.now();
+	testingMessage.edit('Measuring... 3/4');
+	await testingMessage.react('📶');
+
+	const reactMessageDelay = Date.now() - messageReactedAt;
+
+	let messageDeletedAt = Date.now();
+	await testingMessage.delete();
+
+	const deleteMessageDelay = Date.now() - messageDeletedAt;
+
+	const averageDelay = util.roundNumber((sendMessageDelay + editMessageDelay + deleteMessageDelay + reactMessageDelay) / 4, 2);
+
+	// send result back
+	const embed = new Discord.MessageEmbed()
+		.setTitle('Discord Latency Measure')
+		.addField('`SEND_MESSAGE`', `${sendMessageDelay}ms of delay`)
+		.addField('`EDIT_MESSAGE`', `${editMessageDelay}ms of delay`)
+		.addField('`DELETE_MESSAGE`', `${deleteMessageDelay}ms of delay`)
+		.addField('`MESSAGE_REACT`', `${reactMessageDelay}ms of delay`)
+		.setDescription(`The average delay is ${averageDelay}ms`);
+
+	msg.channel.send(embed);
+})
+	.setGlobalCooldown(10000)
+	.setDescription('measure the latency of the discord api')
+	.addClientPermission('EMBED_LINKS'));
+
 foxConsole.info('starting...');
 
 bot.on('message', (msg) => {
