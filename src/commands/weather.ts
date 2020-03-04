@@ -14,6 +14,7 @@ export function addCommands(cs) {
     
     weather.getAllWeather((err, res) => {
       if (err) return msg.channel.send(err);
+      if (!res) return msg.channel.send('City not found or response empty');
 
       let embed = new MessageEmbed()
         .setTitle(`${res.name}, ${res.sys.country}`)
