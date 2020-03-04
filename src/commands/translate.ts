@@ -35,7 +35,7 @@ export function addCommands(cs) {
 
 			yt.translate(text, { to: lang, format: 'plain' }).then(translated => {
 				let translateEmbed = new Discord.MessageEmbed()
-					.setDescription(translated)
+					.setDescription(util.shortenStr(translated, 2000))
 					.setTitle(`\`${util.shortenStr(text, 50).split('\n').join(' ')}\` translated from ${getFullLang(fromlang)} to ${getFullLang(lang)} will be...`)
 					.setFooter('Powered by Yandex.Translate')
 					.setColor('#FF0000');
@@ -67,7 +67,7 @@ export function addCommands(cs) {
 
 			yt.translate(params.join(' '), { from: langfrom, to: langto, format: 'plain' }).then(translated => {
 				let translateEmbed = new Discord.MessageEmbed()
-					.setDescription(translated)
+					.setDescription(util.shortenStr(translated, 2000))
 					.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${getFullLang(langfrom)} to ${getFullLang(langto)} will be...`)
 					.setFooter('Powered by Yandex.Translate')
 					.setColor('#FF0000');
@@ -174,7 +174,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 			text = await yt.translate(text, { from: randLangs[times], to: 'en', format: 'plain' });
 
 			let translateEmbed = new Discord.MessageEmbed()
-				.setDescription(text)
+				.setDescription(util.shortenStr(text, 2000))
 				.setTitle(`\`${util.shortenStr(params.join(' '), 100).split('\n').join(' ')}\` translated ${times} times will be...`)
 				.setFooter('Powered by Yandex.Translate, mode ' + mode)
 				.setColor('#FF0000');

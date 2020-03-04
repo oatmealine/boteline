@@ -681,8 +681,8 @@ cs.addCommand('utilities', new cs.Command('urban', msg => {
 				// YYYY-mm-ddT00:00:00.000Z
 				// note that the last time is always 0:00
 				.setDescription(`written on ${json.written_on.slice(0, 10)} by ${json.author}\n${json.thumbs_up || '??'} :thumbsup: ${json.thumbs_down || '??'} :thumbsdown:`)
-				.addField('Defintion', util.shortenStr(util.replaceUrbanLinks(json.definition), 1021), true)
-				.addField('Example', util.shortenStr(util.replaceUrbanLinks(json.example), 1021), false);
+				.addField('Defintion', util.shortenStr(util.replaceUrbanLinks(json.definition), 1024), true)
+				.addField('Example', util.shortenStr(util.replaceUrbanLinks(json.example), 1024), false);
 
 			msg.channel.send('', embed);
 		} else {
@@ -1030,7 +1030,7 @@ cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
 			if (res.modList !== null && res.modList.length > 0) {
 				embed.addField('Mods', util.shortenStr(
 					res.modList.map(mod => `- ${mod.modid} v${mod.version}`)
-					.join('\n'), 1000)
+					.join('\n'), 1024)
 				);
 			}
 			
@@ -1113,12 +1113,12 @@ bot.on('message', (msg) => {
 						color: '990000',
 						fields: [{
 							name: 'Input',
-							value: '```xl\n' + util.shortenStr(code, 900) + '\n```',
+							value: '```xl\n' + util.shortenStr(code, 1000) + '\n```',
 							inline: true,
 						},
 						{
 							name: 'Output',
-							value: '```xl\n' + util.shortenStr(clean(evaled), 900) + '\n```',
+							value: '```xl\n' + util.shortenStr(clean(evaled), 1000) + '\n```',
 							inline: true,
 						},
 						],

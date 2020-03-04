@@ -163,7 +163,10 @@ export function readIfExists(path : fs.PathLike, options? : {encoding?: string |
 }
 
 export function shortenStr(str: string, chars: number) {
-	return str.substr(0, chars).trimRight() + ((str.length > chars) ? '...' : '');
+	if (str.length > chars)
+		return str.substr(0, chars - 3).trimRight() + '...';
+
+	return str;
 }
 
 // discord utils
