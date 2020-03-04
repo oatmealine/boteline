@@ -52,5 +52,6 @@ export function addCommands(c) {
 		.setDisplayUsage('(hex color)')
 		.addAlias('cr')
 		.addExample('#f7a8cf')
-		.addClientPermissions(['MANAGE_ROLES']));
+		.addClientPermissions(['MANAGE_ROLES'])
+		.setGuildOnly());
 }
