@@ -16,20 +16,27 @@ if (process.env.YANDEXTRANSLATETOKEN) {
 	yt = null;
 }
 
+function getFullLang(code: string) : string {
+	return util.objectFlip(yandex_langs)[code];
+}
+
 export function addCommands(cs) {
 
 	if (yt !== null) {
-		cs.addCommand('utilities', new cs.Command('autotranslate', (msg: Discord.Message) => {
+		cs.addCommand('utilities', new cs.Command('autotranslate', async (msg: Discord.Message) => {
 			let params = util.getParams(msg);
 			let lang = params[0];
 			params.shift();
 
 			msg.channel.startTyping();
 
-			yt.translate(params.join(' '), { to: lang, format: 'plain' }).then(translated => {
+			let text = params.join(' ');
+			let fromlang = await yt.detectStr(text);
+
+			yt.translate(text, { to: lang, format: 'plain' }).then(translated => {
 				let translateEmbed = new Discord.MessageEmbed()
 					.setDescription(translated)
-					.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated to ${util.objectFlip(yandex_langs)[lang]} will be...`)
+					.setTitle(`\`${util.shortenStr(text, 50).split('\n').join(' ')}\` translated from ${getFullLang(fromlang)} to ${getFullLang(lang)} will be...`)
 					.setFooter('Powered by Yandex.Translate')
 					.setColor('#FF0000');
 				msg.channel.send('', { embed: translateEmbed });
@@ -61,7 +68,7 @@ export function addCommands(cs) {
 			yt.translate(params.join(' '), { from: langfrom, to: langto, format: 'plain' }).then(translated => {
 				let translateEmbed = new Discord.MessageEmbed()
 					.setDescription(translated)
-					.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${util.objectFlip(yandex_langs)[langfrom]} to ${util.objectFlip(yandex_langs)[langto]} will be...`)
+					.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${getFullLang(langfrom)} to ${getFullLang(langto)} will be...`)
 					.setFooter('Powered by Yandex.Translate')
 					.setColor('#FF0000');
 				msg.channel.send('', { embed: translateEmbed });
