@@ -38,7 +38,7 @@ class FFMpegCommand extends cs.Command {
 				attachments.forEach((attachment) => {
 					if (videoAttach || !attachment) { return; }
 
-					const filetype = attachment.filename.split('.').pop();
+					const filetype = attachment.name.split('.').pop();
 					const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
 
 					if (acceptedFiletypes.includes(filetype.toLowerCase())) {
