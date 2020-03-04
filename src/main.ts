@@ -989,7 +989,8 @@ cs.addCommand('coin', new cs.SimpleCommand('cwatch', msg => {
 })
 	.setDescription('send all updates to the current channel, use unwatch to stop')
 	.setGlobalCooldown(5000)
-	.addUserPermission('MANAGE_CHANNELS'));
+	.addUserPermission('MANAGE_CHANNELS')
+	.setGuildOnly());
 
 cs.addCommand('coin', new cs.SimpleCommand('cunwatch', msg => {
 	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
@@ -1000,7 +1001,8 @@ cs.addCommand('coin', new cs.SimpleCommand('cunwatch', msg => {
 })
 	.setDescription('stop sending all updates to this guild\'s update channel')
 	.setGlobalCooldown(2000)
-	.addUserPermission('MANAGE_CHANNELS'));
+	.addUserPermission('MANAGE_CHANNELS')
+	.setGuildOnly());
 
 cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
 	const params = util.getParams(msg);
