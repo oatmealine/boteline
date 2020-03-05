@@ -1085,7 +1085,8 @@ cs.addCommand('core', new cs.Command('latencymeasure', async (msg) => {
 })
 	.setGlobalCooldown(10000)
 	.setDescription('measure the latency of the discord api')
-	.addClientPermission('EMBED_LINKS'));
+	.addClientPermission('EMBED_LINKS')
+	.addAlias('fancyping'));
 
 foxConsole.info('starting...');
 
