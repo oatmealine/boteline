@@ -31,6 +31,7 @@ export class Command {
 	public ownerOnly: boolean;
 	public ignorePrefix: boolean;
 	public debugOnly: boolean;
+	public nsfwOnly: boolean;
 
 	public aliases: string[];
 	public examples: string[];
@@ -62,6 +63,8 @@ export class Command {
 		this.ignorePrefix = false;
 		this.debugOnly = false;
 		this.ownerOnly = false;
+		this.nsfwOnly = false;
+
 		this.description = 'No description provided';
 
 		this.aliases = [];
@@ -187,6 +190,15 @@ export class Command {
 	}
 
 	/**
+	 * set whether the command needs an nsfw channel to run
+	 * @param {boolean} needs 
+	 */
+	public setNSFW(needs?: boolean) {
+		this.nsfwOnly = needs === undefined ? true : needs;
+		return this;
+	}
+
+	/**
 	 * set whether the command ignores any given custom prefixes (only really useful for commands that change the prefix)
 	 * @param {boolean} needs
 	 */
@@ -277,6 +289,17 @@ export class Command {
 
 		if (this.needsDM && message.guild) {
 			return message.channel.send('This command needs to be ran in a DM!');
+		}
+
+		if (this.nsfwOnly) {
+			// only check if ran inside a guild
+			if (message.guild && message.channel instanceof Discord.TextChannel) {
+				// nsfw off check
+				if (!message.channel.nsfw) return message.channel.send('This command needs to be ran in an NSFW channel or DM!');
+
+				// check for no nsfw tag in topic
+				if (message.channel.topic.includes('[no_nsfw]')) return message.channel.send('This command needs to be ran in an NSFW channel, but this channel has a [no_nsfw] tag in the topic.');
+			}
 		}
 		
 		if (this.userCooldown > 0) {

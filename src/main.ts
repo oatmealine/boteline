@@ -28,6 +28,7 @@ import * as video from './commands/video';
 import * as info from './commands/info';
 import * as color from './commands/color';
 import * as weather from './commands/weather';
+import * as booru from './commands/booru';
 
 // hardcoded, but cant do anything about it
 let pm2;
@@ -282,6 +283,7 @@ video.addCommands(cs);
 info.addCommands(cs, bot);
 color.addCommands(cs);
 weather.addCommands(cs);
+booru.addCommands(cs);
 
 cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
@@ -1023,7 +1025,7 @@ cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
 				embed.addField(`Players - ${res.onlinePlayers}/${res.maxPlayers}`, 
 					util.shortenStr(
 						res.samplePlayers.map(pl => `- ${pl.name}`)
-						.join('\n'), 1024)
+							.join('\n'), 1024)
 				);
 			} else {
 				embed.setDescription(embed.description + `\n${res.onlinePlayers}/${res.maxPlayers} online`);
@@ -1032,7 +1034,7 @@ cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
 			if (res.modList !== null && res.modList.length > 0) {
 				embed.addField('Mods', util.shortenStr(
 					res.modList.map(mod => `- ${mod.modid} v${mod.version}`)
-					.join('\n'), 1024)
+						.join('\n'), 1024)
 				);
 			}
 			
