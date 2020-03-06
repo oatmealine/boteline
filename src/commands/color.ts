@@ -1,11 +1,11 @@
 import * as util from '../lib/util';
 import * as Discord from 'discord.js';
-import * as cs from '../lib/commandsystem';
+import * as CommandSystem from 'cumsystem';
 
 Discord; // fuck you ts
 
-export function addCommands(c) {
-	c.addCommand('moderating', new cs.SimpleCommand('colorrole', (msg : Discord.Message) => {
+export function addCommands(cs: CommandSystem.System) {
+	cs.addCommand('moderating', new CommandSystem.SimpleCommand('colorrole', (msg : Discord.Message) => {
 		const params = util.getParams(msg);
 
 		const hexRegex = /^#[0-9a-f]{3,6}$/i;

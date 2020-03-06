@@ -4,7 +4,7 @@ const bot = new Discord.Client({
 	disableMentions: 'everyone'
 });
 
-let cs = require('./lib/commandsystem');
+import * as CommandSystem from 'cumsystem';
 
 import * as foxConsole from './lib/foxconsole';
 
@@ -61,7 +61,6 @@ foxConsole.showDebug(process.env.DEBUG == 'true');
 
 // constants & variables
 const prefix : string = process.env.PREFIX;
-cs.setPrefix(prefix);
 
 const version : string = packageJson.version + ' alpha';
 
@@ -267,26 +266,28 @@ function updateCoins(save = true) {
 	}
 }
 
-cs.addCommand('core', new cs.SimpleCommand('invite', () => {
+const cs = new CommandSystem.System(bot, prefix);
+
+cs.addCommand('core', new CommandSystem.SimpleCommand('invite', () => {
 	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
 })
 	.setDescription('get the bot\'s invite')
 	.addAlias('invitelink'));
 
-md.addCommands(cs, bot);
+md.addCommands(cs);
 cv.addCommands(cs);
-sp.addCommands(cs, bot);
-gay.addCommands(cs, bot);
+sp.addCommands(cs);
+gay.addCommands(cs);
 translate.addCommands(cs);
 wiki.addCommands(cs);
 video.addCommands(cs);
-info.addCommands(cs, bot);
+info.addCommands(cs);
 color.addCommands(cs);
 weather.addCommands(cs);
 booru.addCommands(cs);
 
-cs.addCommand('utilities', new cs.Command('icon', (message) => {
-	message.channel.send('', { files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
+cs.addCommand('utilities', new CommandSystem.Command('icon', (message) => {
+	message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
 })
 	.addAlias('servericon')
 	.addAlias('serverpic')
@@ -294,7 +295,7 @@ cs.addCommand('utilities', new cs.Command('icon', (message) => {
 	.addClientPermission('ATTACH_FILES')
 	.setGuildOnly());
 
-cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
+cs.addCommand('utilities', new CommandSystem.Command('pfp', (msg) => {
 	const params = util.getParams(msg);
 	let user: Discord.User;
 
@@ -303,21 +304,21 @@ cs.addCommand('utilities', new cs.Command('pfp', (msg) => {
 	} else {
 		user = msg.author;
 	}
-	msg.channel.send('', { files: [{ attachment: user.displayAvatarURL, name: 'avatar.png' }] });
+	msg.channel.send('', { files: [{ attachment: user.displayAvatarURL({dynamic: true}), name: 'avatar.png' }] });
 })
 	.setUsage('[user]')
 	.addAlias('avatar')
 	.setDescription('get a user\'s pfp')
 	.addClientPermission('ATTACH_FILES'));
 
-cs.addCommand('fun', new cs.SimpleCommand('kva', () => {
+cs.addCommand('fun', new CommandSystem.SimpleCommand('kva', () => {
 	return 'ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку';
 })
 	.setHidden()
 	.addAlias('ква')
 	.setDescription('ква'));
 
-cs.addCommand('fun', new cs.Command('eat', (msg) => {
+cs.addCommand('fun', new CommandSystem.Command('eat', (msg) => {
 	const params = util.getParams(msg);
 
 	const eat = bot.emojis.cache.get('612360473928663040').toString();
@@ -351,7 +352,7 @@ cs.addCommand('fun', new cs.Command('eat', (msg) => {
 	.addAlias('burger')
 	.addClientPermission('USE_EXTERNAL_EMOJIS'));
 
-cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
+cs.addCommand('fun', new CommandSystem.Command('valhalla', (msg) => {
 	const params = util.getParams(msg);
 
 	if (params[0] === 'search') {
@@ -467,7 +468,7 @@ cs.addCommand('fun', new cs.Command('valhalla', (msg) => {
 	.addExample('make aabbbbppffffkkkkkkkk')
 	.setDescription('search up drinks, and make some drinks, va11halla style!\nbasically a text-based replica of the drink making part of va11halla'));
 
-cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
+cs.addCommand('fun', new CommandSystem.SimpleCommand('rate', (msg) => {
 	const params = util.getParams(msg);
 	let thingToRate = params.join(' ').toLowerCase().split(' ').join('');
 
@@ -487,7 +488,7 @@ cs.addCommand('fun', new cs.SimpleCommand('rate', (msg) => {
 	.setUsage('(string)')
 	.addExample('me'));
 
-cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
+cs.addCommand('fun', new CommandSystem.SimpleCommand('pick', (msg) => {
 	const params = util.getParams(msg);
 
 	let thingToRate1: string = params[0].toLowerCase();
@@ -514,7 +515,7 @@ cs.addCommand('fun', new cs.SimpleCommand('pick', (msg) => {
 	.setUsage('(string) (string)')
 	.addExample('njs python'));
 
-cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
+cs.addCommand('fun', new CommandSystem.SimpleCommand('ask', (msg) => {
 	const params = util.getParams(msg);
 	const thingToRate = params.join(' ').toLowerCase();
 	const options = ['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'];
@@ -528,7 +529,7 @@ cs.addCommand('fun', new cs.SimpleCommand('ask', (msg) => {
 	.addAlias('question')
 	.addExample('is this a good example'));
 
-cs.addCommand('fun', new cs.Command('achievement', (msg) => {
+cs.addCommand('fun', new CommandSystem.Command('achievement', (msg) => {
 	const params = util.getParams(msg);
 	msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + encodeURI(params.join('+')), name: 'achievement.png' }] });
 })
@@ -538,17 +539,7 @@ cs.addCommand('fun', new cs.Command('achievement', (msg) => {
 	.addExample('Made an example!')
 	.addClientPermission('ATTACH_FILES'));
 
-cs.addCommand('debug', new cs.SimpleCommand('permtest', () => {
-	return 'yay, it worked!';
-})
-	.setHidden()
-	.setGuildOnly()
-	.setDebugOnly()
-	.addUserPermission('MANAGE_MESSAGES')
-	.addClientPermissions(['MANAGE_MESSAGES', 'BAN_MEMBERS'])
-	.addAlias('permtestingalias'));
-
-cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
+cs.addCommand('core', new CommandSystem.SimpleCommand('prefix', (msg) => {
 	const params = util.getParams(msg);
 	if (!params[0]) { params[0] = prefix; }
 
@@ -572,9 +563,10 @@ cs.addCommand('core', new cs.SimpleCommand('prefix', (msg) => {
 	.addAlias('customprefix')
 	.setDescription('set a custom prefix for boteline')
 	.setUsage('[string]')
-	.addUserPermission('MANAGE_GUILD'));
+	.addUserPermission('MANAGE_GUILD')
+	.setGuildOnly());
 
-cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
+cs.addCommand('fun', new CommandSystem.SimpleCommand('isgay', (msg) => {
 	let params = util.getParams(msg);
 	let ratingThing = params.join(' ').toLowerCase();
 
@@ -608,7 +600,7 @@ cs.addCommand('fun', new cs.SimpleCommand('isgay', (msg) => {
 	.setUsage('(string)')
 	.setDisplayUsage('(thing to test)'));
 
-cs.addCommand('moderating', new cs.Command('starboard', (msg : Discord.Message) => {
+cs.addCommand('moderating', new CommandSystem.Command('starboard', (msg : Discord.Message) => {
 	let params = util.getParams(msg);
 
 	let channel = msg.guild.channels.cache.find(c => c.id === params[0].replace('<#','').replace('>',''));
@@ -643,7 +635,7 @@ cs.addCommand('moderating', new cs.Command('starboard', (msg : Discord.Message) 
 	.setDescription('changes the starboard location, set reacts needed to 0 to remove')
 	.setGuildOnly());
 
-cs.addCommand('fun', new cs.SimpleCommand('minesweeper', (msg) => {
+cs.addCommand('fun', new CommandSystem.SimpleCommand('minesweeper', (msg) => {
 	const params = util.getParams(msg);
 	const board = new minesweeper.Board(minesweeper.generateMineArray({
 		rows: Math.min(100, Number(params[0])),
@@ -669,7 +661,7 @@ cs.addCommand('fun', new cs.SimpleCommand('minesweeper', (msg) => {
 	.setDisplayUsage('(width) (height) (mines)')
 	.setDescription('play minesweeper with discord spoilers'));
 
-cs.addCommand('utilities', new cs.Command('urban', msg => {
+cs.addCommand('utilities', new CommandSystem.Command('urban', msg => {
 	const params = util.getParams(msg);
 	let word = urban(params.join(' '));
 	if (!params[0]) word = urban.random();
@@ -702,7 +694,7 @@ cs.addCommand('utilities', new cs.Command('urban', msg => {
 	.setDescription('check the definition of a word on urban dictionary')
 	.addClientPermission('EMBED_LINKS'));
 
-cs.addCommand('fun', new cs.Command('inspirobot', msg => {
+cs.addCommand('fun', new CommandSystem.Command('inspirobot', msg => {
 	msg.channel.startTyping();
 	rq('http://inspirobot.me/api?generate=true', (err, res, body) => {
 		if (res && res.statusCode == 200) {
@@ -717,7 +709,7 @@ cs.addCommand('fun', new cs.Command('inspirobot', msg => {
 	.setDescription('fetch an inspiring ai-generated quote from [inspirobot](http://inspirobot.me/)')
 	.addAlias('insp'));
 
-cs.addCommand('moderating', new cs.SimpleCommand('blacklistuser', msg => {
+cs.addCommand('moderating', new CommandSystem.SimpleCommand('blacklistuser', msg => {
 	const params = util.getParams(msg);
 	let blacklistcmds = [];
 
@@ -741,14 +733,14 @@ cs.addCommand('moderating', new cs.SimpleCommand('blacklistuser', msg => {
 	.setUsage('(number) [string]')
 	.setDisplayUsage('(userid) [command]..'));
 
-cs.addCommand('fun', new cs.Command('hi', msg => {
+cs.addCommand('fun', new CommandSystem.Command('hi', msg => {
 	msg.channel.send('', {files: ['assets/hi.png']});
 })
 	.setDescription('hi')
 	.setHidden());
 
 // economy stuff
-cs.addCommand('coin', new cs.SimpleCommand('cinit', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('cinit', msg => {
 	if (!userData[msg.author.id]) userData[msg.author.id] = {};
 
 	userData[msg.author.id].invest = {
@@ -763,7 +755,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cinit', msg => {
 })
 	.setDescription('create an account for boteline coin commands'));
 
-cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('cbal', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	let user = userData[msg.author.id].invest;
 	let returnstring = '';
@@ -793,7 +785,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cbal', msg => {
 })
 	.setDescription('check your balance'));
 
-cs.addCommand('coin', new cs.SimpleCommand('cval', () => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('cval', () => {
 	let chartem = coinValue.value < coinValue.pastvalues[coinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
 	let chartemsch = schlattCoinValue.value < schlattCoinValue.pastvalues[schlattCoinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
 	return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ ${chartem}
@@ -803,7 +795,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 })
 	.setDescription('check the coin values'));
 
-cs.addCommand('coin', new cs.SimpleCommand('cbuy', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('cbuy', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	let user = userData[msg.author.id].invest;
 	const params = util.getParams(msg);
@@ -833,7 +825,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuy', msg => {
 	.setDisplayUsage('(coin amount, or dollars)')
 	.addAlias('cinv'));
 
-cs.addCommand('coin', new cs.SimpleCommand('csell', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('csell', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	const params = util.getParams(msg);
 	let user = userData[msg.author.id].invest;
@@ -855,7 +847,7 @@ cs.addCommand('coin', new cs.SimpleCommand('csell', msg => {
 	.setUsage('(string)')
 	.setDisplayUsage('(coins)'));
 
-cs.addCommand('coin', new cs.SimpleCommand('cbuys', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('cbuys', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	let user = userData[msg.author.id].invest;
 	const params = util.getParams(msg);
@@ -889,7 +881,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cbuys', msg => {
 	.setDisplayUsage('(coin amount, percentage, or dollars)')
 	.addAlias('cinv'));
 
-cs.addCommand('coin', new cs.SimpleCommand('csells', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('csells', msg => {
 	if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 	const params = util.getParams(msg);
 	let user = userData[msg.author.id].invest;
@@ -911,7 +903,7 @@ cs.addCommand('coin', new cs.SimpleCommand('csells', msg => {
 	.setUsage('(string)')
 	.setDisplayUsage('(coins)'));
 
-cs.addCommand('coin', new cs.Command('cchart', msg => {
+cs.addCommand('coin', new CommandSystem.Command('cchart', msg => {
 	msg.channel.startTyping();
 	
 	let bcchartdata = {
@@ -961,7 +953,7 @@ cs.addCommand('coin', new cs.Command('cchart', msg => {
 	.addClientPermission('ATTACH_FILES')
 	.setGlobalCooldown(1500));
 
-cs.addCommand('coin', new cs.Command('ctop', msg => {
+cs.addCommand('coin', new CommandSystem.Command('ctop', msg => {
 	let leaderboard = Object.keys(userData)
 		.filter(a => userData[a].invest)
 		.sort(
@@ -984,7 +976,7 @@ cs.addCommand('coin', new cs.Command('ctop', msg => {
 	msg.channel.send(embed);
 }));
 
-cs.addCommand('coin', new cs.SimpleCommand('cwatch', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('cwatch', msg => {
 	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
 
 	guildSettings[msg.guild.id].watchChannel = msg.channel.id;
@@ -996,7 +988,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cwatch', msg => {
 	.addUserPermission('MANAGE_CHANNELS')
 	.setGuildOnly());
 
-cs.addCommand('coin', new cs.SimpleCommand('cunwatch', msg => {
+cs.addCommand('coin', new CommandSystem.SimpleCommand('cunwatch', msg => {
 	if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
 
 	delete guildSettings[msg.guild.id].watchChannel;
@@ -1008,7 +1000,7 @@ cs.addCommand('coin', new cs.SimpleCommand('cunwatch', msg => {
 	.addUserPermission('MANAGE_CHANNELS')
 	.setGuildOnly());
 
-cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
+cs.addCommand('utilities', new CommandSystem.Command('mcping', (msg) => {
 	const params = util.getParams(msg);
 	msg.channel.startTyping();
 	
@@ -1047,7 +1039,7 @@ cs.addCommand('utilities', new cs.Command('mcping', (msg) => {
 		});
 }));
 
-cs.addCommand('core', new cs.Command('latencymeasure', async (msg) => {
+cs.addCommand('core', new CommandSystem.Command('latencymeasure', async (msg) => {
 	// testing
 	let testingMessageSentAt = Date.now();
 	const testingMessage: Discord.Message = await msg.channel.send('Measuring... 1/4');
@@ -1103,98 +1095,90 @@ bot.on('message', (msg) => {
 		}
 	}
 
-	if (content.startsWith(thisPrefix) || content.startsWith(prefix)) {
-		content = content.slice(content.startsWith(thisPrefix) ? thisPrefix.length : prefix.length, content.length);
-		const cmd = content.split(' ')[0];
+	if (!content.startsWith(thisPrefix) && !content.startsWith(prefix)) return;
+	let cmd = content.split(' ')[0];
 
-		foxConsole.debug('got command ' + cmd);
+	if (cmd.startsWith(thisPrefix)) cmd = cmd.slice(thisPrefix.length);
+	if (cmd.startsWith(prefix)) cmd = cmd.slice(prefix.length);
 
-		Object.values(cs.commands).forEach((cat) => {
-			Object.values(cat).forEach((command) => {
-				if ((command['name'] === cmd || command['aliases'].includes(cmd))) {
+	foxConsole.debug('got command ' + cmd);
 
-					// check if user is blacklisted
-					if (userData[msg.author.id] && userData[msg.author.id].blacklist) {
-						let blacklist = userData[msg.author.id].blacklist;
-						if (blacklist.includes(command.name) || blacklist.includes('.')) return;
-					}
-					
-					if (((msg.content.startsWith(thisPrefix) || (msg.content.startsWith(prefix) && command['ignorePrefix'])) || (thisPrefix == prefix)) &&
-						(!command['debugOnly'] || process.env.DEBUG == 'true')) {
-						command['runCommand'](msg, bot);
-					}
-				}
-			}); 
-		});
+	// check if user is blacklisted
+	if (userData[msg.author.id] && userData[msg.author.id].blacklist) {
+		let blacklist = userData[msg.author.id].blacklist;
+		if (blacklist.includes(cmd) || blacklist.includes('.')) return;
+	}
 
-		// debug and owneronly commands
-		// not put into commandsystem for debugging if the system dies or something like that
+	// @ts-ignore
+	cs.parseMessage(msg, thisPrefix);
+
+	// debug and owneronly commands
+	// not put into commandsystem for debugging if the system dies or something like that
 		
-		let clean = function(text) {
-			if (typeof (text) === 'string') {
-				text = text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
-				return text;
-			} else {
-				return text;
+	let clean = function(text) {
+		if (typeof (text) === 'string') {
+			text = text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
+			return text;
+		} else {
+			return text;
+		}
+	};
+
+	if (author.id === process.env.OWNER) {
+		switch (cmd) {
+		case 'eval':
+		case 'debug':
+		case 'seval':
+		case 'sdebug':
+			try {
+				const code = content.replace(cmd + ' ', '');
+				let evaled = eval(code);
+
+				if (typeof evaled !== 'string') {
+					evaled = require('util').inspect(evaled, {depth: 1, maxArrayLength: null});
+				}
+
+				const embed = {
+					title: 'Eval',
+					color: '990000',
+					fields: [{
+						name: 'Input',
+						value: '```xl\n' + util.shortenStr(code, 1000) + '\n```',
+						inline: true,
+					},
+					{
+						name: 'Output',
+						value: '```xl\n' + util.shortenStr(clean(evaled), 1000) + '\n```',
+						inline: true,
+					},
+					],
+				};
+
+				if (!msg.content.startsWith(prefix + 's')) msg.channel.send('', { embed });
+				msg.react('☑');
+			} catch (err) {
+				msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
 			}
-		};
-
-		if (author.id === process.env.OWNER) {
-			switch (cmd) {
-			case 'eval':
-			case 'debug':
-			case 'seval':
-			case 'sdebug':
-				try {
-					const code = content.replace(cmd + ' ', '');
-					let evaled = eval(code);
-
-					if (typeof evaled !== 'string') {
-						evaled = require('util').inspect(evaled, {depth: 1, maxArrayLength: null});
-					}
-
-					const embed = {
-						title: 'Eval',
-						color: '990000',
-						fields: [{
-							name: 'Input',
-							value: '```xl\n' + util.shortenStr(code, 1000) + '\n```',
-							inline: true,
-						},
-						{
-							name: 'Output',
-							value: '```xl\n' + util.shortenStr(clean(evaled), 1000) + '\n```',
-							inline: true,
-						},
-						],
-					};
-
-					if (!msg.content.startsWith(prefix + 's')) msg.channel.send('', { embed });
-					msg.react('☑');
-				} catch (err) {
-					msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
-				}
-				break;
-			case 'reboot':
-			case 'restart':
-				if (pm2 !== null) {
-					msg.react('🆗').then(() => {
-						pm2.restart('boteline', () => {});
-					});
-				}
-				break;
-			case 'exec':
-			case 'sexec':
-				exec(content.replace(cmd + ' ', ''), (err, stdout) => {
-					if (err) {
-						if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + err + '```');
-						msg.react('❌');
-					} else {
-						if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + stdout + '```');
-						msg.react('☑');
-					}
+			break;
+		case 'reboot':
+		case 'restart':
+			if (pm2 !== null) {
+				msg.react('🆗').then(() => {
+					pm2.restart('boteline', () => {});
 				});
 			}
+			break;
+		case 'exec':
+		case 'sexec':
+			exec(content.replace(cmd + ' ', ''), (err, stdout) => {
+				if (err) {
+					if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + err + '```');
+					msg.react('❌');
+				} else {
+					if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + stdout + '```');
+					msg.react('☑');
+				}
+			});
 		}
 	}
 });

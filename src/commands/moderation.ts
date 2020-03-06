@@ -1,12 +1,13 @@
 import * as util from '../lib/util.js';
 import * as Discord from 'discord.js';
+import * as CommandSystem from 'cumsystem';
 
 Discord; // fuck you ts
 
-export function addCommands(cs, bot: Discord.Client) {
-	cs.addCommand('moderating', new cs.SimpleCommand('ban', (msg) => {
+export function addCommands(cs: CommandSystem.System) {
+	cs.addCommand('moderating', new CommandSystem.SimpleCommand('ban', (msg) => {
 		const params = util.getParams(msg);
-		const banMember = msg.guild.members.get(util.parseUser(bot, params[0], msg.guild).id);
+		const banMember = msg.guild.members.cache.get(util.parseUser(cs.client, params[0], msg.guild).id);
 
 		if (banMember !== undefined) {
 			if (banMember.id === msg.author.id) {
@@ -32,9 +33,9 @@ export function addCommands(cs, bot: Discord.Client) {
 		.addUserPermission('BAN_MEMBERS')
 		.setGuildOnly());
 
-	cs.addCommand('moderating', new cs.SimpleCommand('kick', (message) => {
+	cs.addCommand('moderating', new CommandSystem.SimpleCommand('kick', (message) => {
 		const params = message.content.split(' ').slice(1, message.content.length);
-		const banMember = message.guild.members.get(util.parseUser(bot, params[0], message.guild).id);
+		const banMember = message.guild.members.cache.get(util.parseUser(cs.client, params[0], message.guild).id);
 
 		if (banMember !== undefined) {
 			if (banMember.id === message.member.id) {

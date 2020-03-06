@@ -1,10 +1,10 @@
-import * as cs from '../lib/commandsystem';
+import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as util from '../lib/util';
 import * as foxConsole from '../lib/foxconsole';
 
-class FFMpegCommand extends cs.Command {
+class FFMpegCommand extends CommandSystem.Command {
 	public inputOptions: Function
 	public outputOptions: Function
 
@@ -118,7 +118,7 @@ class FFMpegCommand extends cs.Command {
 	}
 }
 
-export function addCommands(cs) {
+export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = '20'; }

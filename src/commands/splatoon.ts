@@ -1,18 +1,19 @@
 import * as util from '../lib/util.js';
 import * as Discord from 'discord.js';
+import * as CommandSystem from 'cumsystem';
 
 Discord; // fuck you ts
 
-export function addCommands(cs, bot: Discord.Client) {
-	cs.addCommand('utilities', new cs.Command('splatoon', (msg) => {
+export function addCommands(cs: CommandSystem.System) {
+	cs.addCommand('utilities', new CommandSystem.Command('splatoon', (msg) => {
 		util.checkSplatoon().then(obj => {
 			let data = obj.data;
 
 			let timeLeft = Math.floor(data.league[0].end_time - Date.now() / 1000);
 
-			const regularemote = bot.emojis.cache.get('639188039503183907') !== undefined ? bot.emojis.cache.get('639188039503183907').toString() + ' ' : '';
-			const rankedemote = bot.emojis.cache.get('639188039658242078') !== undefined ? bot.emojis.cache.get('639188039658242078').toString() + ' ' : '';
-			const leagueemote = bot.emojis.cache.get('639188038089703452') !== undefined ? bot.emojis.cache.get('639188038089703452').toString() + ' ' : '';
+			const regularemote = cs.client.emojis.cache.get('639188039503183907') !== undefined ? cs.client.emojis.cache.get('639188039503183907').toString() + ' ' : '';
+			const rankedemote = cs.client.emojis.cache.get('639188039658242078') !== undefined ? cs.client.emojis.cache.get('639188039658242078').toString() + ' ' : '';
+			const leagueemote = cs.client.emojis.cache.get('639188038089703452') !== undefined ? cs.client.emojis.cache.get('639188038089703452').toString() + ' ' : '';
 
 			let embed = new Discord.MessageEmbed()
 				.setTitle('Splatoon 2 Map Schedules')
@@ -40,7 +41,7 @@ ${Math.floor(timeLeft / 60 / 60) % 24}h ${Math.floor(timeLeft / 60) % 60}m ${tim
 		.setDescription('Check the schedule of the Splatoon 2 stage rotations')
 		.addClientPermission('EMBED_LINKS'));
 
-	cs.addCommand('utilities', new cs.Command('salmonrun', (msg) => {
+	cs.addCommand('utilities', new CommandSystem.Command('salmonrun', (msg) => {
 		util.checkSalmon().then(obj => {
 			let data = obj.data;
 

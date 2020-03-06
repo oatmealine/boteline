@@ -1,11 +1,11 @@
 import * as util from '../lib/util.js';
 import * as Discord from 'discord.js';
-import * as cs from '../lib/commandsystem';
+import * as CommandSystem from 'cumsystem';
 import { createCanvas, loadImage } from 'canvas';
 
 Discord;
 
-class CanvasGradientApplyCommand extends cs.Command {
+class CanvasGradientApplyCommand extends CommandSystem.Command {
 	public gradient: string[];
 	public bottomstring: string;
 
@@ -71,7 +71,7 @@ class CanvasGradientApplyCommand extends cs.Command {
 	}
 }
 
-export function addCommands(cs, bot : Discord.Client) {
+export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand('image', new CanvasGradientApplyCommand('gay',
 		['rgba(255,0,0,0.5)',
 			'rgba(255,127,0,0.5)',
@@ -80,7 +80,7 @@ export function addCommands(cs, bot : Discord.Client) {
 			'rgba(0,255,255,0.5)',
 			'rgba(0,0,255,0.5)',
 			'rgba(255,0,255,0.5)'],
-		'GAY', bot)
+		'GAY', cs.client)
 		.setDescription('puts a gay (homosexual) flag over your (or someone else\'s) icon')
 		.addAlias('gayoverlay')
 		.setGlobalCooldown(100)
@@ -92,7 +92,7 @@ export function addCommands(cs, bot : Discord.Client) {
 			'rgba(255,255,255,0.6)',
 			'rgba(247,168,184,0.6)',
 			'rgba(85,205,252,0.6)'],
-		'TRANS', bot)
+		'TRANS', cs.client)
 		.setDescription('puts a trans (transgender) flag over your (or someone else\'s) icon')
 		.addAlias('transoverlay')
 		.setGlobalCooldown(100)
@@ -104,7 +104,7 @@ export function addCommands(cs, bot : Discord.Client) {
 			'rgba(155,79,150,0.6)',
 			'rgba(0,56,168,0.6)',
 			'rgba(0,56,168,0.6)'],
-		'BI', bot)
+		'BI', cs.client)
 		.setDescription('puts a bi (bisexual) flag over your (or someone else\'s) icon')
 		.addAlias('bioverlay')
 		.setGlobalCooldown(100)
@@ -115,7 +115,7 @@ export function addCommands(cs, bot : Discord.Client) {
 			'rgba(255,255,255,0.6)',
 			'rgba(155,89,208,0.6)',
 			'rgba(0,0,0,0.6)'],
-		'ENBY', bot)
+		'ENBY', cs.client)
 		.setDescription('puts an enby (non-binary) flag over your (or someone else\'s) icon')
 		.addAlias('enbyoverlay')
 		.setGlobalCooldown(100)
@@ -125,7 +125,7 @@ export function addCommands(cs, bot : Discord.Client) {
 		['rgba(255, 27, 141,0.6)',
 			'rgba(255, 218, 0,0.6)',
 			'rgba(27, 179, 255,0.6)'],
-		'PAN', bot)
+		'PAN', cs.client)
 		.setDescription('puts a pan (pansexual) flag over your (or someone else\'s) icon')
 		.addAlias('panoverlay')
 		.setGlobalCooldown(100)
@@ -136,7 +136,7 @@ export function addCommands(cs, bot : Discord.Client) {
 			'rgba(127, 127, 127,0.6)',
 			'rgba(255, 255, 255,0.6)',
 			'rgba(102, 0, 102,0.6)'],
-		'ASEXUAL', bot)
+		'ASEXUAL', cs.client)
 		.setDescription('puts a ace (asexual) flag over your (or someone else\'s) icon')
 		.addAlias('aceoverlay')
 		.setGlobalCooldown(100)
@@ -148,7 +148,7 @@ export function addCommands(cs, bot : Discord.Client) {
 			'rgba(255, 255, 255,0.6)',
 			'rgba(212, 97, 166,0.6)',
 			'rgba(165, 0, 98,0.6)'],
-		'LESBIAN', bot)
+		'LESBIAN', cs.client)
 		.setDescription('puts a lesbian flag over your (or someone else\'s) icon')
 		.addAlias('lesbianoverlay')
 		.setGlobalCooldown(100)

@@ -1,5 +1,6 @@
 import * as foxConsole from '../lib/foxconsole';
 import * as util from '../lib/util';
+import * as CommandSystem from 'cumsystem';
 
 // wikimedia api
 let wiki, wikimc, wikiterraria;
@@ -14,9 +15,9 @@ try {
 	foxConsole.warning('wikiapi returned error: ' + err);
 }
 
-export function addCommands(cs) {
+export function addCommands(cs: CommandSystem.System) {
 	if (wiki) {
-		cs.addCommand('wiki', new cs.Command('wiki', async msg => {
+		cs.addCommand('wiki', new CommandSystem.Command('wiki', async msg => {
 			const params = util.getParams(msg);
 			let page_data = await wiki.page(params.join(' '));
 
@@ -35,7 +36,7 @@ export function addCommands(cs) {
 	}
 
 	if (wikimc) {
-		cs.addCommand('wiki', new cs.Command('mcwiki', async msg => {
+		cs.addCommand('wiki', new CommandSystem.Command('mcwiki', async msg => {
 			const params = util.getParams(msg);
 			let page_data = await wikimc.page(params.join(' '));
 
@@ -53,7 +54,7 @@ export function addCommands(cs) {
 	}
 
 	if (wikiterraria) {
-		cs.addCommand('wiki', new cs.Command('terrariawiki', async msg => {
+		cs.addCommand('wiki', new CommandSystem.Command('terrariawiki', async msg => {
 			const params = util.getParams(msg);
 			let page_data = await wikiterraria.page(params.join(' '));
 

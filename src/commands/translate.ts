@@ -1,6 +1,7 @@
 import YandexTranslate from 'yet-another-yandex-translate';
 import * as Discord from 'discord.js';
 import * as util from '../lib/util';
+import * as CommandSystem from 'cumsystem';
 
 const yandex_langs = { 'Afrikaans': 'af', 'Albanian': 'sq', 'Amharic': 'am', 'Arabic': 'ar', 'Armenian': 'hy', 'Azerbaijan': 'az', 'Bashkir': 'ba', 'Basque': 'eu', 'Belarusian': 'be', 'Bengali': 'bn', 'Bosnian': 'bs', 'Bulgarian': 'bg', 'Burmese': 'my', 'Catalan': 'ca', 'Cebuano': 'ceb', 'Chinese': 'zh', 'Croatian': 'hr', 'Czech': 'cs', 'Danish': 'da', 'Dutch': 'nl', 'English': 'en', 'Esperanto': 'eo', 'Estonian': 'et', 'Finnish': 'fi', 'French': 'fr', 'Galician': 'gl', 'Georgian': 'ka', 'German': 'de', 'Greek': 'el', 'Gujarati': 'gu', 'Haitian (Creole)': 'ht', 'Hebrew': 'he', 'Hill Mari': 'mrj', 'Hindi': 'hi', 'Hungarian': 'hu', 'Icelandic': 'is', 'Indonesian': 'id', 'Irish': 'ga', 'Italian': 'it', 'Japanese': 'ja', 'Javanese': 'jv', 'Kannada': 'kn', 'Kazakh': 'kk', 'Khmer': 'km', 'Korean': 'ko', 'Kyrgyz': 'ky', 'Laotian': 'lo', 'Latin': 'la', 'Latvian': 'lv', 'Lithuanian': 'lt', 'Luxembourgish': 'lb', 'Macedonian': 'mk', 'Malagasy': 'mg', 'Malay': 'ms', 'Malayalam': 'ml', 'Maltese': 'mt', 'Maori': 'mi', 'Marathi': 'mr', 'Mari': 'mhr', 'Mongolian': 'mn', 'Nepali': 'ne', 'Norwegian': 'no', 'Papiamento': 'pap', 'Persian': 'fa', 'Polish': 'pl', 'Portuguese': 'pt', 'Punjabi': 'pa', 'Romanian': 'ro', 'Russian': 'ru', 'Scottish': 'gd', 'Serbian': 'sr', 'Sinhala': 'si', 'Slovakian': 'sk', 'Slovenian': 'sl', 'Spanish': 'es', 'Sundanese': 'su', 'Swahili': 'sw', 'Swedish': 'sv', 'Tagalog': 'tl', 'Tajik': 'tg', 'Tamil': 'ta', 'Tatar': 'tt', 'Telugu': 'te', 'Thai': 'th', 'Turkish': 'tr', 'Udmurt': 'udm', 'Ukrainian': 'uk', 'Urdu': 'ur', 'Uzbek': 'uz', 'Vietnamese': 'vi', 'Welsh': 'cy', 'Xhosa': 'xh', 'Yiddish': 'yi' };
 
@@ -20,10 +21,10 @@ function getFullLang(code: string) : string {
 	return util.objectFlip(yandex_langs)[code];
 }
 
-export function addCommands(cs) {
+export function addCommands(cs: CommandSystem.System) {
 
 	if (yt !== null) {
-		cs.addCommand('utilities', new cs.Command('autotranslate', async (msg: Discord.Message) => {
+		cs.addCommand('utilities', new CommandSystem.Command('autotranslate', async (msg: Discord.Message) => {
 			let params = util.getParams(msg);
 			let lang = params[0];
 			params.shift();
@@ -57,7 +58,7 @@ export function addCommands(cs) {
 			.setGlobalCooldown(500)
 			.setUserCooldown(1000));
 
-		cs.addCommand('utilities', new cs.Command('translate', (msg: Discord.Message) => {
+		cs.addCommand('utilities', new CommandSystem.Command('translate', (msg: Discord.Message) => {
 			let params = util.getParams(msg);
 			let langfrom = params[0];
 			let langto = params[1];
@@ -89,7 +90,7 @@ export function addCommands(cs) {
 			.setGlobalCooldown(500)
 			.setUserCooldown(1000));
 
-		cs.addCommand('fun', new cs.Command('masstranslate', async (msg: Discord.Message) => {
+		cs.addCommand('fun', new CommandSystem.Command('masstranslate', async (msg: Discord.Message) => {
 			let params = util.getParams(msg);
 			let times = Number(params[0]);
 
@@ -192,7 +193,7 @@ modes are normal, hard, curated, (langname), legacy`)
 			.setGlobalCooldown(700)
 			.setUserCooldown(3000));
 
-		cs.addCommand('utilities', new cs.Command('langs', (msg: Discord.Message) => {
+		cs.addCommand('utilities', new CommandSystem.Command('langs', (msg: Discord.Message) => {
 			msg.channel.send('The supported languages for ' + prefix + 'translate are:\n' + Object.keys(yandex_langs).map(k => k + ' (' + yandex_langs[k] + ')').join(', '));
 		})
 			.setDescription('get the available languages for ' + prefix + 'translate'));
