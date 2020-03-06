@@ -21,7 +21,7 @@ export function addCommands(cs: CommandSystem.System) {
 			const params = util.getParams(msg);
 			let page_data = await wiki.page(params.join(' '));
 
-			if (page_data.wikitext < 0) {
+			if (page_data.wikitext < 1) {
 				msg.channel.send('page not found!');
 			} else {
 				msg.channel.send(`https://en.wikipedia.org/wiki/${encodeURI(page_data.title.split(' ').join('_'))}`);
@@ -40,7 +40,7 @@ export function addCommands(cs: CommandSystem.System) {
 			const params = util.getParams(msg);
 			let page_data = await wikimc.page(params.join(' '));
 
-			if (page_data.wikitext < 0) {
+			if (page_data.wikitext < 1) {
 				msg.channel.send('page not found!');
 			} else {
 				msg.channel.send(`https://minecraft.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
@@ -58,7 +58,7 @@ export function addCommands(cs: CommandSystem.System) {
 			const params = util.getParams(msg);
 			let page_data = await wikiterraria.page(params.join(' '));
 
-			if (page_data.wikitext < 0) {
+			if (page_data.wikitext < 1) {
 				msg.channel.send('page not found!');
 			} else {
 				msg.channel.send(`https://terraria.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
