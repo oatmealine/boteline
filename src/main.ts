@@ -10,7 +10,6 @@ import * as foxConsole from './lib/foxconsole';
 
 import * as util from './lib/util.js';
 
-import {exec} from 'child_process';
 import * as fs from 'fs';
 
 import * as minesweeper from 'minesweeper';
@@ -29,19 +28,7 @@ import * as info from './commands/info';
 import * as color from './commands/color';
 import * as weather from './commands/weather';
 import * as booru from './commands/booru';
-
-// hardcoded, but cant do anything about it
-let pm2;
-
-try {
-	pm2 = require('pm2');
-	pm2.connect(function (err){
-		if (err) throw err;
-	});
-} catch (err) {
-	pm2 = null;
-	foxConsole.warning('pm2 module doesnt exist, reboot will not exist');
-}
+import * as debug from './commands/debug';
 
 const ch = require('chalk');
 // files
@@ -285,6 +272,7 @@ info.addCommands(cs);
 color.addCommands(cs);
 weather.addCommands(cs);
 booru.addCommands(cs);
+debug.addCommands(cs);
 
 cs.addCommand('utilities', new CommandSystem.Command('icon', (message) => {
 	message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
@@ -1096,10 +1084,11 @@ bot.on('message', (msg) => {
 	}
 
 	if (!content.startsWith(thisPrefix) && !content.startsWith(prefix)) return;
-	let cmd = content.split(' ')[0];
 
-	if (cmd.startsWith(thisPrefix)) cmd = cmd.slice(thisPrefix.length);
-	if (cmd.startsWith(prefix)) cmd = cmd.slice(prefix.length);
+	if (content.startsWith(thisPrefix)) content = content.slice(thisPrefix.length);
+	if (content.startsWith(prefix)) content = content.slice(prefix.length);
+
+	let cmd = content.split(' ')[0];
 
 	foxConsole.debug('got command ' + cmd);
 
@@ -1115,70 +1104,21 @@ bot.on('message', (msg) => {
 	// debug and owneronly commands
 	// not put into commandsystem for debugging if the system dies or something like that
 		
-	let clean = function(text) {
-		if (typeof (text) === 'string') {
-			text = text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
-			return text;
-		} else {
-			return text;
-		}
-	};
-
 	if (author.id === process.env.OWNER) {
 		switch (cmd) {
 		case 'eval':
 		case 'debug':
 		case 'seval':
 		case 'sdebug':
-			try {
-				const code = content.replace(cmd + ' ', '');
-				let evaled = eval(code);
 
-				if (typeof evaled !== 'string') {
-					evaled = require('util').inspect(evaled, {depth: 1, maxArrayLength: null});
-				}
-
-				const embed = {
-					title: 'Eval',
-					color: '990000',
-					fields: [{
-						name: 'Input',
-						value: '```xl\n' + util.shortenStr(code, 1000) + '\n```',
-						inline: true,
-					},
-					{
-						name: 'Output',
-						value: '```xl\n' + util.shortenStr(clean(evaled), 1000) + '\n```',
-						inline: true,
-					},
-					],
-				};
-
-				if (!msg.content.startsWith(prefix + 's')) msg.channel.send('', { embed });
-				msg.react('☑');
-			} catch (err) {
-				msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
-			}
 			break;
 		case 'reboot':
 		case 'restart':
-			if (pm2 !== null) {
-				msg.react('🆗').then(() => {
-					pm2.restart('boteline', () => {});
-				});
-			}
+			
 			break;
 		case 'exec':
 		case 'sexec':
-			exec(content.replace(cmd + ' ', ''), (err, stdout) => {
-				if (err) {
-					if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + err + '```');
-					msg.react('❌');
-				} else {
-					if (!msg.content.startsWith(prefix + 's')) msg.channel.send('```' + stdout + '```');
-					msg.react('☑');
-				}
-			});
+			
 		}
 	}
 });
