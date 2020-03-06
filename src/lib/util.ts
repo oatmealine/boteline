@@ -1,4 +1,5 @@
-import * as rq from 'request';
+const got = require('got');
+
 import * as Discord from 'discord.js';
 import * as foxconsole from './foxconsole';
 import * as fs from 'fs';
@@ -95,13 +96,14 @@ export function checkSplatoon() : Promise<any> {
 		}
 
 		foxconsole.debug('fetching splatoon2.ink data...');
-		rq('https://splatoon2.ink/data/schedules.json', {
+
+		got('https://splatoon2.ink/data/schedules.json', {
 			'user-agent': 'Boteline (oatmealine#1704)'
-		}, (err, response, body) => {
-			foxconsole.debug('got code '+response.statusCode);
-			if (response.statusCode === 200 && !err) {
+		}).then(res => {
+			foxconsole.debug('got code ' + res.statusCode);
+			if (res.statusCode === 200) {
 				foxconsole.debug('done!');
-				cache.splatoon.data = JSON.parse(body);
+				cache.splatoon.data = JSON.parse(res.body);
 				cache.splatoon.timer = new Date();
 				resolve(cache.splatoon);
 			} else {
@@ -122,13 +124,13 @@ export function checkSalmon() : Promise<any> {
 		}
 
 		foxconsole.debug('fetching splatoon2.ink data...');
-		rq('https://splatoon2.ink/data/coop-schedules.json', {
+		got('https://splatoon2.ink/data/schedules.json', {
 			'user-agent': 'Boteline (oatmealine#1704)'
-		}, (err, response, body : string) => {
-			foxconsole.debug('got code '+response.statusCode);
-			if (response.statusCode === 200 && !err) {
+		}).then(res => {
+			foxconsole.debug('got code ' + res.statusCode);
+			if (res && res.statusCode === 200) {
 				foxconsole.debug('done!');
-				cache.salmon.data = JSON.parse(body);
+				cache.salmon.data = JSON.parse(res.body);
 				cache.salmon.timer = new Date();
 				resolve(cache.salmon);
 			} else {

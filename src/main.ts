@@ -14,7 +14,6 @@ import * as fs from 'fs';
 
 import * as minesweeper from 'minesweeper';
 import * as urban from 'urban';
-import * as rq from 'request';
 
 // modules
 import * as cv from './commands/convert';
@@ -31,6 +30,7 @@ import * as booru from './commands/booru';
 import * as debug from './commands/debug';
 
 const ch = require('chalk');
+const got = require('got');
 // files
 
 const packageJson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
@@ -684,13 +684,15 @@ cs.addCommand('utilities', new CommandSystem.Command('urban', msg => {
 
 cs.addCommand('fun', new CommandSystem.Command('inspirobot', msg => {
 	msg.channel.startTyping();
-	rq('http://inspirobot.me/api?generate=true', (err, res, body) => {
-		if (res && res.statusCode == 200) {
-			msg.channel.send({files: [body]}).then(() => {
-				msg.channel.stopTyping();
-			});
-		}
-	});
+	
+	got('http://inspirobot.me/api?generate=true')
+		.then(res => {
+			if (res && res.statusCode == 200) {
+				msg.channel.send({files: [res.body]}).then(() => {
+					msg.channel.stopTyping();
+				});
+			}
+		});
 })
 	.addClientPermission('ATTACH_FILES')
 	.setGlobalCooldown(1000)
