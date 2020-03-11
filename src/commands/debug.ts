@@ -24,6 +24,12 @@ export function addCommands(cs: CommandSystem.System) {
 				evaled = require('util').inspect(evaled, {depth: 1, maxArrayLength: null});
 			}
 
+			evaled = evaled.toString();
+
+			if (evaled.includes(msg.client.token)) {
+				return msg.channel.send('Bot token found in result, aborting');
+			}
+
 			const embed = {
 				title: 'Eval',
 				color: '990000',
@@ -41,9 +47,9 @@ export function addCommands(cs: CommandSystem.System) {
 			};
 
 			if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('', { embed });
-			msg.react('☑');
+			return msg.react('☑');
 		} catch (err) {
-			msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
+			return msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
 		}
 	})
 		.setOwnerOnly()
