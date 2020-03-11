@@ -29,7 +29,6 @@
     "got": "^10.6.0",
     "minecraft-server-util": "^1.1.0",
     "minesweeper": "^1.0.5",
-    "openweather-apis": "^4.2.0",
     "typescript": "^3.6.4",
     "urban": "^0.3.2",
     "wikiapi": "^1.7.0",
