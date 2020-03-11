@@ -45,7 +45,7 @@ class CanvasGradientApplyCommand extends CommandSystem.Command {
 			ctx.textAlign = 'center';
 			ctx.fillText(displayname.toUpperCase() + ' is ' + bottomstring, 150, 340 + 15);
 
-			loadImage(user.displayAvatarURL()).then((image) => {
+			loadImage(user.displayAvatarURL({format: 'png'})).then((image) => {
 				ctx.drawImage(image, 10, 10, 280, 280);
 
 				ctx.strokeStyle = 'white';
