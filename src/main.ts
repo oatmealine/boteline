@@ -596,17 +596,17 @@ cs.addCommand('utilities', new CommandSystem.Command('mcping', (msg) => {
 cs.addCommand('core', new CommandSystem.Command('latencymeasure', async (msg) => {
 	// testing
 	let testingMessageSentAt = Date.now();
-	const testingMessage: Discord.Message = await msg.channel.send('Measuring... 1/4');
+	const testingMessage: Discord.Message = await msg.channel.send('Measuring... [#\\_\\_\\_]');
 
 	const sendMessageDelay = Date.now() - testingMessageSentAt;
 	
 	let messageEditedAt = Date.now();
-	await testingMessage.edit('Measuring... 2/4');
+	await testingMessage.edit('Measuring... [##\\_\\_]');
 
 	const editMessageDelay = Date.now() - messageEditedAt;
 
 	let messageReactedAt = Date.now();
-	testingMessage.edit('Measuring... 3/4');
+	testingMessage.edit('Measuring... [###\\_]');
 	await testingMessage.react('📶');
 
 	const reactMessageDelay = Date.now() - messageReactedAt;
@@ -616,15 +616,15 @@ cs.addCommand('core', new CommandSystem.Command('latencymeasure', async (msg) =>
 
 	const deleteMessageDelay = Date.now() - messageDeletedAt;
 
-	const averageDelay = util.roundNumber((sendMessageDelay + editMessageDelay + deleteMessageDelay + reactMessageDelay) / 4, 2);
+	const averageDelay = util.roundNumber((sendMessageDelay + editMessageDelay + deleteMessageDelay + reactMessageDelay) / 5, 2);
 
 	// send result back
 	const embed = new Discord.MessageEmbed()
-		.setTitle('Discord Latency Measure')
-		.addField('`SEND_MESSAGE`', `${sendMessageDelay}ms of delay`)
-		.addField('`EDIT_MESSAGE`', `${editMessageDelay}ms of delay`)
-		.addField('`DELETE_MESSAGE`', `${deleteMessageDelay}ms of delay`)
-		.addField('`MESSAGE_REACT`', `${reactMessageDelay}ms of delay`)
+		.setTitle('Discord API Latency Measure')
+		.addField('`MESSAGE_CREATE`', `${sendMessageDelay}ms of delay`)
+		.addField('`MESSAGE_UPDATE`', `${editMessageDelay}ms of delay`)
+		.addField('`MESSAGE_DELETE`', `${deleteMessageDelay}ms of delay`)
+		.addField('`MESSAGE_REACTION_ADD`', `${reactMessageDelay}ms of delay`)
 		.setDescription(`The average delay is ${averageDelay}ms`);
 
 	msg.channel.send(embed);
