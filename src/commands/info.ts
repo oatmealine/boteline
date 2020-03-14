@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import * as util from '../lib/util';
 import * as CommandSystem from 'cumsystem';
 
+import * as si from 'systeminformation';
+
 const packageJson = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }));
 const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', { encoding: 'utf8' }));
 
@@ -16,6 +18,12 @@ let cpuUsage1sec: number = 0;
 let cpuUsageMinOld = process.cpuUsage();
 let cpuUsage30secOld = process.cpuUsage();
 let cpuUsage1secOld = process.cpuUsage();
+
+let systemInfo;
+
+si.getStaticData(data => {
+	systemInfo = data;
+});
 
 setInterval(() => {
 	const usage = process.cpuUsage(cpuUsage1secOld);
@@ -49,23 +57,26 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 			.addField('Uptime', util.formatMiliseconds(process.uptime()), true));
 	})
 		.addAlias('stats')
-		.setDescription('get some info and stats about the cs.client'));
+		.setDescription('get some info and stats about the bot'));
 
 	cs.addCommand('core', new CommandSystem.Command('hoststats', (msg) => {
 		let memtotal = util.formatFileSize(os.totalmem());
 		let memused = util.formatFileSize(os.totalmem() - os.freemem());
 
+		console.log(systemInfo);
+
 		msg.channel.send(new Discord.MessageEmbed()
-			.setFooter(`Running on ${os.platform}/${os.type()} (${os.arch()}) version ${os.release()}`)
-			.setTitle(`Host's stats - ${os.hostname()}`)
-			.setDescription('Stats for the cs.client\'s host')
+			.setFooter(`Running on ${systemInfo.os.platform} - ${systemInfo.os.distro} (kernel version ${systemInfo.os.kernel}) (${systemInfo.os.arch}) ${systemInfo.os.release}`)
+			.setTitle(`Host's stats - ${systemInfo.os.hostname}`)
+			.setDescription('Stats for the bot\'s host')
 			.addField('Uptime', util.formatMiliseconds(os.uptime()), true)
 			.addField('Memory', `${memused}/${memtotal} used`, true)
-			.addField('CPU', `${os.cpus()[0].model}`, true));
+			.addField('BIOS', `${systemInfo.bios.vendor} ${systemInfo.bios.version}`, true)
+			.addField('Baseboard', `${systemInfo.baseboard.manufacturer} ${systemInfo.baseboard.model} v${systemInfo.baseboard.version}`, true)
+			.addField('CPU', `${systemInfo.cpu.manufacturer} ${systemInfo.cpu.brand} model ${systemInfo.cpu.model} @${systemInfo.cpu.speedmax}GHz (${systemInfo.cpu.cores} cores)`, true));
 	})
 		.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])
 		.setDescription('get some info and stats about the cs.client'));
-
 
 	cs.addCommand('core', new CommandSystem.Command('listdependencies', (msg) => {
 		let dependencyEmbed = new Discord.MessageEmbed()
