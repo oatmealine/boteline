@@ -15,6 +15,8 @@ import * as fs from 'fs';
 import * as minesweeper from 'minesweeper';
 import * as urban from 'urban';
 
+import * as parse5 from 'parse5';
+
 // modules
 import * as cv from './commands/convert';
 import * as md from './commands/moderation';
@@ -633,6 +635,29 @@ cs.addCommand('core', new CommandSystem.Command('latencymeasure', async (msg) =>
 	.setDescription('measure the latency of the discord api')
 	.addClientPermission('EMBED_LINKS')
 	.addAlias('fancyping'));
+
+cs.addCommand('fun', new CommandSystem.Command('robloxad', async (msg) => {
+	let url = 'https://www.roblox.com/user-sponsorship/' + (Math.floor(Math.random() * 3) + 1);
+	let document = await got(url);
+
+	let parsedDocument = parse5.parse(document.body);
+
+	// @ts-ignore
+	let attrs = parsedDocument.childNodes[1].childNodes[2].childNodes[1].childNodes[1].attrs;
+	// @ts-ignore
+	let link = parsedDocument.childNodes[1].childNodes[2].childNodes[1].attrs[2].value;
+
+	let embed = new Discord.MessageEmbed()
+		.setTitle(attrs[1].value)
+		.setURL(link)
+		.setImage(attrs[0].value)
+		.setDescription(`ads fetched from [here](${url})`);
+
+	return msg.channel.send(embed);
+})
+	.setDescription('fetch a roblox ad')
+	.addClientPermissions(['EMBED_LINKS', 'ATTACH_FILES'])
+	.setGlobalCooldown(300));
 
 foxConsole.info('starting...');
 

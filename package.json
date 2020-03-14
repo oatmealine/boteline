@@ -19,6 +19,7 @@
   "author": "oatmealine",
   "license": "MIT",
   "dependencies": {
+    "@types/parse5": "^5.0.2",
     "booru": "^2.1.0",
     "canvas": "^2.6.1",
     "chalk": "^2.4.2",
@@ -29,6 +30,7 @@
     "got": "^10.6.0",
     "minecraft-server-util": "^1.1.0",
     "minesweeper": "^1.0.5",
+    "parse5": "^5.1.1",
     "systeminformation": "^4.23.1",
     "typescript": "^3.6.4",
     "urban": "^0.3.2",
