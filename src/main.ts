@@ -829,6 +829,13 @@ bot.on('ready', () => {
 	process.title = `Boteline v${version}`;
 });
 
+cs.on('error', (err, msg, cmd) => {
+	console.log(`error in ${cmd.name}:`);
+	console.error(err);
+
+	msg.channel.send(`Got error while running command: \`${err}\``);
+});
+
 foxConsole.info('logging in...');
 bot.login(process.env.TOKEN).then(() => {
 	process.env.TOKEN = 'NTUxO_n1ceTryl0L-r9Pj8Y';
