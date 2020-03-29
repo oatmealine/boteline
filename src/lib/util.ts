@@ -108,7 +108,7 @@ export function checkSplatoon() : Promise<any> {
 				cache.splatoon.timer = new Date();
 				resolve(cache.splatoon);
 			} else {
-				logger.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
+				logger.warn('failed to fetch splatoon2.ink data, using potentially outdated data');
 				resolve(cache.splatoon);
 			}
 		});
@@ -135,7 +135,7 @@ export function checkSalmon() : Promise<any> {
 				cache.salmon.timer = new Date();
 				resolve(cache.salmon);
 			} else {
-				logger.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
+				logger.warn('failed to fetch splatoon2.ink data, using potentially outdated data');
 				resolve(cache.salmon);
 			}
 		});

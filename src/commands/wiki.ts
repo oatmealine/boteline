@@ -14,7 +14,7 @@ export function addCommands(cs: CommandSystem.System) {
 		wikimc = new Wikiapi('https://minecraft.gamepedia.com/api.php');
 		wikiterraria = new Wikiapi('https://terraria.gamepedia.com/api.php');
 	} catch (err) {
-		logger.warning('wikiapi returned error: ' + err);
+		logger.warn('wikiapi returned error: ' + err);
 	}
 
 	if (wiki) {

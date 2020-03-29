@@ -87,8 +87,8 @@ class FFMpegCommand extends CommandSystem.Command {
 						})
 						.on('error', (err) => {
 							msg.channel.stopTyping();
-							logger.warning('ffmpeg failed!');
-							logger.warning(err);
+							logger.warn('ffmpeg failed!');
+							logger.warn(err);
 							if (progMessage) {
 								progMessage.edit(`processing: error! \`${err}\``);
 							} else {
