@@ -12,7 +12,7 @@ let userData;
 let lastCoinUpdateDate = Date.now();
 
 function updateCoins(cs: CommandSystem.System, save = true) {
-	console.log('updating coin values');
+	cs.get('logger').verbose('updating coin values');
 
 	lastCoinUpdateDate = Date.now();
 

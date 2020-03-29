@@ -1,21 +1,22 @@
-import * as foxConsole from '../lib/foxconsole';
 import * as util from '../lib/util';
 import * as CommandSystem from 'cumsystem';
 
 // wikimedia api
 let wiki, wikimc, wikiterraria;
 
-try {
-	let Wikiapi = require('wikiapi');
-
-	wiki = new Wikiapi('en');
-	wikimc = new Wikiapi('https://minecraft.gamepedia.com/api.php');
-	wikiterraria = new Wikiapi('https://terraria.gamepedia.com/api.php');
-} catch (err) {
-	foxConsole.warning('wikiapi returned error: ' + err);
-}
-
 export function addCommands(cs: CommandSystem.System) {
+	let logger = cs.get('logger');
+
+	try {
+		let Wikiapi = require('wikiapi');
+
+		wiki = new Wikiapi('en');
+		wikimc = new Wikiapi('https://minecraft.gamepedia.com/api.php');
+		wikiterraria = new Wikiapi('https://terraria.gamepedia.com/api.php');
+	} catch (err) {
+		logger.warning('wikiapi returned error: ' + err);
+	}
+
 	if (wiki) {
 		cs.addCommand('wiki', new CommandSystem.Command('wiki', async msg => {
 			const params = util.getParams(msg);

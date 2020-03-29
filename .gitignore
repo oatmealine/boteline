@@ -6,3 +6,6 @@ built/
 data/*
 temp/*
 .env
+
+boteline.log
+boteline-error.log

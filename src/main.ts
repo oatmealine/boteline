@@ -6,8 +6,6 @@ const bot = new Discord.Client({
 
 import * as CommandSystem from 'cumsystem';
 
-import * as foxConsole from './lib/foxconsole';
-
 import * as util from './lib/util.js';
 
 import * as fs from 'fs';
@@ -16,6 +14,8 @@ import * as minesweeper from 'minesweeper';
 import * as urban from 'urban';
 
 import * as parse5 from 'parse5';
+
+import * as winston from 'winston';
 
 // modules
 import * as cv from './commands/convert';
@@ -45,7 +45,30 @@ const valhallaDrinks = JSON.parse(fs.readFileSync('./src/valhalla.json', {encodi
 
 // .env stuff
 require('dotenv').config();
-foxConsole.showDebug(process.env.DEBUG == 'true');
+
+// logger
+
+const logger = winston.createLogger({
+	level: 'info',
+	format: winston.format.combine(
+		winston.format.timestamp(),
+		winston.format.printf(log => `${util.formatTime(new Date(log.timestamp))} | ${log.message}`)
+	),
+	transports: [
+		new winston.transports.File({filename: 'boteline-error.log', level: 'error'}),
+		new winston.transports.File({filename: 'boteline.log'}),
+		new winston.transports.Console({
+			format: winston.format.combine(
+				winston.format.colorize(),
+				winston.format.timestamp(),
+				winston.format.printf(log => 
+					`${util.formatTime(new Date(log.timestamp))} - [${log.level}] ${log.message}`
+				)
+			),
+			level: process.env.DEBUG === 'true' ? 'silly' : 'info'
+		})
+	]
+});
 
 // constants & variables
 const prefix : string = process.env.PREFIX;
@@ -56,8 +79,8 @@ let application: Discord.ClientApplication;
 
 let starboardBinds = {};
 
-console.log(ch.red.bold(`boteline v${version}`));
-if (process.env.DEBUG) { console.debug(ch.grey('debug printing on')); }
+logger.log(ch.red.bold(`boteline v${version}`));
+if (process.env.DEBUG) { logger.debug(ch.grey('debug printing on')); }
 
 process.title = `Starting Boteline v${version}`;
 
@@ -73,12 +96,15 @@ console.log(ch.bold(`
        ${ch.bgWhite('  ')}    ${ch.bgWhite('  ')}
 
 `));
-foxConsole.info('adding commands...');
+logger.info('adding commands...');
 
 const cs = new CommandSystem.System(bot, prefix);
 
 cs.set('userData', userData);
 cs.set('guildSettings', guildSettings);
+cs.set('logger', logger);
+
+util.setLogger(logger);
 
 cs.addCommand('core', new CommandSystem.SimpleCommand('invite', () => {
 	return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
@@ -234,8 +260,8 @@ cs.addCommand('fun', new CommandSystem.Command('valhalla', (msg) => {
 		iced = params.includes('ice');
 		aged = params.includes('aged');
 
-		foxConsole.debug(`${adelhyde}, ${bronsonExtract}, ${powderedDelta}, ${flangerine}, ${karmotrine}`);
-		foxConsole.debug(`${blended}, ${aged}, ${iced}`);
+		logger.debug(`${adelhyde}, ${bronsonExtract}, ${powderedDelta}, ${flangerine}, ${karmotrine}`);
+		logger.debug(`${blended}, ${aged}, ${iced}`);
 
 		let drink: boolean;
 		let drinkBig: boolean;
@@ -659,7 +685,7 @@ cs.addCommand('fun', new CommandSystem.Command('robloxad', async (msg) => {
 	.addClientPermissions(['EMBED_LINKS', 'ATTACH_FILES'])
 	.setGlobalCooldown(300));
 
-foxConsole.info('starting...');
+logger.info('starting...');
 
 bot.on('message', (msg) => {
 	let content: string = msg.content;
@@ -681,7 +707,7 @@ bot.on('message', (msg) => {
 
 	let cmd = content.split(' ')[0];
 
-	foxConsole.debug('got command ' + cmd);
+	logger.debug('got command ' + cmd);
 
 	// check if user is blacklisted
 	if (userData[msg.author.id] && userData[msg.author.id].blacklist) {
@@ -785,16 +811,16 @@ let firedReady = false;
 
 bot.on('ready', () => {
 	if (firedReady) {
-		foxConsole.warning('ready event was fired twice');
+		logger.warn('ready event was fired twice');
 		return;
 	}
 
-	foxConsole.info('fetching application...');
+	logger.info('fetching application...');
 	bot.fetchApplication().then((app) => {
 		application = app;
 	});
 
-	foxConsole.info('doing post-login intervals...');
+	logger.info('doing post-login intervals...');
 
 	const presences: [string, Discord.ActivityType][] = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`, 'STREAMING']];
 
@@ -807,16 +833,16 @@ bot.on('ready', () => {
 	}, 30000);
 
 	bot.setInterval(() => {
-		foxConsole.debug('saving userdata & guild settings...');
+		logger.debug('saving userdata & guild settings...');
 		fs.writeFile('./data/userdata.json', JSON.stringify(userData), (err) => {
 			if (err) {
-				foxConsole.error('failed saving userdata: ' + err);
+				logger.error('failed saving userdata: ' + err);
 			}
 		});
 
 		fs.writeFile('./data/guildsettings.json', JSON.stringify(guildSettings), (err) => {
 			if (err) {
-				foxConsole.error('failed saving guildsettings: ' + err);
+				logger.error('failed saving guildsettings: ' + err);
 			}
 		});
 	}, 120000);
@@ -824,20 +850,20 @@ bot.on('ready', () => {
 	// update boteline coin stuff
 	cs.setClient(bot);
 
-	foxConsole.success('ready!');
+	logger.info('ready!');
 	firedReady = true;
 	process.title = `Boteline v${version}`;
 });
 
 cs.on('error', (err, msg, cmd) => {
-	console.log(`error in ${cmd.name}:`);
-	console.error(err);
+	logger.error(`error in ${cmd.name}:`);
+	logger.error(err);
 
 	msg.channel.send(`Got error while running command: \`${err}\``);
 });
 
-foxConsole.info('logging in...');
+logger.info('logging in...');
 bot.login(process.env.TOKEN).then(() => {
 	process.env.TOKEN = 'NTUxO_n1ceTryl0L-r9Pj8Y';
-	foxConsole.info('patched out token');
+	logger.info('patched out token');
 });

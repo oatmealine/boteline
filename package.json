@@ -35,6 +35,7 @@
     "typescript": "^3.6.4",
     "urban": "^0.3.2",
     "wikiapi": "^1.7.0",
+    "winston": "^3.2.1",
     "yet-another-yandex-translate": "^1.2.0"
   },
   "devDependencies": {

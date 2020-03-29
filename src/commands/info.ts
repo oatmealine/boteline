@@ -63,8 +63,6 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 		let memtotal = util.formatFileSize(os.totalmem());
 		let memused = util.formatFileSize(os.totalmem() - os.freemem());
 
-		console.log(systemInfo);
-
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Running on ${systemInfo.os.platform} - ${systemInfo.os.distro} (kernel version ${systemInfo.os.kernel}) (${systemInfo.os.arch}) ${systemInfo.os.release}`)
 			.setTitle(`Host's stats - ${systemInfo.os.hostname}`)

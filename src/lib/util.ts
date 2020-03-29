@@ -1,8 +1,9 @@
 const got = require('got');
 
 import * as Discord from 'discord.js';
-import * as foxconsole from './foxconsole';
 import * as fs from 'fs';
+
+let logger;
 
 const cache = {
 	'splatoon': {
@@ -95,19 +96,19 @@ export function checkSplatoon() : Promise<any> {
 			}
 		}
 
-		foxconsole.debug('fetching splatoon2.ink data...');
+		logger.debug('fetching splatoon2.ink data...');
 
 		got('https://splatoon2.ink/data/schedules.json', {
 			'user-agent': 'Boteline (oatmealine#1704)'
 		}).then(res => {
-			foxconsole.debug('got code ' + res.statusCode);
+			logger.debug('got code ' + res.statusCode);
 			if (res.statusCode === 200) {
-				foxconsole.debug('done!');
+				logger.debug('done!');
 				cache.splatoon.data = JSON.parse(res.body);
 				cache.splatoon.timer = new Date();
 				resolve(cache.splatoon);
 			} else {
-				foxconsole.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
+				logger.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
 				resolve(cache.splatoon);
 			}
 		});
@@ -123,18 +124,18 @@ export function checkSalmon() : Promise<any> {
 			}
 		}
 
-		foxconsole.debug('fetching splatoon2.ink data...');
+		logger.debug('fetching splatoon2.ink data...');
 		got('https://splatoon2.ink/data/schedules.json', {
 			'user-agent': 'Boteline (oatmealine#1704)'
 		}).then(res => {
-			foxconsole.debug('got code ' + res.statusCode);
+			logger.debug('got code ' + res.statusCode);
 			if (res && res.statusCode === 200) {
-				foxconsole.debug('done!');
+				logger.debug('done!');
 				cache.salmon.data = JSON.parse(res.body);
 				cache.salmon.timer = new Date();
 				resolve(cache.salmon);
 			} else {
-				foxconsole.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
+				logger.warning('failed to fetch splatoon2.ink data, using potentially outdated data');
 				resolve(cache.salmon);
 			}
 		});
@@ -378,4 +379,8 @@ export function formatMinecraftCode(str: string) : string {
 	});
 
 	return newSplits.join('') + closeBy.reverse().join('');
+}
+
+export function setLogger(log) {
+	logger = log;
 }

@@ -2,7 +2,8 @@ import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as util from '../lib/util';
-import * as foxConsole from '../lib/foxconsole';
+
+let logger;
 
 class FFMpegCommand extends CommandSystem.Command {
 	public inputOptions: Function
@@ -70,13 +71,13 @@ class FFMpegCommand extends CommandSystem.Command {
 						.inputOptions(this.inputOptions(msg))
 						.outputOptions(this.outputOptions(msg))
 						.on('start', (commandLine) => {
-							foxConsole.info('started ffmpeg with command: ' + commandLine);
+							logger.info('started ffmpeg with command: ' + commandLine);
 							if (progMessage) {
 								progMessage.edit('processing: 0% (0s) done');
 							}
 						})
 						.on('stderr', (stderrLine) => {
-							foxConsole.debug('ffmpeg: ' + stderrLine);
+							logger.debug('ffmpeg: ' + stderrLine);
 						})
 						.on('progress', (progress) => {
 							if (lastEdit + 2000 < Date.now() && progMessage) {
@@ -86,8 +87,8 @@ class FFMpegCommand extends CommandSystem.Command {
 						})
 						.on('error', (err) => {
 							msg.channel.stopTyping();
-							foxConsole.warning('ffmpeg failed!');
-							foxConsole.warning(err);
+							logger.warning('ffmpeg failed!');
+							logger.warning(err);
 							if (progMessage) {
 								progMessage.edit(`processing: error! \`${err}\``);
 							} else {
@@ -119,6 +120,8 @@ class FFMpegCommand extends CommandSystem.Command {
 }
 
 export function addCommands(cs: CommandSystem.System) {
+	logger = cs.get('logger');
+
 	cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = '20'; }
