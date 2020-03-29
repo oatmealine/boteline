@@ -79,7 +79,7 @@ let application: Discord.ClientApplication;
 
 let starboardBinds = {};
 
-logger.log(ch.red.bold(`boteline v${version}`));
+logger.info(ch.red.bold(`boteline v${version}`));
 if (process.env.DEBUG) { logger.debug(ch.grey('debug printing on')); }
 
 process.title = `Starting Boteline v${version}`;
