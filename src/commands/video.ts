@@ -101,7 +101,7 @@ class FFMpegCommand extends CommandSystem.Command {
 							if (progMessage) {
 								progMessage.edit('processing: done! uploading');
 							}
-							msg.channel.send('ok, done', { files: ['./temp/temp.mp4'] }).then(() => {
+							msg.channel.send('', { files: ['./temp/temp.mp4'] }).then(() => {
 								if (progMessage) {
 									progMessage.delete();
 								}
@@ -151,10 +151,10 @@ export function addCommands(cs: CommandSystem.System) {
 			// add Da Text
 			// doesnt work so commented out for now : (
 			//`-vf "drawtext=\\"fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0\\""`,
+			// framerate (i use this instead of -r because else it would extend the video beyond 25 seconds)
+			'-filter:v fps=fps=2',
 			// bitrate
-			'-b:v 40k', '-b:a 40k',
-			// framerate
-			'-framerate 2',
+			'-b:v 30k', '-b:a 20k',
 			// trim the video
 			'-shortest'
 		];
