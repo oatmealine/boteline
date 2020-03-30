@@ -6,14 +6,14 @@ import * as util from '../lib/util';
 let logger;
 
 class FFMpegCommand extends CommandSystem.Command {
-	public inputOptions: Function
-	public outputOptions: Function
+	public inputOptions: Function;
+	public outputOptions: Function;
 
-	constructor(name: string, inputOptions, outputOptions) {
+	constructor(name: string, inputOptions, outputOptions?) {
 		super(name, null);
 
 		this.inputOptions = inputOptions;
-		this.outputOptions = outputOptions;
+		this.outputOptions = outputOptions || (() => []);
 
 		this.cfunc = async (msg) => {
 			const params = util.getParams(msg);
@@ -67,7 +67,9 @@ class FFMpegCommand extends CommandSystem.Command {
 						}
 					}
 
-					ffmpeg(videoAttach.url)
+					ffmpeg()
+						.input(videoAttach.url)
+						//.input(this.addInput(msg))
 						.inputOptions(this.inputOptions(msg))
 						.outputOptions(this.outputOptions(msg))
 						.on('start', (commandLine) => {
@@ -77,7 +79,7 @@ class FFMpegCommand extends CommandSystem.Command {
 							}
 						})
 						.on('stderr', (stderrLine) => {
-							logger.debug('ffmpeg: ' + stderrLine);
+							logger.verbose('ffmpeg: ' + stderrLine);
 						})
 						.on('progress', (progress) => {
 							if (lastEdit + 2000 < Date.now() && progMessage) {
@@ -88,7 +90,6 @@ class FFMpegCommand extends CommandSystem.Command {
 						.on('error', (err) => {
 							msg.channel.stopTyping();
 							logger.warn('ffmpeg failed!');
-							logger.warn(err);
 							if (progMessage) {
 								progMessage.edit(`processing: error! \`${err}\``);
 							} else {
@@ -122,7 +123,7 @@ class FFMpegCommand extends CommandSystem.Command {
 export function addCommands(cs: CommandSystem.System) {
 	logger = cs.get('logger');
 
-	cs.addCommand('fun', new FFMpegCommand('compress', () => [], (msg) => {
+	cs.addCommand('video', new FFMpegCommand('compress', () => [], (msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = '20'; }
 		return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac'];
@@ -133,4 +134,28 @@ export function addCommands(cs: CommandSystem.System) {
 		.addClientPermission('ATTACH_FILES')
 		.setGlobalCooldown(1000)
 		.setUserCooldown(5000));
+
+	cs.addCommand('video', new FFMpegCommand('arabic', () => [], () => {
+		let arabicText = '';
+	
+		// to generate the text we just take random arabic characters and mash them together
+		for (let i = 0; i < Math.floor(Math.random() * 20 + 5); i++) {
+			// arabic characters range from around 1547 to 1957. i just chose a smaller range of the ones that look the most Funy
+			arabicText += String.fromCharCode(1550 + Math.floor(Math.random() * 410));
+		}
+
+		return [
+			// replace audio with nokia.mp3
+			'-i ./assets/nokia.mp3',
+			'-map 0:v:0', '-map 1:a:0',
+			// add Da Text
+			`-vf "drawtext=\\"fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0\\""`,
+			// bitrate
+			'-b:v 40k', '-b:a 40k',
+			// framerate
+			'-framerate 2',
+			// trim the video
+			'-shortest'
+		];
+	}));
 }
