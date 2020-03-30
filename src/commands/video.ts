@@ -136,20 +136,21 @@ export function addCommands(cs: CommandSystem.System) {
 		.setUserCooldown(5000));
 
 	cs.addCommand('video', new FFMpegCommand('arabic', () => [], () => {
-		let arabicText = '';
+		/*let arabicText = '';
 	
 		// to generate the text we just take random arabic characters and mash them together
 		for (let i = 0; i < Math.floor(Math.random() * 20 + 5); i++) {
 			// arabic characters range from around 1547 to 1957. i just chose a smaller range of the ones that look the most Funy
 			arabicText += String.fromCharCode(1550 + Math.floor(Math.random() * 410));
-		}
+		}*/
 
 		return [
 			// replace audio with nokia.mp3
 			'-i ./assets/nokia.mp3',
 			'-map 0:v:0', '-map 1:a:0',
 			// add Da Text
-			`-vf "drawtext=\\"fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0\\""`,
+			// doesnt work so commented out for now : (
+			//`-vf "drawtext=\\"fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0\\""`,
 			// bitrate
 			'-b:v 40k', '-b:a 40k',
 			// framerate
