@@ -1,7 +1,13 @@
 import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as ffmpeg from 'fluent-ffmpeg';
+import * as fs from 'fs';
 import * as util from '../lib/util';
+import * as bufferSplit from 'buffer-split';
+const got = require('got');
+
+const videoFormats = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a', 'avi'];
+const editTimeout = 2500;
 
 let logger;
 
@@ -17,37 +23,8 @@ class FFMpegCommand extends CommandSystem.Command {
 
 		this.cfunc = async (msg) => {
 			const params = util.getParams(msg);
-			const attachments = [];
-
-			if (msg.attachments.size === 0) {
-				await msg.channel.messages.fetch({ limit: 20 }).then((msges) => {
-					msges.array().forEach((m: Discord.Message) => {
-						if (m.attachments.size > 0) {
-							m.attachments.array().forEach((att) => {
-								attachments.push(att);
-							});
-						}
-					});
-				});
-			} else {
-				attachments.push(msg.attachments.first());
-			}
-
-			if (attachments.length > 0) {
-				let videoAttach: Discord.MessageAttachment;
-
-				attachments.forEach((attachment) => {
-					if (videoAttach || !attachment) { return; }
-
-					const filetype = attachment.name.split('.').pop();
-					const acceptedFiletypes = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a'];
-
-					if (acceptedFiletypes.includes(filetype.toLowerCase())) {
-						videoAttach = attachment;
-					}
-				});
-
-				if (videoAttach) {
+			util.fetchAttachment(msg, videoFormats)
+				.then(videoAttach => {
 					let progMessage: Discord.Message;
 					let lastEdit = 0; // to avoid ratelimiting
 
@@ -82,7 +59,7 @@ class FFMpegCommand extends CommandSystem.Command {
 							logger.verbose('ffmpeg: ' + stderrLine);
 						})
 						.on('progress', (progress) => {
-							if (lastEdit + 2000 < Date.now() && progMessage) {
+							if (lastEdit + editTimeout < Date.now() && progMessage) {
 								lastEdit = Date.now();
 								progMessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
 							}
@@ -109,12 +86,10 @@ class FFMpegCommand extends CommandSystem.Command {
 						})
 						// .pipe(stream);
 						.save('./temp/temp.mp4');
-				} else {
-					msg.channel.send('No video attachments found');
-				}
-			} else {
-				msg.channel.send('No attachments found');
-			}
+				})
+				.catch(err => {
+					msg.channel.send(`Error: \`${err}\``);
+				});
 		};
 		return this;
 	}
@@ -159,4 +134,129 @@ export function addCommands(cs: CommandSystem.System) {
 			'-shortest'
 		];
 	}));
+
+	cs.addCommand('video', new CommandSystem.Command('datamosh', async (msg) => {
+		const progMessage = await msg.channel.send('downloading video...');
+		let lastEdit = 0;
+
+		util.fetchAttachment(msg, videoFormats)
+			.then(async (videoAttach) => {
+				if (videoAttach.name.split('.').pop() !== 'avi') {
+					if (progMessage) progMessage.edit('converting to avi...');
+
+					await (() => {
+						return new Promise(resolve => {
+							ffmpeg(videoAttach.url)
+								.on('start', (commandLine) => {
+									logger.info('started ffmpeg with command: ' + commandLine);
+									if (lastEdit + editTimeout < Date.now() && progMessage) {
+										progMessage.edit('converting to avi: **0%** `(00:00:00)` done');
+									}
+								})
+								.on('stderr', (stderrLine) => {
+									logger.verbose('ffmpeg: ' + stderrLine);
+								})
+								.on('progress', (progress) => {
+									if (lastEdit + editTimeout < Date.now() && progMessage) {
+										lastEdit = Date.now();
+										progMessage.edit(`converting to avi: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
+									}
+								})
+								.on('error', (err) => {
+									logger.warn('ffmpeg failed!');
+									throw err;
+								})
+								.on('end', () => {
+									if (lastEdit + editTimeout < Date.now() && progMessage) {
+										progMessage.edit('converting to avi: done! gonna start ACTUALLY processing now');
+									}
+
+									resolve();
+								})
+								.save('./temp/tempIn.avi');
+						});
+					})();
+				} else {
+					await got(videoAttach.url)
+						.then(response => {
+							fs.writeFileSync('./temp/tempIn.avi', response.body);
+						})
+						.catch(err => {
+							throw err;
+						});
+				}
+
+				// by now ./temp/tempIn.avi should be a real file, but you cant be too sure with jill's code
+
+				if(!fs.existsSync('./temp/tempIn.avi')) throw new Error('!!! what !!!\nsomething went colossally wrong, and the temp file doesnt exist. what the fuck. WHAT FUCK.');
+
+				let aviFileBytes = fs.readFileSync('./temp/tempIn.avi');
+
+				const frameEnd = Buffer.from('30306463', 'hex');
+				const iframeStart = Buffer.from('0001B0', 'hex');
+
+				let frames = bufferSplit(aviFileBytes, frameEnd);
+				let newAviFileBytes = Buffer.from('');
+				let doneFrames = 0;
+
+				frames.forEach((frame: Buffer, i, arr) => {
+					if ((frame.includes(iframeStart)) && doneFrames > 2) {
+						newAviFileBytes = Buffer.concat([newAviFileBytes, arr[i - 1], frameEnd]);
+					} else {
+						newAviFileBytes = Buffer.concat([newAviFileBytes, frame, frameEnd]);
+					}
+
+					if (lastEdit + editTimeout < Date.now() && progMessage) {
+						lastEdit = Date.now();
+						progMessage.edit(`destroying avi... frame ${doneFrames}/${frames.length}`);
+					}
+
+					doneFrames++;
+				});
+
+				fs.writeFileSync('./temp/temp.avi', newAviFileBytes);
+
+				ffmpeg('./temp/temp.avi')
+					.on('start', (commandLine) => {
+						logger.info('started ffmpeg with command: ' + commandLine);
+						if (lastEdit + editTimeout < Date.now() && progMessage) {
+							progMessage.edit('converting to mp4: **0%** `(00:00:00)` done');
+						}
+					})
+					.on('stderr', (stderrLine) => {
+						logger.verbose('ffmpeg: ' + stderrLine);
+					})
+					.on('progress', (progress) => {
+						if (lastEdit + editTimeout < Date.now() && progMessage) {
+							lastEdit = Date.now();
+							progMessage.edit(`converting to mp4: **about ${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%??** (very inaccurate due to header corruption) \`(${progress.timemark})\``);
+						}
+					})
+					.on('error', (err) => {
+						logger.warn('ffmpeg failed!');
+						throw err;
+					})
+					.on('end', async () => {
+						if (progMessage) {
+							progMessage.edit('converting to mp4: done! uploading...');
+						}
+
+						await msg.channel.send({files: ['./temp/temp.mp4']});
+
+						progMessage.delete();
+					})
+					.save('./temp/temp.mp4');
+			})
+			.catch((err: Error) => {
+				logger.warn(err.message);
+				if (progMessage) {
+					progMessage.edit(`error!!: ${err.message}`);
+				} else {
+					msg.channel.send(`error!!: ${err.message}`);
+				}
+			});
+	})
+		.setDescription('apply datamoshing effects to a video (aka remove the i-frames)')
+		.setGlobalCooldown(5000)
+		.setUserCooldown(6000));
 }

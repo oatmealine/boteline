@@ -381,6 +381,40 @@ export function formatMinecraftCode(str: string) : string {
 	return newSplits.join('') + closeBy.reverse().join('');
 }
 
+export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = []) {
+	let attachments = [];
+
+	if (msg.attachments.size === 0) {
+		await msg.channel.messages.fetch({ limit: 20 }).then((msges) => {
+			msges.array().forEach((m: Discord.Message) => {
+				if (m.attachments.size > 0) {
+					m.attachments.array().forEach((att) => {
+						attachments.push(att);
+					});
+				}
+			});
+		});
+	} else {
+		attachments.push(msg.attachments.first());
+	}
+
+	if (attachments.length > 0) {
+		let attach: Discord.MessageAttachment;
+		attachments.forEach((attachment) => {
+			if (attach || !attachment) { return; }
+			const filetype = attachment.name.split('.').pop();
+			if (acceptedFiletypes.includes(filetype.toLowerCase()) || acceptedFiletypes.length === 0) {
+				attach = attachment;
+			}
+		});
+
+		if (!attach) throw new Error('No suitable attachments found');
+		return attach;
+	} else {
+		throw new Error('No attachments found');
+	}
+}
+
 export function setLogger(log) {
 	logger = log;
 }
