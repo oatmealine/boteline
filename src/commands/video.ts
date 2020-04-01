@@ -66,7 +66,7 @@ class FFMpegCommand extends CommandSystem.Command {
 						})
 						.on('error', (err) => {
 							msg.channel.stopTyping();
-							logger.warn('ffmpeg failed!');
+							logger.error('ffmpeg failed!: ' + err);
 							if (progMessage) {
 								progMessage.edit(`processing: error! \`${err}\``);
 							} else {
@@ -163,8 +163,8 @@ export function addCommands(cs: CommandSystem.System) {
 									}
 								})
 								.on('error', (err) => {
-									logger.warn('ffmpeg failed!');
-									throw err;
+									logger.error('ffmpeg failed!');
+									if (progMessage) progMessage.edit('ffmpeg failed: ' + err);
 								})
 								.on('end', () => {
 									if (lastEdit + editTimeout < Date.now() && progMessage) {
@@ -182,7 +182,8 @@ export function addCommands(cs: CommandSystem.System) {
 							fs.writeFileSync('./temp/tempIn.avi', response.body);
 						})
 						.catch(err => {
-							throw err;
+							logger.error('downloading failed: ' + err);
+							if (progMessage) progMessage.edit('downloading failed: ' + err);
 						});
 				}
 
@@ -199,9 +200,35 @@ export function addCommands(cs: CommandSystem.System) {
 				let newAviFileBytes = Buffer.from('');
 				let doneFrames = 0;
 
+				// decide a timeline for repeated frame replacement
+
+				let replaceFramesArr = [];
+
+				let replacing = false;
+				let replacementEnd = 0;
+
+				for (let i = 0; i < frames.length; i++) {
+					replaceFramesArr[i] = false;
+					
+					if (i - replacementEnd > 30 && Math.random() > 0.8 && !replacing) {
+						replacing = true;
+						replacementEnd = i + Math.floor(Math.random() * 25) + 3;
+					}
+
+					if (replacing) {
+						if (i < replacementEnd) {
+							replaceFramesArr[i] = true;
+						} else {
+							replacing = false;
+						}
+					}
+				}
+
 				frames.forEach((frame: Buffer, i, arr) => {
-					if ((frame.includes(iframeStart)) && doneFrames > 2) {
-						newAviFileBytes = Buffer.concat([newAviFileBytes, arr[i - 1], frameEnd]);
+					if ((frame.includes(iframeStart) || i % 250 > 200 || replaceFramesArr[i]) && doneFrames > 5) {
+						let previousFrame = arr[i - 1];
+						if (bufferSplit(newAviFileBytes, frameEnd)[i - 1]) previousFrame = bufferSplit(newAviFileBytes, frameEnd)[i - 1];
+						newAviFileBytes = Buffer.concat([newAviFileBytes, previousFrame, frameEnd]);
 					} else {
 						newAviFileBytes = Buffer.concat([newAviFileBytes, frame, frameEnd]);
 					}
@@ -233,8 +260,8 @@ export function addCommands(cs: CommandSystem.System) {
 						}
 					})
 					.on('error', (err) => {
-						logger.warn('ffmpeg failed!');
-						throw err;
+						logger.error('ffmpeg failed!');
+						if (progMessage) progMessage.edit('ffmpeg failed: ' + err);
 					})
 					.on('end', async () => {
 						if (progMessage) {
@@ -248,7 +275,7 @@ export function addCommands(cs: CommandSystem.System) {
 					.save('./temp/temp.mp4');
 			})
 			.catch((err: Error) => {
-				logger.warn(err.message);
+				logger.error(err.message);
 				if (progMessage) {
 					progMessage.edit(`error!!: ${err.message}`);
 				} else {
@@ -257,6 +284,6 @@ export function addCommands(cs: CommandSystem.System) {
 			});
 	})
 		.setDescription('apply datamoshing effects to a video (aka remove the i-frames)')
-		.setGlobalCooldown(5000)
+		.setGlobalCooldown(7000)
 		.setUserCooldown(6000));
 }
