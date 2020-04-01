@@ -6,7 +6,7 @@ import * as util from '../lib/util';
 import * as bufferSplit from 'buffer-split';
 const got = require('got');
 
-const videoFormats = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a', 'avi', 'mkv', 'mp3', 'wav', 'ogg'];
+const videoFormats = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a', 'avi', 'mkv', 'mp3', 'wav', 'ogg', 'mov'];
 const editTimeout = 2500;
 
 let logger;
