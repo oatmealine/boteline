@@ -284,6 +284,6 @@ export function addCommands(cs: CommandSystem.System) {
 			});
 	})
 		.setDescription('apply datamoshing effects to a video (aka remove the i-frames)')
-		.setGlobalCooldown(7000)
-		.setUserCooldown(6000));
+		.setGlobalCooldown(4000)
+		.setUserCooldown(7000));
 }
