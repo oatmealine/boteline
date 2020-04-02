@@ -61,15 +61,25 @@ export function addCommands(cs: CommandSystem.System) {
 	
 	if (pm2 !== null) {
 		cs.addCommand('debug', new CommandSystem.Command('restart', msg => {
-			if (pm2 !== null) {
-				msg.react('🆗').then(() => {
-					pm2.restart('boteline', () => {});
-				});
-			}
+			msg.react('🆗').then(() => {
+				pm2.restart('boteline', () => {});
+			});
 		})
 			.setOwnerOnly()
 			.setDescription('Restart the bot (only if launched with pm2)')
 			.addAlias('reboot'));
+	
+		cs.addCommand('debug', new CommandSystem.Command('update', async (msg) => {
+			await msg.react('⏱️');
+			exec('git pull && npm install && npm run build', async (err) => {
+				if (err) return msg.react('❌');
+				await msg.react('☑');
+				return pm2.restart('boteline', () => {});
+			});
+		})
+			.setOwnerOnly()
+			.setDescription('git pull, npm install, npm run build and pm2 restart')
+			.addAlias('up'));	
 	}
 
 	cs.addCommand('debug', new CommandSystem.Command('exec', (msg, content) => {
