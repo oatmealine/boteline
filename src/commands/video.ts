@@ -7,7 +7,7 @@ import * as bufferSplit from 'buffer-split';
 import * as os from 'os';
 const got = require('got');
 
-const videoFormats = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a', 'avi', 'mkv', 'mp3', 'wav', 'ogg', 'mov', 'gif'];
+const videoFormats = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a', 'avi', 'mov', 'gif'];
 const editTimeout = 2500;
 
 const temp = os.tmpdir();
