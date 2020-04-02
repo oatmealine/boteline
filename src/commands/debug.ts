@@ -57,32 +57,33 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDisplayUsage('(code)')
 		.setDescription('Execute JS code')
 		.addAliases(['eval', 'sdebug', 'seval']));
-    
-	cs.addCommand('debug', new CommandSystem.Command('restart', msg => {
-		if (pm2 !== null) {
-			msg.react('🆗').then(() => {
-				pm2.restart('boteline', () => {});
-			});
-		}
-	})
-		.setOwnerOnly()
-		.setDescription('Restart the bot (only if launched with pm2)')
-		.addAlias('reboot'));
-
+		
+	
 	if (pm2 !== null) {
-		cs.addCommand('debug', new CommandSystem.Command('exec', (msg, content) => {
-			exec(content, (err, stdout) => {
-				if (err) {
-					if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('```' + err + '```');
-					msg.react('❌');
-				} else {
-					if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('```' + stdout + '```');
-					msg.react('☑');
-				}
-			});
+		cs.addCommand('debug', new CommandSystem.Command('restart', msg => {
+			if (pm2 !== null) {
+				msg.react('🆗').then(() => {
+					pm2.restart('boteline', () => {});
+				});
+			}
 		})
 			.setOwnerOnly()
-			.setDescription('Execute a command prompt command')
-			.addAlias('sexec'));
-	}  
+			.setDescription('Restart the bot (only if launched with pm2)')
+			.addAlias('reboot'));
+	}
+
+	cs.addCommand('debug', new CommandSystem.Command('exec', (msg, content) => {
+		exec(content, (err, stdout) => {
+			if (err) {
+				if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('```' + err + '```');
+				msg.react('❌');
+			} else {
+				if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('```' + stdout + '```');
+				msg.react('☑');
+			}
+		});
+	})
+		.setOwnerOnly()
+		.setDescription('Execute a command prompt command')
+		.addAlias('sexec'));
 }
