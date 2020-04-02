@@ -381,7 +381,7 @@ export function formatMinecraftCode(str: string) : string {
 	return newSplits.join('') + closeBy.reverse().join('');
 }
 
-export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = []) {
+export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = [], disableSizeLimit = false) {
 	let attachments: Discord.MessageAttachment[] = [];
 
 	if (msg.attachments.size === 0) {
@@ -390,7 +390,7 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 				// checking attachments
 				if (m.attachments.size > 0) {
 					m.attachments.array().forEach((att) => {
-						attachments.push(att);
+						if (disableSizeLimit || att.size >= 8000000) attachments.push(att);
 					});
 				}
 

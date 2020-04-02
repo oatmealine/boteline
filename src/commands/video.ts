@@ -107,6 +107,11 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 		};
 		return this;
 	}
+
+	setDescription(desc: string) {
+		this.description = '_This command will fetch input from above messages, putting links as arguments won\'t work!_\n' + desc;
+		return this;
+	}
 }
 
 export function addCommands(cs: CommandSystem.System) {
@@ -204,7 +209,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 
 				// by now it should be a real file, but you cant be too sure with jill's code
 
-				if(!fs.existsSync(tempFileIn)) throw new Error('!!! what !!!\nsomething went colossally wrong, and the temp file doesnt exist. what the fuck. WHAT FUCK.');
+				if(!fs.existsSync(tempFileIn)) throw new Error('!!! what !!! something went colossally wrong, and the temp file doesnt exist. what the fuck. WHAT FUCK.');
 
 				let aviFileBytes = fs.readFileSync(tempFileIn);
 
@@ -212,6 +217,11 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 				const iframeStart = Buffer.from('0001B0', 'hex');
 
 				let frames = bufferSplit(aviFileBytes, frameEnd);
+				
+				if (frames.length > 7000) throw new Error('Too many frames (the hard limit is on about 7000 frames)');
+
+				logger.debug(`loaded ${frames.length} frames`);
+
 				let newAviFileBytes = Buffer.from('');
 				let doneFrames = 0;
 
