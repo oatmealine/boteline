@@ -55,9 +55,6 @@ class FFMpegCommand extends CommandSystem.Command {
 								progMessage.edit('processing: 0% (0s) done');
 							}
 						})
-						.on('stderr', (stderrLine) => {
-							logger.verbose('ffmpeg: ' + stderrLine);
-						})
 						.on('progress', (progress) => {
 							if (lastEdit + editTimeout < Date.now() && progMessage) {
 								lastEdit = Date.now();
@@ -153,9 +150,6 @@ export function addCommands(cs: CommandSystem.System) {
 										progMessage.edit('converting to avi: **0%** `(00:00:00)` done');
 									}
 								})
-								.on('stderr', (stderrLine) => {
-									logger.verbose('ffmpeg: ' + stderrLine);
-								})
 								.on('progress', (progress) => {
 									if (lastEdit + editTimeout < Date.now() && progMessage) {
 										lastEdit = Date.now();
@@ -243,6 +237,9 @@ export function addCommands(cs: CommandSystem.System) {
 
 				fs.writeFileSync('./temp/temp.avi', newAviFileBytes);
 
+				let warnings = 0;
+				let previousLineWarning = false;
+
 				ffmpeg('./temp/temp.avi')
 					.on('start', (commandLine) => {
 						logger.info('started ffmpeg with command: ' + commandLine);
@@ -251,12 +248,25 @@ export function addCommands(cs: CommandSystem.System) {
 						}
 					})
 					.on('stderr', (stderrLine) => {
-						logger.verbose('ffmpeg: ' + stderrLine);
+						if (stderrLine.trim().startsWith('Last message repeated') && previousLineWarning) {
+							let times = stderrLine.trim().split(' ')[3];
+							warnings += times;
+
+							return;
+						}
+
+						if (stderrLine.startsWith('[mp3float')) {
+							warnings++;
+							previousLineWarning = true;
+							return;
+						}
+
+						previousLineWarning = false;
 					})
 					.on('progress', (progress) => {
 						if (lastEdit + editTimeout < Date.now() && progMessage) {
 							lastEdit = Date.now();
-							progMessage.edit(`converting to mp4: **about ${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%??** (very inaccurate due to header corruption) \`(${progress.timemark})\``);
+							progMessage.edit(`converting to mp4: **about ${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%??** (very inaccurate due to header corruption) \`(${progress.timemark})\` ${warnings} :warning:`);
 						}
 					})
 					.on('error', (err) => {
@@ -268,7 +278,7 @@ export function addCommands(cs: CommandSystem.System) {
 							progMessage.edit('converting to mp4: done! uploading...');
 						}
 
-						await msg.channel.send({files: ['./temp/temp.mp4']});
+						await msg.channel.send(`${warnings} :warning: (the more, the better)`, {files: ['./temp/temp.mp4']});
 
 						progMessage.delete();
 					})

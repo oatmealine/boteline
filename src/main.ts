@@ -857,7 +857,7 @@ bot.on('ready', () => {
 
 cs.on('error', (err, msg, cmd) => {
 	logger.error(`error in ${cmd.name}:`);
-	logger.error(err);
+	logger.error(err.stack);
 
 	msg.channel.send(`Got error while running command: \`${err}\``);
 });
