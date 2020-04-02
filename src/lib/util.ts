@@ -382,14 +382,25 @@ export function formatMinecraftCode(str: string) : string {
 }
 
 export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = []) {
-	let attachments = [];
+	let attachments: Discord.MessageAttachment[] = [];
 
 	if (msg.attachments.size === 0) {
 		await msg.channel.messages.fetch({ limit: 20 }).then((msges) => {
 			msges.array().forEach((m: Discord.Message) => {
+				// checking attachments
 				if (m.attachments.size > 0) {
 					m.attachments.array().forEach((att) => {
 						attachments.push(att);
+					});
+				}
+
+				// checking embeds
+				if (m.embeds.length > 0) {
+					m.embeds.forEach(em => {
+						if (em.type !== 'rich' && em.title === undefined && em.provider === null) attachments.push(new Discord.MessageAttachment(em.url)); // not really a better way to test for this
+						
+						if (em.image) attachments.push(new Discord.MessageAttachment(em.image.url));
+						if (em.thumbnail) attachments.push(new Discord.MessageAttachment(em.thumbnail.url));
 					});
 				}
 			});
@@ -401,8 +412,15 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 	if (attachments.length > 0) {
 		let attach: Discord.MessageAttachment;
 		attachments.forEach((attachment) => {
-			if (attach || !attachment) { return; }
-			const filetype = attachment.name.split('.').pop();
+			if (attach || !attachment) return;
+
+			if (!attachment.url) {
+				if (typeof attachment.attachment === 'string') {
+					attachment.url = attachment.attachment;
+				} else return;
+			}
+
+			const filetype = attachment.url.split('.').pop();
 			if (acceptedFiletypes.includes(filetype.toLowerCase()) || acceptedFiletypes.length === 0) {
 				attach = attachment;
 			}

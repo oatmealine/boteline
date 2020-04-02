@@ -141,7 +141,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		util.fetchAttachment(msg, videoFormats)
 			.then(async (videoAttach) => {
-				if (videoAttach.name.split('.').pop() !== 'avi') {
+				if (videoAttach.url.split('.').pop() !== 'avi') {
 					if (progMessage) progMessage.edit('converting to avi...');
 
 					await (() => {
@@ -275,7 +275,7 @@ export function addCommands(cs: CommandSystem.System) {
 					.save('./temp/temp.mp4');
 			})
 			.catch((err: Error) => {
-				logger.error(err.message);
+				logger.error(err.stack);
 				if (progMessage) {
 					progMessage.edit(`error!!: ${err.message}`);
 				} else {
