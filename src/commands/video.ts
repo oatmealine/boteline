@@ -44,21 +44,29 @@ class FFMpegCommand extends CommandSystem.Command {
 						}
 					}
 
+					let log = '';
+
 					ffmpeg()
 						.input(videoAttach.url)
 						//.input(this.addInput(msg))
 						.inputOptions(this.inputOptions(msg))
 						.outputOptions(this.outputOptions(msg))
 						.on('start', (commandLine) => {
-							logger.info('started ffmpeg with command: ' + commandLine);
+							logger.debug('started ffmpeg with command: ' + commandLine);
 							if (progMessage) {
 								progMessage.edit('processing: 0% (0s) done');
 							}
 						})
+						.on('stderr', stderrLine => {
+							log += '\n' + stderrLine;
+						})
 						.on('progress', (progress) => {
 							if (lastEdit + editTimeout < Date.now() && progMessage) {
 								lastEdit = Date.now();
-								progMessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
+								progMessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\`
+\`\`\`
+${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
+\`\`\``);
 							}
 						})
 						.on('error', (err) => {
@@ -143,28 +151,25 @@ export function addCommands(cs: CommandSystem.System) {
 
 					await (() => {
 						return new Promise(resolve => {
+							let log = '';
+
 							ffmpeg(videoAttach.url)
 								.on('start', (commandLine) => {
-									logger.info('started ffmpeg with command: ' + commandLine);
-									if (lastEdit + editTimeout < Date.now() && progMessage) {
-										progMessage.edit('converting to avi: **0%** `(00:00:00)` done');
-									}
+									logger.debug('started ffmpeg with command: ' + commandLine);
+								})
+								.on('stderr', stderrLine => {
+									log += '\n' + stderrLine;
 								})
 								.on('progress', (progress) => {
 									if (lastEdit + editTimeout < Date.now() && progMessage) {
 										lastEdit = Date.now();
-										progMessage.edit(`converting to avi: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\``);
+										progMessage.edit(`converting to avi: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\`
+\`\`\`
+${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
+\`\`\``);
 									}
-								})
-								.on('error', (err) => {
-									logger.error('ffmpeg failed!');
-									if (progMessage) progMessage.edit('ffmpeg failed: ' + err);
 								})
 								.on('end', () => {
-									if (lastEdit + editTimeout < Date.now() && progMessage) {
-										progMessage.edit('converting to avi: done! gonna start ACTUALLY processing now');
-									}
-
 									resolve();
 								})
 								.save('./temp/tempIn.avi');
@@ -239,18 +244,18 @@ export function addCommands(cs: CommandSystem.System) {
 
 				let warnings = 0;
 				let previousLineWarning = false;
+				let log = '';
 
 				ffmpeg('./temp/temp.avi')
 					.on('start', (commandLine) => {
-						logger.info('started ffmpeg with command: ' + commandLine);
-						if (lastEdit + editTimeout < Date.now() && progMessage) {
-							progMessage.edit('converting to mp4: **0%** `(00:00:00)` done');
-						}
+						logger.debug('started ffmpeg with command: ' + commandLine);
 					})
-					.on('stderr', (stderrLine) => {
+					.on('stderr', stderrLine => {
+						log += '\n' + stderrLine;
+
 						if (stderrLine.trim().startsWith('Last message repeated') && previousLineWarning) {
 							let times = stderrLine.trim().split(' ')[3];
-							warnings += times;
+							if (isNaN(times)) warnings += times;
 
 							return;
 						}
@@ -266,12 +271,11 @@ export function addCommands(cs: CommandSystem.System) {
 					.on('progress', (progress) => {
 						if (lastEdit + editTimeout < Date.now() && progMessage) {
 							lastEdit = Date.now();
-							progMessage.edit(`converting to mp4: **about ${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%??** (very inaccurate due to header corruption) \`(${progress.timemark})\` ${warnings} :warning:`);
+							progMessage.edit(`converting to mp4: **about ${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%??** (very inaccurate due to header corruption) \`(${progress.timemark})\` ${warnings} :warning:
+\`\`\`
+${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
+\`\`\``);
 						}
-					})
-					.on('error', (err) => {
-						logger.error('ffmpeg failed!');
-						if (progMessage) progMessage.edit('ffmpeg failed: ' + err);
 					})
 					.on('end', async () => {
 						if (progMessage) {
