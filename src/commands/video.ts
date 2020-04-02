@@ -4,10 +4,18 @@ import * as ffmpeg from 'fluent-ffmpeg';
 import * as fs from 'fs';
 import * as util from '../lib/util';
 import * as bufferSplit from 'buffer-split';
+import * as os from 'os';
 const got = require('got');
 
 const videoFormats = ['apng', 'webm', 'swf', 'wmv', 'mp4', 'flv', 'm4a', 'avi', 'mkv', 'mp3', 'wav', 'ogg', 'mov', 'gif'];
 const editTimeout = 2500;
+
+const temp = os.tmpdir();
+
+function genName() {
+	let nameChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+	return Array(15).fill('').map(() => nameChars[Math.floor(Math.random() * nameChars.length)]).join('');
+}
 
 let logger;
 
@@ -45,6 +53,7 @@ class FFMpegCommand extends CommandSystem.Command {
 					}
 
 					let log = '';
+					let tempFile = temp + '/' + genName() + '.mp4';
 
 					ffmpeg()
 						.input(videoAttach.url)
@@ -83,14 +92,14 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 							if (progMessage) {
 								progMessage.edit('processing: done! uploading');
 							}
-							msg.channel.send('', { files: ['./temp/temp.mp4'] }).then(() => {
+							msg.channel.send('', { files: [tempFile] }).then(() => {
 								if (progMessage) {
 									progMessage.delete();
 								}
 							});
 						})
 						// .pipe(stream);
-						.save('./temp/temp.mp4');
+						.save(tempFile);
 				})
 				.catch(err => {
 					msg.channel.send(`Error: \`${err}\``);
@@ -151,6 +160,8 @@ export function addCommands(cs: CommandSystem.System) {
 
 		util.fetchAttachment(msg, videoFormats)
 			.then(async (videoAttach) => {
+				let tempFileIn = temp + '/' + genName() + '.avi';
+
 				if (videoAttach.url.split('.').pop() !== 'avi') {
 					if (progMessage) progMessage.edit('converting to avi...');
 
@@ -177,13 +188,13 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 								.on('end', () => {
 									resolve();
 								})
-								.save('./temp/tempIn.avi');
+								.save(tempFileIn);
 						});
 					})();
 				} else {
 					await got(videoAttach.url)
 						.then(response => {
-							fs.writeFileSync('./temp/tempIn.avi', response.body);
+							fs.writeFileSync(tempFileIn, response.body);
 						})
 						.catch(err => {
 							logger.error('downloading failed: ' + err);
@@ -191,11 +202,11 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 						});
 				}
 
-				// by now ./temp/tempIn.avi should be a real file, but you cant be too sure with jill's code
+				// by now it should be a real file, but you cant be too sure with jill's code
 
-				if(!fs.existsSync('./temp/tempIn.avi')) throw new Error('!!! what !!!\nsomething went colossally wrong, and the temp file doesnt exist. what the fuck. WHAT FUCK.');
+				if(!fs.existsSync(tempFileIn)) throw new Error('!!! what !!!\nsomething went colossally wrong, and the temp file doesnt exist. what the fuck. WHAT FUCK.');
 
-				let aviFileBytes = fs.readFileSync('./temp/tempIn.avi');
+				let aviFileBytes = fs.readFileSync(tempFileIn);
 
 				const frameEnd = Buffer.from('30306463', 'hex');
 				const iframeStart = Buffer.from('0001B0', 'hex');
@@ -248,13 +259,17 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 					doneFrames++;
 				});
 
-				fs.writeFileSync('./temp/temp.avi', newAviFileBytes);
+				let tempFileAvi = temp + '/' + genName() + '.avi';
+
+				fs.writeFileSync(tempFileAvi, newAviFileBytes);
 
 				let warnings = 0;
 				let previousLineWarning = false;
 				let log = '';
 
-				ffmpeg('./temp/temp.avi')
+				let tempFileOutput = temp + '/' + genName() + '.mp4';
+
+				ffmpeg(tempFileAvi)
 					.on('start', (commandLine) => {
 						logger.debug('started ffmpeg with command: ' + commandLine);
 					})
@@ -290,11 +305,11 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 							progMessage.edit('converting to mp4: done! uploading...');
 						}
 
-						await msg.channel.send(`${warnings} :warning: (the more, the better)`, {files: ['./temp/temp.mp4']});
+						await msg.channel.send(`${warnings} :warning: (the more, the better)`, {files: [tempFileOutput]});
 
 						progMessage.delete();
 					})
-					.save('./temp/temp.mp4');
+					.save(tempFileOutput);
 			})
 			.catch((err: Error) => {
 				logger.error(err.stack);
