@@ -141,6 +141,11 @@ export function addCommands(cs: CommandSystem.System) {
 	}));
 
 	cs.addCommand('video', new CommandSystem.Command('datamosh', async (msg) => {
+		const params = util.getParams(msg);
+
+		let intensity = 0.2;
+		if (params[0]) intensity = Number(params[0]);
+		
 		const progMessage = await msg.channel.send('downloading video...');
 		let lastEdit = 0;
 
@@ -209,7 +214,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 				for (let i = 0; i < frames.length; i++) {
 					replaceFramesArr[i] = false;
 					
-					if (i - replacementEnd > 30 && Math.random() > 0.8 && !replacing) {
+					if (i - replacementEnd > (1-intensity) * 100 && Math.random() > 1-intensity && !replacing) {
 						replacing = true;
 						replacementEnd = i + Math.floor(Math.random() * 25) + 3;
 					}
@@ -223,8 +228,11 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 					}
 				}
 
+				let occasionalReplaceInterval = (1-intensity) * 1000;
+				let occasionalReplaceThreshold = occasionalReplaceInterval - intensity * 10;
+
 				frames.forEach((frame: Buffer, i, arr) => {
-					if ((frame.includes(iframeStart) || i % 250 > 200 || replaceFramesArr[i]) && doneFrames > 5) {
+					if ((frame.includes(iframeStart) || i % occasionalReplaceInterval > occasionalReplaceThreshold || replaceFramesArr[i]) && doneFrames > 5) {
 						let previousFrame = arr[i - 1];
 						if (bufferSplit(newAviFileBytes, frameEnd)[i - 1]) previousFrame = bufferSplit(newAviFileBytes, frameEnd)[i - 1];
 						newAviFileBytes = Buffer.concat([newAviFileBytes, previousFrame, frameEnd]);
@@ -297,7 +305,10 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 				}
 			});
 	})
-		.setDescription('apply datamoshing effects to a video (aka remove the i-frames)')
+		.setDescription('apply datamoshing effects to a video (aka remove the i-frames and repeat previous ones)\nintensity ranges from 0 to 1, ex. 0 just removes i frames, 1 completely obliterates the video')
+		.setUsage('[number]')
+		.setDisplayUsage('[intensity]')
+		.addAlias('dm')
 		.setGlobalCooldown(4000)
 		.setUserCooldown(7000));
 }
