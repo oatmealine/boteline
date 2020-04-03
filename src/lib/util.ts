@@ -390,7 +390,7 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 				// checking attachments
 				if (m.attachments.size > 0) {
 					m.attachments.array().forEach((att) => {
-						if (disableSizeLimit || att.size >= 8000000) attachments.push(att);
+						if (disableSizeLimit || att.size <= 8000000) attachments.push(att);
 					});
 				}
 
@@ -420,7 +420,9 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 				} else return;
 			}
 
-			const filetype = attachment.url.split('.').pop();
+			if (!attachment.name) attachment.name = attachment.url;
+
+			const filetype = attachment.name.split('.').pop();
 			if (acceptedFiletypes.includes(filetype.toLowerCase()) || acceptedFiletypes.length === 0) {
 				attach = attachment;
 			}
