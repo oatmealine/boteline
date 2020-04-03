@@ -32,6 +32,7 @@
     "got": "^10.6.0",
     "minecraft-server-util": "^1.1.0",
     "minesweeper": "^1.0.5",
+    "novelcovid": "^1.1.2",
     "parse5": "^5.1.1",
     "systeminformation": "^4.23.1",
     "typescript": "^3.6.4",
