@@ -664,13 +664,13 @@ cs.addCommand('corona', new CommandSystem.SimpleCommand('corona', async (msg, co
 	let embed = new Discord.MessageEmbed()
 		.setFooter(`Updated at ${util.formatDate(new Date(stats.updated))}`)
 		.setTitle(stats.country || 'Worldwide')
-		.addField('Cases', `${stats.cases} ${stats.todayCases ? `*+${stats.todayCases} today*` : ''} ${stats.deathsPerOneMillion ? `\n${stats.casesPerOneMillion} cases per 1mil` : ''}`, true)
-		.addField('Deaths', `${stats.deaths} ${stats.todayDeaths ? `*+${stats.todayDeaths} today*` : ''} ${stats.deathsPerOneMillion ? `\n${stats.deathsPerOneMillion} deaths per 1mil` : ''}`, true)
-		.addField('Recovered', `${stats.recovered} ${stats.todayRecovered ? `*+${stats.todayRecovered} today*` : ''}`, true)
+		.addField('Cases', `${util.formatNum(stats.cases)} ${stats.todayCases ? `*+${util.formatNum(stats.todayCases)} today*` : ''} ${stats.deathsPerOneMillion ? `\n${util.formatNum(stats.casesPerOneMillion)} cases per 1mil` : ''}`, true)
+		.addField('Deaths', `${util.formatNum(stats.deaths)} ${stats.todayDeaths ? `*+${util.formatNum(stats.todayDeaths)} today*` : ''} ${stats.deathsPerOneMillion ? `\n${util.formatNum(stats.deathsPerOneMillion)} deaths per 1mil` : ''}`, true)
+		.addField('Recovered', `${util.formatNum(stats.recovered)} ${stats.todayRecovered ? `*+${util.formatNum(stats.todayRecovered)} today*` : ''}`, true)
 		.addField('R/D ratio', `${util.roundNumber(stats.recovered / stats.deaths, 3)}`, true)
 		.setDescription(`Mortality rate: ${util.roundNumber(stats.deaths / stats.cases * 100, 2)}%\nRecovery rate: ${util.roundNumber(stats.recovered / stats.cases * 100, 2)}%`);
 
-	if (stats.active) embed.addField('Active', `${stats.active}${stats.critical ? `, ${stats.critical} critical` : ''}`);
+	if (stats.active) embed.addField('Active', `${util.formatNum(stats.active)}${stats.critical ? `, ${util.formatNum(stats.critical)} (${util.roundNumber(stats.critical / stats.active, 2)}%) critical` : ''}`);
 	if (stats.countryInfo) embed.setThumbnail(stats.countryInfo.flag);
 	if (stats.affectedCountries) embed.addField('Affected countries', stats.affectedCountries, true);
 
