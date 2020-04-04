@@ -71,10 +71,38 @@ export function addCommands(cs: CommandSystem.System) {
 	
 		cs.addCommand('debug', new CommandSystem.Command('update', async (msg) => {
 			await msg.react('⏱️');
-			exec('git pull && npm install && npm run build', async (err) => {
+			let progMessage = await msg.channel.send('Downloading update...');
+			
+			exec('git pull', (err, stdout) => {
 				if (err) return msg.react('❌');
-				await msg.react('☑');
-				return pm2.restart('boteline', () => {});
+				
+				if (stdout.startsWith('Already up to date.')) return progMessage.edit('No new updates');
+				
+				progMessage.edit('Installing NPM updates...\n```' + util.shortenStr(stdout, 500) + '```');
+
+				exec('npm install', (err, stdout) => {
+					if (err) {
+						msg.react('❌');
+						progMessage.edit(`\`\`\`${err}\`\`\``);
+						return;
+					}
+
+					progMessage.edit('Building...\n```' + util.shortenStr(stdout, 500) + '```');
+					exec('npm run build', async (err) => {
+						if (err) {
+							msg.react('❌');
+							progMessage.edit(`\`\`\`${err}\`\`\``);
+							return;
+						}
+
+						await msg.react('☑');
+						await progMessage.edit('Done! Restarting...');
+
+						return pm2.restart('boteline', () => {});
+					});
+				});
+
+				return 'a'; // wow i hate ts
 			});
 		})
 			.setOwnerOnly()
