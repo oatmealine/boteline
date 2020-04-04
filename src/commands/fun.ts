@@ -124,7 +124,7 @@ export function addCommands(cs: CommandSystem.System) {
 		
 		return `> ${params.join(' ')}\n${options[rating]}`;
 	})
-		.setDescription('ask the cs.client a question')
+		.setDescription('ask the bot a question')
 		.setUsage('(string)')
 		.addAlias('askquestion')
 		.addAlias('question')

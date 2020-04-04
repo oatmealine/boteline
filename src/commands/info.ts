@@ -74,7 +74,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 			.addField('CPU', `${systemInfo.cpu.manufacturer} ${systemInfo.cpu.brand} model ${systemInfo.cpu.model} @${systemInfo.cpu.speedmax}GHz (${systemInfo.cpu.cores} cores)`, true));
 	})
 		.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])
-		.setDescription('get some info and stats about the cs.client'));
+		.setDescription('get some info and stats about the bot'));
 
 	cs.addCommand('core', new CommandSystem.Command('listdependencies', (msg) => {
 		let dependencyEmbed = new Discord.MessageEmbed()
