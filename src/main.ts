@@ -773,7 +773,6 @@ bot.on('message', (msg) => {
 		if (blacklist.includes(cmd) || blacklist.includes('.')) return;
 	}
 
-	// @ts-ignore
 	cs.parseMessage(msg, thisPrefix);
 
 	// debug and owneronly commands
@@ -848,7 +847,6 @@ function handleReactions(reaction, user) {
 				if (starboardBinds[reaction.message.id]) {
 					starboardBinds[reaction.message.id].edit('', {embed: embed});
 				} else {
-					// @ts-ignore (you cant react to a message ...in a vc)
 					channel.send('', {embed: embed})
 						.then(m => {
 							starboardBinds[reaction.message.id] = m;
