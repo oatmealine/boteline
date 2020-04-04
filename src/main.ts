@@ -641,8 +641,6 @@ cs.addCommand('corona', new CommandSystem.SimpleCommand('corona', async (msg, co
 			);
 
 			if (jhucsseStats) {
-				console.log(jhucsseStats);
-				
 				stats = {
 					cases: jhucsseStats.stats.confirmed,
 					deaths: jhucsseStats.stats.deaths,
@@ -658,8 +656,6 @@ cs.addCommand('corona', new CommandSystem.SimpleCommand('corona', async (msg, co
 	} else {
 		stats = await track.all();
 	}
-
-	console.log(stats);
 
 	let embed = new Discord.MessageEmbed()
 		.setFooter(`Updated at ${util.formatDate(new Date(stats.updated))}`)
