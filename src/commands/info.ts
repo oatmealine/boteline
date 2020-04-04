@@ -48,12 +48,12 @@ export function addCommands(cs: CommandSystem.System) {
 			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, cs.client.user.displayAvatarURL({dynamic: true}))
 			.setTitle(`${cs.client.user.username} v${packageJson.version} stats`)
 			.setURL(packageJson.repository)
-			.setDescription(`Currently in ${cs.client.guilds.cache.size} servers, with ${cs.client.channels.cache.size} cached channels and ${cs.client.users.cache.size} cached users`)
+			.setDescription(`Currently in ${util.formatNum(cs.client.guilds.cache.size)} servers, with ${util.formatNum(cs.client.channels.cache.size)} cached channels and ${util.formatNum(cs.client.users.cache.size)} cached users`)
 			.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
-			.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 3)}%**
-Last 30 seconds: **${util.roundNumber(cpuUsage30sec, 3)}%**
-Last minute: **${util.roundNumber(cpuUsageMin, 3)}%**
-Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 3)}%**`, true)
+			.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 2)}%**
+Last 30 seconds: **${util.roundNumber(cpuUsage30sec, 2)}%**
+Last minute: **${util.roundNumber(cpuUsageMin, 2)}%**
+Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 2)}%**`, true)
 			.addField('Uptime', util.formatMiliseconds(process.uptime()), true));
 	})
 		.addAlias('stats')
