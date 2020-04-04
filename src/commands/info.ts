@@ -48,7 +48,7 @@ export function addCommands(cs: CommandSystem.System) {
 			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, cs.client.user.displayAvatarURL({dynamic: true}))
 			.setTitle(`${cs.client.user.username} v${packageJson.version} stats`)
 			.setURL(packageJson.repository)
-			.setDescription(`Currently in ${util.formatNum(cs.client.guilds.cache.size)} servers, with ${util.formatNum(cs.client.channels.cache.size)} cached channels and ${util.formatNum(cs.client.users.cache.size)} cached users`)
+			.setDescription(`Currently in ${cs.client.guilds.cache.size.toLocaleString()} servers, with ${cs.client.channels.cache.size.toLocaleString()} cached channels and ${cs.client.users.cache.size.toLocaleString()} cached users`)
 			.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
 			.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 2)}%**
 Last 30 seconds: **${util.roundNumber(cpuUsage30sec, 2)}%**

@@ -435,20 +435,6 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 	}
 }
 
-export function formatNum(num: number): string {
-	let endString = '';
-	let numberString = Math.floor(num).toString();
-	for (let i = numberString.length; i > 0; i--) {
-		if ((numberString.length - i) % 3 === 0 && numberString.length - i !== 0) {
-			endString = ',' + endString;
-		}
-
-		endString = numberString[i - 1] + endString;
-	}
-
-	return endString;
-}
-
 export function setLogger(log) {
 	logger = log;
 }
