@@ -134,9 +134,9 @@ export function addCommands(cs: CommandSystem.System) {
 		let params = util.getParams(msg);
 		let ratingThing = params.join(' ').toLowerCase();
 
-		const transOverride = ['duck', 'oatmealine', 'oat', 'jill', 'ladizi', 'lavie', 'arceus', 'leah'];
+		const transOverride = ['duck', 'oatmealine', 'oat', 'jill', 'ladizi', 'lavie', 'arceus', 'leah', 'skye'];
 		const enbyOverride = ['jude'];
-		const gayOverride = ['discord', 'oat', 'jill', 'oatmealine', 'ur mom'];
+		const gayOverride = ['discord', 'oat', 'jill', 'oatmealine', 'ur mom', 'skye', 'duck'];
 		const biOverride = [];
 		const aceOverride = ['catte'];
 
