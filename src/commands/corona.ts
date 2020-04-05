@@ -43,8 +43,8 @@ export function addCommands(cs: CommandSystem.System) {
 		let embed = new Discord.MessageEmbed()
 			.setFooter(`Updated at ${util.formatDate(new Date(stats.updated))}`)
 			.setTitle(stats.country || 'Worldwide')
-			.addField('Cases', `${stats.cases.toLocaleString()} ${stats.todayCases ? `*+${stats.todayCases.toLocaleString()} today*` : ''} ${stats.deathsPerOneMillion ? `\n${stats.casesPerOneMillion.toLocaleString()} cases per 1mil` : ''}`, true)
-			.addField('Deaths', `${stats.deaths.toLocaleString()} ${stats.todayDeaths ? `*+${stats.todayDeaths.toLocaleString()} today*` : ''} ${stats.deathsPerOneMillion ? `\n${stats.deathsPerOneMillion.toLocaleString()} deaths per 1mil` : ''}`, true)
+			.addField('Cases', `${stats.cases.toLocaleString()} ${stats.todayCases ? `*+${stats.todayCases.toLocaleString()} today*` : ''} ${stats.deathsPerOneMillion ? ` \n${stats.casesPerOneMillion.toLocaleString()} cases per 1mil` : ''}`, true)
+			.addField('Deaths', `${stats.deaths.toLocaleString()} ${stats.todayDeaths ? `*+${stats.todayDeaths.toLocaleString()} today*` : ''} ${stats.deathsPerOneMillion ? ` \n${stats.deathsPerOneMillion.toLocaleString()} deaths per 1mil` : ''}`, true)
 			.addField('Recovered', `${stats.recovered.toLocaleString()} ${stats.todayRecovered ? `*+${stats.todayRecovered.toLocaleString()} today*` : ''}`, true)
 			.addField('R/D ratio', `${util.roundNumber(stats.recovered / stats.deaths, 3)}`, true)
 			.setDescription(`Mortality rate: ${util.roundNumber(stats.deaths / stats.cases * 100, 2)}%\nRecovery rate: ${util.roundNumber(stats.recovered / stats.cases * 100, 2)}%`);
