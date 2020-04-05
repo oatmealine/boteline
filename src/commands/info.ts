@@ -5,6 +5,7 @@ import * as util from '../lib/util';
 import * as CommandSystem from 'cumsystem';
 
 import * as si from 'systeminformation';
+import * as osu from 'node-os-utils';
 
 const packageJson = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }));
 const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', { encoding: 'utf8' }));
@@ -20,8 +21,9 @@ let cpuUsage30secOld = process.cpuUsage();
 let cpuUsage1secOld = process.cpuUsage();
 
 let systemInfo;
+let cpuUsage;
 
-si.getStaticData(data => {
+si.getAllData('_', '_', data => {
 	systemInfo = data;
 });
 
@@ -29,6 +31,10 @@ setInterval(() => {
 	const usage = process.cpuUsage(cpuUsage1secOld);
 	cpuUsage1sec = 100 * (usage.user + usage.system) / 1000000;
 	cpuUsage1secOld = process.cpuUsage();
+
+	osu.cpu.usage().then(data => {
+		cpuUsage = data;
+	});
 }, 1000);
 setInterval(() => {
 	const usage = process.cpuUsage(cpuUsage30secOld);
@@ -62,16 +68,21 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 	cs.addCommand('core', new CommandSystem.Command('hoststats', (msg) => {
 		let memtotal = util.formatFileSize(os.totalmem());
 		let memused = util.formatFileSize(os.totalmem() - os.freemem());
+		let swaptotal = util.formatFileSize(systemInfo.mem.swaptotal);
+		let swapused = util.formatFileSize(systemInfo.mem.swapused);
 
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Running on ${systemInfo.os.platform} - ${systemInfo.os.distro} (kernel version ${systemInfo.os.kernel}) (${systemInfo.os.arch}) ${systemInfo.os.release}`)
 			.setTitle(`Host's stats - ${systemInfo.os.hostname}`)
 			.setDescription('Stats for the bot\'s host')
 			.addField('Uptime', util.formatMiliseconds(os.uptime()), true)
-			.addField('Memory', `${memused}/${memtotal} used`, true)
 			.addField('BIOS', `${systemInfo.bios.vendor} ${systemInfo.bios.version}`, true)
 			.addField('Baseboard', `${systemInfo.baseboard.manufacturer} ${systemInfo.baseboard.model} v${systemInfo.baseboard.version}`, true)
-			.addField('CPU', `${systemInfo.cpu.manufacturer} ${systemInfo.cpu.brand} model ${systemInfo.cpu.model} @${systemInfo.cpu.speedmax}GHz (${systemInfo.cpu.cores} cores)`, true));
+			.addField('Memory', `${memused}/${memtotal} used \`${util.progress(os.totalmem() - os.freemem(), os.totalmem())}\``)
+			.addField('Swap', `${swapused}/${swaptotal} used \`${util.progress(systemInfo.mem.swapused, systemInfo.mem.swaptotal)}\``)
+			.addField('CPU', `${systemInfo.cpu.manufacturer} ${systemInfo.cpu.brand} model ${systemInfo.cpu.model} @${systemInfo.cpu.speedmax}GHz (${systemInfo.cpu.cores} cores) \nUsage: ${cpuUsage}% \`${util.progress(cpuUsage, 100)}\``)
+			.addField('GPU', `${systemInfo.graphics.controllers[0].vendor} ${systemInfo.graphics.controllers[0].model} w/ ${systemInfo.graphics.controllers[0].vram}MB VRAM`)
+			.addField(`Disk(s) (${systemInfo.fsSize.length} mounted)`, systemInfo.diskLayout.filter(d => !(d.name === '' || d.device.startsWith('/dev/ram'))).map(d => `${d.vendor} ${d.type} - ${d.device || d.name}, ${util.formatFileSize(d.size)}`)));
 	})
 		.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])
 		.setDescription('get some info and stats about the bot'));
