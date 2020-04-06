@@ -426,7 +426,7 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 
 			if (!attachment.name) attachment.name = attachment.url;
 
-			const filetype = attachment.name.split('.').pop();
+			const filetype = attachment.name.split('/').pop().split('.').pop();
 			if (acceptedFiletypes.includes(filetype.toLowerCase()) || acceptedFiletypes.length === 0) {
 				attach = attachment;
 			}
