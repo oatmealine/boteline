@@ -399,6 +399,10 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 					m.embeds.forEach(em => {
 						if (em.type !== 'rich' && em.title === undefined && em.provider === null) attachments.push(new Discord.MessageAttachment(em.url)); // not really a better way to test for this
 						
+						if (em.provider !== null && em.provider.name === 'Tenor') { // tenor compat
+							attachments.push(new Discord.MessageAttachment(em.video.url, 'tenor.mp4'));
+						}
+
 						if (em.image) attachments.push(new Discord.MessageAttachment(em.image.url));
 						if (em.thumbnail) attachments.push(new Discord.MessageAttachment(em.thumbnail.url));
 					});
