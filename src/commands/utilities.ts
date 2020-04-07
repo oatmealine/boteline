@@ -28,4 +28,32 @@ export function addCommands(cs: CommandSystem.System) {
 		.addAlias('avatar')
 		.setDescription('get a user\'s pfp')
 		.addClientPermission('ATTACH_FILES'));
+
+	cs.addCommand('utilities', new CommandSystem.SimpleCommand('encode78', (msg, content) => {
+		function letterTo78(letter) {
+			let code = '';
+			let n = letter.charCodeAt(0);
+		
+			let aAmt = Math.floor(n / 7);
+			let aLeftover = n % 7;
+			let abAmt = 7 - aLeftover;
+		
+			code += 'a'.repeat(aAmt);
+			if (abAmt > 0) {
+				code += 'ab'.repeat(abAmt);
+				code += 'a';
+			}
+			code += 'y';
+			return code;
+		}
+		
+		function stringTo78(string) {
+			return string.split('').map(s => letterTo78(s)).join('rb\n') + '\nfuck';
+		}
+		
+		return '```78\n' + stringTo78(content) + '```';
+	})
+		.addExample('hello world!')
+		.setUsage('(string)')
+		.setDescription('converts a string to a [78 program](https://github.com/oatmealine/78) that outputs that string'));
 }
