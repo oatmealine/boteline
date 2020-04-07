@@ -55,8 +55,6 @@ const prefix : string = process.env.PREFIX;
 
 const version : string = packageJson.version + ' alpha';
 
-let starboardBinds = {};
-
 logger.info(ch.red.bold(`boteline v${version}`));
 if (process.env.DEBUG) { logger.debug(ch.grey('debug printing on')); }
 
@@ -118,71 +116,6 @@ bot.on('message', (msg) => {
 	cs.parseMessage(msg, thisPrefix);
 });
 
-bot.on('messageUpdate', (oldMsg, msg) => {
-	if (msg.guild !== null && guildSettings[msg.guild.id] !== undefined && guildSettings[msg.guild.id].starboard !== undefined) {
-		let starboardSettings = guildSettings[msg.guild.id].starboard;
-
-		if (starboardBinds[msg.id]) {
-			let embed = util.starboardEmbed(msg, starboardSettings, true);
-
-			starboardBinds[msg.id].edit('', {embed: embed});
-		}
-	}
-});
-
-bot.on('messageDelete', (msg) => {
-	if(msg.guild !== null && guildSettings[msg.guild.id] !== undefined && guildSettings[msg.guild.id].starboard !== undefined) {
-		if (starboardBinds[msg.id]) {
-			starboardBinds[msg.id].delete();
-			delete starboardBinds[msg.id];
-		}
-	}
-});
-
-function handleReactions(reaction, user) {
-	if (reaction.message.guild !== null && guildSettings[reaction.message.guild.id] !== undefined && guildSettings[reaction.message.guild.id].starboard !== undefined) {
-		let starboardSettings = guildSettings[reaction.message.guild.id].starboard;
-
-		if (starboardSettings.guildEmote) {
-			if (starboardSettings.emote !== reaction.emoji.id) return;
-		} else {
-			if (starboardSettings.emote !== reaction.emoji.toString()) return;
-		}
-
-		if (user.id === reaction.message.author.id || user.bot) {
-			reaction.remove(user);
-			return;
-		}
-
-		if (reaction.count >= starboardSettings.starsNeeded) {
-			let channel = reaction.message.guild.channels.cache.find(ch => ch.id === starboardSettings.channel);
-
-			if (channel) {
-				let embed = util.starboardEmbed(reaction.message, starboardSettings, false, reaction);
-
-				if(reaction.message.attachments) {
-					let image = reaction.message.attachments.filter(at => at.width !== null).first();
-					if (image) embed.setImage(image.url);
-				}
-
-				if (starboardBinds[reaction.message.id]) {
-					starboardBinds[reaction.message.id].edit('', {embed: embed});
-				} else {
-					channel.send('', {embed: embed})
-						.then(m => {
-							starboardBinds[reaction.message.id] = m;
-						});
-				}
-			}
-		} else if (starboardBinds[reaction.message.id]) {
-			starboardBinds[reaction.message.id].delete();
-			delete starboardBinds[reaction.message.id];
-		}
-	}
-}
-
-bot.on('messageReactionAdd', handleReactions);
-bot.on('messageReactionRemove', handleReactions);
 
 let firedReady = false;
 

@@ -5,7 +5,6 @@ import * as CommandSystem from 'cumsystem';
 Discord; // fuck you ts
 
 export function addCommands(cs: CommandSystem.System) {
-	let guildSettings = cs.get('guildSettings');
 	let userData = cs.get('userData');
 
 	cs.addCommand('moderating', new CommandSystem.SimpleCommand('ban', (msg) => {
@@ -63,42 +62,6 @@ export function addCommands(cs: CommandSystem.System) {
 		.addClientPermission('KICK_MEMBERS')
 		.addUserPermission('KICK_MEMBERS')
 		.setGuildOnly());
-
-	cs.addCommand('moderating', new CommandSystem.Command('starboard', (msg : Discord.Message) => {
-		let params = util.getParams(msg);
-
-		let channel = msg.guild.channels.cache.find(c => c.id === params[0].replace('<#','').replace('>',''));
-		if(!channel) {
-			return msg.channel.send('channel doesnt exist!');
-		} else {
-			if(!channel.permissionsFor(msg.guild.me).has('SEND_MESSAGES')) return msg.channel.send('i cant send messages there!');
-			if(!channel.permissionsFor(msg.guild.me).has('EMBED_LINKS')) return msg.channel.send('i cant add embeds there!');
-		}
-
-		if (!params[2]) params[2] = '⭐';
-		let emote = msg.guild.emojis.cache.find(em => em.id === params[2].slice(-19,-1));
-
-		if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
-
-		if (params[1] !== '0') {
-			guildSettings[msg.guild.id].starboard = {channel: channel.id, starsNeeded: Number(params[1]), emote: emote ? emote.id : params[2], guildEmote: emote !== undefined};
-
-			let starSettings = guildSettings[msg.guild.id].starboard;
-			return msg.channel.send(`gotcha! all messages with ${starSettings.starsNeeded} ${starSettings.guildEmote ? msg.guild.emojis.cache.get(starSettings.emote).toString() : starSettings.emote} reactions will be quoted in <#${starSettings.channel}>`);
-		} else {
-			delete guildSettings[msg.guild.id].starboard;
-			return msg.channel.send('removed starboard from server!');
-		}
-	})
-		.addAlias('board')
-		.addAlias('setStarboard')
-		.addUserPermission('MANAGE_CHANNELS')
-		.addClientPermission('MANAGE_MESSAGES')
-		.setUsage('(string) (number) [string]')
-		.setDisplayUsage('(channel) (reacts needed) [emote]')
-		.setDescription('changes the starboard location, set reacts needed to 0 to remove')
-		.setGuildOnly());
-
 	
 	cs.addCommand('moderating', new CommandSystem.SimpleCommand('blacklistuser', msg => {
 		const params = util.getParams(msg);
