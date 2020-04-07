@@ -141,7 +141,7 @@ export function addCommands(cs: CommandSystem.System) {
 		const aceOverride = ['catte'];
 
 		let ratedHash = util.hashCode(ratingThing);
-		let ratedHashUpper = util.hashCode(ratingThing);
+		let ratedHashUpper = util.hashCode(ratingThing.toUpperCase());
 
 		let isGay = (ratedHash % 3) === 0 || gayOverride.includes(ratingThing);
 		let isBi = (ratedHashUpper % 4) === 0 || biOverride.includes(ratingThing);
