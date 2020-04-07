@@ -1,3 +1,4 @@
+/* eslint-disable no-fallthrough */
 import * as CommandSystem from 'cumsystem';
 // eslint-disable-next-line no-unused-vars
 import * as Discord from 'discord.js';
@@ -56,4 +57,112 @@ export function addCommands(cs: CommandSystem.System) {
 		.addExample('hello world!')
 		.setUsage('(string)')
 		.setDescription('converts a string to a [78 program](https://github.com/oatmealine/78) that outputs that string'));
+
+	cs.addCommand('utilities', new CommandSystem.Command('exec78', (msg, content) => {
+		let input = content;
+
+		// memory stuff
+		let mainval = 0;
+		let bakval = 0;
+
+		let gmult = 0;
+
+		let run = true;
+		let cycles = 0;
+		const maxCycles = 4000;
+		let output = '';
+
+		function runCodePiece(code, loop) {
+			const arrlen = code.length;
+			
+			code.split('').forEach((v, i) => {
+				cycles++;
+
+				if (cycles > maxCycles) {
+					output = 'Too many cycles';
+					throw new Error('Stack overflow');
+				}
+
+				if (code[i - 1]) {
+					const vp = code[i - 1];
+					if (vp === 'h') {
+						let cond = mainval > 0;
+						if (code[i - 2] === 'k') cond = mainval < 0;
+						if (cond) return;
+					}
+					if (vp === 'j') {
+						let cond = mainval === 0;
+						if (code[i - 2] === 'k') cond = mainval !== 0;
+						if (cond) return;
+					}
+
+					if (v !== 'g' && vp === 'g') {
+						mainval += Math.round(Math.pow(10, -gmult) * 100) / 100;
+						gmult = 0;
+					}
+				}
+
+				if (code.split('').slice(i, i + 4).join('') === 'fuck') run = false;
+
+				switch(v) {
+				case 'a':
+					mainval += 7;
+					break;
+				case 'b':
+					mainval -= 8;
+					break;
+				case 'g':
+					gmult++;
+					break;
+				case 'o':
+					output += String(mainval * 2);
+					break;
+				case 's':
+					// eslint-disable-next-line no-case-declarations
+					let bak = bakval;
+					bakval = mainval;
+					mainval = bak;
+					break;
+				case 'r':
+					mainval = 8;
+					break;
+				case 'y':
+					output += String.fromCharCode(mainval);
+					break;
+				case 'k':
+					if (code[i + 1] && (code[i + 1] === 'h' || code[i + 1] === 'j'))
+						break;
+				case ' ':
+				case '\n':
+				case 'j':
+				case 'u':
+				case 'c':
+				case 'h':
+				case 'f':
+					break;
+				default:
+					output = `${v}: unrecognized instruction`;
+					run = false;
+					break;
+				}
+
+				if (i === arrlen - 1 && loop && mainval !== 0 && run) runCodePiece(code, loop);
+			});
+		}
+
+		while(run) {
+			cycles++;
+
+			if (cycles > maxCycles) {
+				output = 'Too many cycles';
+				throw new Error('Stack overflow');
+			}
+
+			input.split('!').forEach((v, b) => {
+				runCodePiece(v, (b % 2) === 1);
+			});
+		}
+
+		msg.channel.send(`\`${output}\``);
+	}));
 }
