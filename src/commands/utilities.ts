@@ -164,5 +164,9 @@ export function addCommands(cs: CommandSystem.System) {
 		}
 
 		msg.channel.send(`\`${output}\``);
-	}));
+	})
+		.addExample('a o fuck')
+		.setUsage('(string)')
+		.setDisplayUsage('(code)')
+		.setDescription('a limited interpreter of [78](https://github.com/oatmealine/78)'));
 }
