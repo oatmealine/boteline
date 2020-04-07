@@ -49,6 +49,8 @@ function handleReactions(reaction, user) {
 }
 
 export function addCommands(cs: CommandSystem.System) {
+	guildSettings = cs.get('guildSettings');
+
 	cs.addCommand('moderating', new CommandSystem.Command('starboard', (msg : Discord.Message) => {
 		let params = util.getParams(msg);
 
