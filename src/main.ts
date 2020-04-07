@@ -90,7 +90,6 @@ logger.info('starting...');
 
 bot.on('message', (msg) => {
 	let content: string = msg.content;
-	const author: Discord.User = msg.author;
 
 	let thisPrefix: string = prefix;
 
@@ -117,27 +116,6 @@ bot.on('message', (msg) => {
 	}
 
 	cs.parseMessage(msg, thisPrefix);
-
-	// debug and owneronly commands
-	// not put into commandsystem for debugging if the system dies or something like that
-		
-	if (author.id === process.env.OWNER) {
-		switch (cmd) {
-		case 'eval':
-		case 'debug':
-		case 'seval':
-		case 'sdebug':
-
-			break;
-		case 'reboot':
-		case 'restart':
-			
-			break;
-		case 'exec':
-		case 'sexec':
-			
-		}
-	}
 });
 
 bot.on('messageUpdate', (oldMsg, msg) => {
