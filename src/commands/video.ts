@@ -154,7 +154,11 @@ export function addCommands(cs: CommandSystem.System) {
 			// trim the video
 			'-shortest'
 		];
-	}));
+	})
+		.setDescription('(arabic text here)')
+		.setGlobalCooldown(1000)
+		.setUserCooldown(3000)
+		.addClientPermission('ATTACH_FILES'));
 
 	cs.addCommand('video', new FFMpegCommand('togif', () => [], () => [], 'gif')
 		.setDescription('turns a video into an animated gif')
