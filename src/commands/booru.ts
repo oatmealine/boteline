@@ -10,6 +10,7 @@ function getSites() {
 	Object.keys(sites).filter(s => s !== 'lolibooru.moe' /* no pedophiles allowed */).forEach(s => {
 		let site = sites[s];
 		if (!site) return;
+		
 		sitesObj[s] = site;
 	});
 	
@@ -23,8 +24,10 @@ export function addCommands(cs: CommandSystem.System) {
 		let tags = params.slice(1);
 		let sites = getSites();
 
-		if (Object.keys(sites).includes(params[0])) {
-			if (sites[params[0]].nsfw && !(msg.channel.type !== 'text' || msg.channel.nsfw)) return msg.channel.send('This site is NSFW, and you aren\'t in an NSFW channel!');
+		let site: any = Object.values(sites).find((v: any) => v.domain === params[0] || v.aliases.includes(params[0])); // booru has stupid classes
+
+		if (site) {
+			if (site.nsfw && !(msg.channel.type !== 'text' || msg.channel.nsfw)) return msg.channel.send('This site is NSFW, and you aren\'t in an NSFW channel!');
 
 			return booru.search(params[0], tags, {limit: 1, random: true})
 				.then(results => {
@@ -51,7 +54,9 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDisplayUsage('(site) (tags..)'));
 
 	cs.addCommand('booru', new CommandSystem.SimpleCommand('boorusites', () => 
-		Object.keys(getSites()).map(s => `${s}${getSites()[s].nsfw ? ' (NSFW)' : ''}`).join(', ') // im sorry
+		Object.keys(getSites())
+			.sort((a, b) => a.charCodeAt(0) - b.charCodeAt(0))
+			.map(s => `${s}${getSites()[s].nsfw ? ' (NSFW)' : ''}`).join(', ') // im sorry
 	)
 		.setDescription('see what sites are available for m.boorusites'));
 }
