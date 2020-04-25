@@ -22,12 +22,14 @@ let logger;
 class FFMpegCommand extends CommandSystem.Command {
 	public inputOptions: Function;
 	public outputOptions: Function;
+	public format: string;
 
-	constructor(name: string, inputOptions, outputOptions?) {
+	constructor(name: string, inputOptions, outputOptions?, format = 'mp4') {
 		super(name, null);
 
 		this.inputOptions = inputOptions;
 		this.outputOptions = outputOptions || (() => []);
+		this.format = format;
 
 		this.cfunc = async (msg) => {
 			const params = util.getParams(msg);
@@ -53,7 +55,7 @@ class FFMpegCommand extends CommandSystem.Command {
 					}
 
 					let log = '';
-					let tempFile = temp + '/' + genName() + '.mp4';
+					let tempFile = temp + '/' + genName() + '.' + format;
 
 					ffmpeg()
 						.input(videoAttach.url)
@@ -153,6 +155,18 @@ export function addCommands(cs: CommandSystem.System) {
 			'-shortest'
 		];
 	}));
+
+	cs.addCommand('video', new FFMpegCommand('togif', () => [], () => [], 'gif')
+		.setDescription('turns a video into an animated gif')
+		.setGlobalCooldown(1000)
+		.setUserCooldown(3000)
+		.addClientPermission('ATTACH_FILES'));
+
+	cs.addCommand('video', new FFMpegCommand('tomp4', () => [], () => [], 'mp4')
+		.setDescription('turns a video or gif to an mp4 format video')
+		.setGlobalCooldown(500)
+		.setUserCooldown(2000)
+		.addClientPermission('ATTACH_FILES'));
 
 	cs.addCommand('video', new CommandSystem.Command('datamosh', async (msg) => {
 		const params = util.getParams(msg);
