@@ -3,31 +3,55 @@ import * as util from '../lib/util';
 import * as Discord from 'discord.js';
 import * as CommandSystem from 'cumsystem';
 
+function getSites() {
+	let sites = booru.sites;
+	let sitesObj = {};
+
+	Object.keys(sites).filter(s => s !== 'lolibooru.moe' /* no pedophiles allowed */).forEach(s => {
+		let site = sites[s];
+		if (!site) return;
+		sitesObj[s] = site;
+	});
+	
+	return sitesObj;
+}
+
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('utilities', new CommandSystem.Command('boorufetch', msg => {
+	cs.addCommand('booru', new CommandSystem.Command('boorufetch', msg => {
 		const params = util.getParams(msg);
 
 		let tags = params.slice(1);
+		let sites = getSites();
 
-		if (Object.keys(booru.sites).includes(params[0])) {
-			booru.search(params[0], tags, {limit: 1, random: true})
+		if (Object.keys(sites).includes(params[0])) {
+			if (sites[params[0]].nsfw && !(msg.channel.type !== 'text' || msg.channel.nsfw)) return msg.channel.send('This site is NSFW, and you aren\'t in an NSFW channel!');
+
+			return booru.search(params[0], tags, {limit: 1, random: true})
 				.then(results => {
 					let img = results[0];
 
+					if (!img) return msg.channel.send('No images found (?? i think)');
+
 					let embed = new Discord.MessageEmbed()
-						.setTitle(img.postView)
+						.setTitle(img.id)
+						.setURL(img.postView)
 						.setImage(img.fileUrl)
 						.setColor('#334433')
-						.setDescription(`Score: ${img.score}\nTags: \`${img.tags.join(', ')}\`${img.source ? `\n[Source](${img.source})` : ''}`);
+						.setDescription(`Score: ${img.score || '?'}\nTags: \`${util.shortenStr(img.tags.join(', '), 500)}\`${img.source ? `\n[Source](${img.source})` : ''}`);
 
-					msg.channel.send(embed);
+					return msg.channel.send(embed);
 				});
 		} else {
-			msg.channel.send('That site isn\'t supported!');
+			return msg.channel.send('That site isn\'t supported!');
 		}
 	})
-		.setDescription('searches a booru site for tags\nthe available sites can be checked here: https://github.com/AtlasTheBot/booru/blob/HEAD/src/sites.json')
-		.setNSFW()
+		.setDescription('searches a booru site for tags\nthe available sites can be checked w/ m.boorusites')
 		.setUsage('(string) (string)')
+		.addAlias('booru')
 		.setDisplayUsage('(site) (tags..)'));
+
+	cs.addCommand('booru', new CommandSystem.SimpleCommand('boorusites', () => 
+		Object.keys(getSites()).map(s => `${s}${getSites()[s].nsfw ? ' (NSFW)' : ''}`).join(', ') // im sorry
+	)
+		.setDescription('see what sites are available for m.boorusites'));
 }
