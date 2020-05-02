@@ -20,15 +20,13 @@ function genName() {
 let logger;
 
 class FFMpegCommand extends CommandSystem.Command {
-	public inputOptions: Function;
-	public outputOptions: Function;
+	public process: Function;
 	public format: string;
 
-	constructor(name: string, inputOptions, outputOptions?, format = 'mp4') {
+	constructor(name: string, process, format = 'mp4') {
 		super(name, null);
 
-		this.inputOptions = inputOptions;
-		this.outputOptions = outputOptions || (() => []);
+		this.process = process;
 		this.format = format;
 
 		this.cfunc = async (msg) => {
@@ -57,11 +55,9 @@ class FFMpegCommand extends CommandSystem.Command {
 					let log = '';
 					let tempFile = temp + '/' + genName() + '.' + format;
 
-					ffmpeg()
+					let command = ffmpeg()
 						.input(videoAttach.url)
 						//.input(this.addInput(msg))
-						.inputOptions(this.inputOptions(msg))
-						.outputOptions(this.outputOptions(msg))
 						.on('start', (commandLine) => {
 							logger.debug('started ffmpeg with command: ' + commandLine);
 							if (progMessage) {
@@ -99,7 +95,11 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 									progMessage.delete();
 								}
 							});
-						})
+						});
+				
+					process(command, msg);
+
+					command
 						// .pipe(stream);
 						.save(tempFile);
 				})
@@ -119,10 +119,10 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 export function addCommands(cs: CommandSystem.System) {
 	logger = cs.get('logger');
 
-	cs.addCommand('video', new FFMpegCommand('compress', () => [], (msg) => {
+	cs.addCommand('video', new FFMpegCommand('compress', (command, msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = '20'; }
-		return [`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac'];
+		command.outputOptions([`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac']);
 	})
 		.setDescription('compresses a video')
 		.addAlias('compression')
@@ -131,42 +131,53 @@ export function addCommands(cs: CommandSystem.System) {
 		.setGlobalCooldown(1000)
 		.setUserCooldown(5000));
 
-	cs.addCommand('video', new FFMpegCommand('arabic', () => [], () => {
-		/*let arabicText = '';
+	cs.addCommand('video', new FFMpegCommand('vibrato', (command, msg) => {
+		const params = util.getParams(msg);
+		if (!params[0]) { params[0] = '10'; }
+		command.audioFilters(`vibrato=${params[0]}`);
+	})
+		.setDescription('applies vibrato to a video, values 100 and up make it sound really distorted')
+		.addAlias('vibr')
+		.addAlias('wibbry')
+		.setUsage('[number]')
+		.addClientPermission('ATTACH_FILES')
+		.setGlobalCooldown(1000)
+		.setUserCooldown(5000));
+
+	cs.addCommand('video', new FFMpegCommand('arabic', (command) => {
+		let arabicText = '';
 	
 		// to generate the text we just take random arabic characters and mash them together
 		for (let i = 0; i < Math.floor(Math.random() * 20 + 5); i++) {
 			// arabic characters range from around 1547 to 1957. i just chose a smaller range of the ones that look the most Funy
 			arabicText += String.fromCharCode(1550 + Math.floor(Math.random() * 410));
-		}*/
+		}
 
-		return [
-			// replace audio with nokia.mp3
-			'-i ./assets/nokia.mp3',
-			'-map 0:v:0', '-map 1:a:0',
-			// add Da Text
-			// doesnt work so commented out for now : (
-			//`-vf "drawtext=\\"fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0\\""`,
-			// framerate (i use this instead of -r because else it would extend the video beyond 25 seconds)
-			'-filter:v fps=fps=2',
-			// bitrate
-			'-b:v 30k', '-b:a 20k',
-			// trim the video
-			'-shortest'
-		];
+		command
+			.input('./assets/nokia.mp3')
+			.outputOptions([
+				'-map 0:v:0', '-map 1:a:0',
+				// framerate (i use this instead of -r because else it would extend the video beyond 25 seconds)
+				// '-filter:v fps=fps=2',
+				// bitrate
+				'-b:v 30k', '-b:a 20k',
+				// trim the video
+				'-shortest'
+			])
+			.videoFilters(`drawtext="fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0"`);
 	})
 		.setDescription('(arabic text here)')
 		.setGlobalCooldown(1000)
 		.setUserCooldown(3000)
 		.addClientPermission('ATTACH_FILES'));
 
-	cs.addCommand('video', new FFMpegCommand('togif', () => [], () => [], 'gif')
+	cs.addCommand('video', new FFMpegCommand('togif', () => [], 'gif')
 		.setDescription('turns a video into an animated gif')
 		.setGlobalCooldown(1000)
 		.setUserCooldown(3000)
 		.addClientPermission('ATTACH_FILES'));
 
-	cs.addCommand('video', new FFMpegCommand('tomp4', () => [], () => [], 'mp4')
+	cs.addCommand('video', new FFMpegCommand('tomp4', () => [], 'mp4')
 		.setDescription('turns a video or gif to an mp4 format video')
 		.setGlobalCooldown(500)
 		.setUserCooldown(2000)
