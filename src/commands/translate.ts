@@ -48,7 +48,7 @@ export function addCommands(cs: CommandSystem.System) {
 					msg.channel.stopTyping();
 				});
 		})
-			.setCategory('utilities')
+			.setCategory('translate')
 			.addClientPermission('EMBED_LINKS')
 			.setDescription(prefix + 'translate, but with the first language set to auto')
 			.addAlias('atransl')
@@ -81,7 +81,7 @@ export function addCommands(cs: CommandSystem.System) {
 					msg.channel.stopTyping();
 				});
 		})
-			.setCategory('utilities')
+			.setCategory('translate')
 			.addClientPermission('EMBED_LINKS')
 			.setDescription('translate some text, get accepted langs list with ' + prefix + 'langs')
 			.addAlias('transl')
@@ -183,7 +183,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 				.setColor('#FF0000');
 			progMessage.edit('', { embed: translateEmbed });
 		})
-			.setCategory('fun')
+			.setCategory('translate')
 			.addClientPermission('EMBED_LINKS')
 			.setDescription(`translate a piece of text back and forth a certain amount of times to random languages before translating it back to english. will mostly return gibberish if set to a high value
 modes are normal, hard, curated, (langname), legacy`)
@@ -199,7 +199,7 @@ modes are normal, hard, curated, (langname), legacy`)
 		cs.addCommand(new CommandSystem.Command('langs', (msg: Discord.Message) => {
 			msg.channel.send('The supported languages for ' + prefix + 'translate are:\n' + Object.keys(yandex_langs).map(k => k + ' (' + yandex_langs[k] + ')').join(', '));
 		})
-			.setCategory('utilities')
+			.setCategory('translate')
 			.setDescription('get the available languages for ' + prefix + 'translate'));
 	}
 }
