@@ -100,7 +100,7 @@ export function addCommands(cs: CommandSystem.System) {
 				.addField('Cases per mil., predicted (realistic)', util.roundNumber(caseRateRealisticPerMil, 0).toLocaleString(), true)
 				.addField('Cases per mil., actual', stats.casesPerOneMillion.toLocaleString(), true)
 				.addField('R/D ratio', util.roundNumber(stats.recovered / stats.deaths, 3), false)
-				.setDescription(`Mortality rate: ${util.roundNumber(stats.deaths / stats.cases * 100, 2)}%\nRecovery rate: ${util.roundNumber(stats.recovered / stats.cases * 100, 2)}%\nPredicted cases per million assumes everyone in the area takes a test, therefore accounting for people who have/had COVID but haven't done a test`);
+				.setDescription(`Mortality rate: ${util.roundNumber(stats.deaths / stats.cases * 100, 2)}%\nRecovery rate: ${util.roundNumber(stats.recovered / stats.cases * 100, 2)}%`);
 
 			if (stats.countryInfo) embed.setThumbnail(stats.countryInfo.flag);
 
@@ -110,7 +110,7 @@ export function addCommands(cs: CommandSystem.System) {
 		}
 	})
 		.setCategory('corona')
-		.setDescription('corona with relative stats, so every country is rated fairly')
+		.setDescription('corona with relative stats, so every country is rated fairly\npredicted cases per million assumes everyone in the area takes a test, therefore accounting for people who have/had COVID but haven\'t done a test')
 		.addAliases(['rcovid', 'rcorona', 'relcovid', 'relcorona'])
 		.addExample('Russia')
 		.addExample('Michigan')
