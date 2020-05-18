@@ -49,7 +49,7 @@ setInterval(() => {
 
 export function addCommands(cs: CommandSystem.System) {
 
-	cs.addCommand('core', new CommandSystem.Command('info', (msg) => {
+	cs.addCommand(new CommandSystem.Command('info', (msg) => {
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, cs.client.user.displayAvatarURL({dynamic: true}))
 			.setTitle(`${cs.client.user.username} v${packageJson.version} stats`)
@@ -62,10 +62,11 @@ Last minute: **${util.roundNumber(cpuUsageMin, 2)}%**
 Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 2)}%**`, true)
 			.addField('Uptime', util.formatMiliseconds(process.uptime()), true));
 	})
+		.setCategory('core')
 		.addAlias('stats')
 		.setDescription('get some info and stats about the bot'));
 
-	cs.addCommand('core', new CommandSystem.Command('hoststats', (msg) => {
+	cs.addCommand(new CommandSystem.Command('hoststats', (msg) => {
 		let memtotal = util.formatFileSize(os.totalmem());
 		let memused = util.formatFileSize(os.totalmem() - os.freemem());
 		let swaptotal = util.formatFileSize(systemInfo.mem.swaptotal);
@@ -84,10 +85,11 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 			.addField('GPU', `${systemInfo.graphics.controllers[0].vendor} ${systemInfo.graphics.controllers[0].model} w/ ${systemInfo.graphics.controllers[0].vram}MB VRAM`)
 			.addField(`Disk(s) (${systemInfo.fsSize.length} mounted)`, systemInfo.diskLayout.filter(d => !(d.name === '' || d.device.startsWith('/dev/ram'))).map(d => `${d.vendor} ${d.type} - ${d.device || d.name}, ${util.formatFileSize(d.size)}`)));
 	})
+		.setCategory('core')
 		.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])
 		.setDescription('get some info and stats about the bot'));
 
-	cs.addCommand('core', new CommandSystem.Command('listdependencies', (msg) => {
+	cs.addCommand(new CommandSystem.Command('listdependencies', (msg) => {
 		let dependencyEmbed = new Discord.MessageEmbed()
 			.setTitle('Boteline Dependencies')
 			.setColor('#FFFF00')
@@ -99,6 +101,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 
 		msg.channel.send('', { embed: dependencyEmbed });
 	})
+		.setCategory('core')
 		.addAlias('dependencies')
 		.addAlias('depends')
 		.addClientPermission('EMBED_LINKS')

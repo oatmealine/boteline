@@ -5,16 +5,17 @@ import * as Discord from 'discord.js';
 import * as util from '../lib/util';
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('utilities', new CommandSystem.Command('icon', (message) => {
+	cs.addCommand(new CommandSystem.Command('icon', (message) => {
 		message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
 	})
+		.setCategory('utilities')
 		.addAlias('servericon')
 		.addAlias('serverpic')
 		.setDescription('get the server\'s icon')
 		.addClientPermission('ATTACH_FILES')
 		.setGuildOnly());
 
-	cs.addCommand('utilities', new CommandSystem.Command('pfp', (msg) => {
+	cs.addCommand(new CommandSystem.Command('pfp', (msg) => {
 		const params = util.getParams(msg);
 		let user: Discord.User;
 
@@ -25,12 +26,13 @@ export function addCommands(cs: CommandSystem.System) {
 		}
 		msg.channel.send('', { files: [{ attachment: user.displayAvatarURL({dynamic: true}), name: 'avatar.png' }] });
 	})
+		.setCategory('utilities')
 		.setUsage('[user]')
 		.addAlias('avatar')
 		.setDescription('get a user\'s pfp')
 		.addClientPermission('ATTACH_FILES'));
 
-	cs.addCommand('utilities', new CommandSystem.SimpleCommand('encode78', (msg, content) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('encode78', (msg, content) => {
 		function letterTo78(letter) {
 			let code = '';
 			let n = letter.charCodeAt(0);
@@ -54,11 +56,12 @@ export function addCommands(cs: CommandSystem.System) {
 		
 		return '```78\n' + stringTo78(content) + '```';
 	})
+		.setCategory('utilities')
 		.addExample('hello world!')
 		.setUsage('(string)')
 		.setDescription('converts a string to a [78 program](https://github.com/oatmealine/78) that outputs that string'));
 
-	cs.addCommand('utilities', new CommandSystem.Command('exec78', (msg, content) => {
+	cs.addCommand(new CommandSystem.Command('exec78', (msg, content) => {
 		let input = content;
 
 		// memory stuff
@@ -165,6 +168,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		msg.channel.send(`\`${output}\``);
 	})
+		.setCategory('utilities')
 		.addExample('a o fuck')
 		.setUsage('(string)')
 		.setDisplayUsage('(code)')

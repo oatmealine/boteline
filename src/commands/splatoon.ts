@@ -5,7 +5,7 @@ import * as CommandSystem from 'cumsystem';
 Discord; // fuck you ts
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('utilities', new CommandSystem.Command('splatoon', (msg) => {
+	cs.addCommand(new CommandSystem.Command('splatoon', (msg) => {
 		util.checkSplatoon().then(obj => {
 			let data = obj.data;
 
@@ -36,12 +36,13 @@ ${Math.floor(timeLeft / 60 / 60) % 24}h ${Math.floor(timeLeft / 60) % 60}m ${tim
 			msg.channel.send('', embed);
 		});
 	})
+		.setCategory('utilities')
 		.addAlias('splatoonschedule')
 		.addAlias('splatoon2')
 		.setDescription('Check the schedule of the Splatoon 2 stage rotations')
 		.addClientPermission('EMBED_LINKS'));
 
-	cs.addCommand('utilities', new CommandSystem.Command('salmonrun', (msg) => {
+	cs.addCommand(new CommandSystem.Command('salmonrun', (msg) => {
 		util.checkSalmon().then(obj => {
 			let data = obj.data;
 
@@ -69,6 +70,7 @@ ${timeLeftStart < 0 ? `${Math.floor(timeLeftEnd / 60 / 60) % 24}h ${Math.floor(t
 			msg.channel.send('', embed);
 		});
 	})
+		.setCategory('utilities')
 		.addAlias('salmon')
 		.addAlias('salmonschedule')
 		.setDescription('Check the schedule of the Splatoon 2 Salmon Run stage/weapon rotations')

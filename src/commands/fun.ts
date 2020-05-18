@@ -5,7 +5,7 @@ import * as util from '../lib/util';
 const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('fun', new CommandSystem.Command('robloxad', async (msg) => {
+	cs.addCommand(new CommandSystem.Command('robloxad', async (msg) => {
 		let url = 'https://www.roblox.com/user-sponsorship/' + (Math.floor(Math.random() * 3) + 1);
 		let document = await got(url);
 
@@ -24,18 +24,20 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return msg.channel.send(embed);
 	})
+		.setCategory('fun')
 		.setDescription('fetch a roblox ad')
 		.addClientPermissions(['EMBED_LINKS', 'ATTACH_FILES'])
 		.setGlobalCooldown(300));
 
-	cs.addCommand('fun', new CommandSystem.SimpleCommand('kva', () => {
+	cs.addCommand(new CommandSystem.SimpleCommand('kva', () => {
 		return 'ква ква ква  гав гав гав    мяяяяяу   беееее  муууу  ку ку';
 	})
+		.setCategory('fun')
 		.setHidden()
 		.addAlias('ква')
 		.setDescription('ква'));
 		
-	cs.addCommand('fun', new CommandSystem.Command('eat', (msg) => {
+	cs.addCommand(new CommandSystem.Command('eat', (msg) => {
 		const params = util.getParams(msg);
 		
 		const eat = cs.client.emojis.cache.get('612360473928663040').toString();
@@ -64,12 +66,13 @@ export function addCommands(cs: CommandSystem.System) {
 				}, 1000);
 		});
 	})
+		.setCategory('fun')
 		.setDescription('eat the Burger')
 		.setUsage('[any]')
 		.addAlias('burger')
 		.addClientPermission('USE_EXTERNAL_EMOJIS'));
 		
-	cs.addCommand('fun', new CommandSystem.SimpleCommand('rate', (msg) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('rate', (msg) => {
 		const params = util.getParams(msg);
 		let thingToRate = params.join(' ').toLowerCase().split(' ').join('');
 		
@@ -85,11 +88,12 @@ export function addCommands(cs: CommandSystem.System) {
 		
 		return `I'd give ${params.join(' ').replace('me', 'you').replace('my', 'your')} a **${rating}/10**`;
 	})
+		.setCategory('fun')
 		.setDescription('rates something')
 		.setUsage('(string)')
 		.addExample('me'));
 		
-	cs.addCommand('fun', new CommandSystem.SimpleCommand('pick', (msg) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('pick', (msg) => {
 		const params = util.getParams(msg);
 		
 		let thingToRate1: string = params[0].toLowerCase();
@@ -111,12 +115,13 @@ export function addCommands(cs: CommandSystem.System) {
 		const rating2 = util.seedAndRate(thingToRate2);
 		return `Out of ${params[0]} and ${params[1]}, I'd pick **${rating1 === rating2 ? 'neither' : (rating1 > rating2 ? thingToRate1 : thingToRate2)}**`;
 	})
+		.setCategory('fun')
 		.addAlias('choose')
 		.setDescription('rates 2 objects, and picks one of them')
 		.setUsage('(string) (string)')
 		.addExample('njs python'));
 		
-	cs.addCommand('fun', new CommandSystem.SimpleCommand('ask', (msg) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('ask', (msg) => {
 		const params = util.getParams(msg);
 		const thingToRate = params.join(' ').toLowerCase();
 		const options = ['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'];
@@ -124,13 +129,14 @@ export function addCommands(cs: CommandSystem.System) {
 		
 		return `> ${params.join(' ')}\n${options[rating]}`;
 	})
+		.setCategory('fun')
 		.setDescription('ask the bot a question')
 		.setUsage('(string)')
 		.addAlias('askquestion')
 		.addAlias('question')
 		.addExample('is this a good example'));
 
-	cs.addCommand('fun', new CommandSystem.SimpleCommand('isgay', (msg) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('isgay', (msg) => {
 		let params = util.getParams(msg);
 		let ratingThing = params.join(' ').toLowerCase();
 
@@ -156,6 +162,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return `**${params.join(' ')}** is ${sexuality !== '' ? sexuality : (isTrans || isEnby ? '' : 'not gay')}${(sexuality !== '' && (isTrans || isEnby)) ? ' and ' : ''}${(isTrans || isEnby ? (isEnby ? 'non-binary' : 'trans') : '')}!`;
 	})
+		.setCategory('fun')
 		.addAlias('istrans')
 		.addAlias('isenby')
 		.addAlias('isbi')
@@ -164,7 +171,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setUsage('(string)')
 		.setDisplayUsage('(thing to test)'));
 
-	cs.addCommand('fun', new CommandSystem.Command('inspirobot', msg => {
+	cs.addCommand(new CommandSystem.Command('inspirobot', msg => {
 		msg.channel.startTyping();
 	
 		got('http://inspirobot.me/api?generate=true')
@@ -176,14 +183,16 @@ export function addCommands(cs: CommandSystem.System) {
 				}
 			});
 	})
+		.setCategory('fun')
 		.addClientPermission('ATTACH_FILES')
 		.setGlobalCooldown(1000)
 		.setDescription('fetch an inspiring ai-generated quote from [inspirobot](http://inspirobot.me/)')
 		.addAlias('insp'));
 
-	cs.addCommand('fun', new CommandSystem.Command('hi', msg => {
+	cs.addCommand(new CommandSystem.Command('hi', msg => {
 		msg.channel.send('', {files: ['assets/hi.png']});
 	})
+		.setCategory('fun')
 		.setDescription('hi')
 		.setHidden());
 }

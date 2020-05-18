@@ -119,11 +119,12 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 export function addCommands(cs: CommandSystem.System) {
 	logger = cs.get('logger');
 
-	cs.addCommand('video', new FFMpegCommand('compress', (command, msg) => {
+	cs.addCommand(new FFMpegCommand('compress', (command, msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = '20'; }
 		command.outputOptions([`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac']);
 	})
+		.setCategory('video')
 		.setDescription('compresses a video')
 		.addAlias('compression')
 		.setUsage('[number]')
@@ -131,11 +132,12 @@ export function addCommands(cs: CommandSystem.System) {
 		.setGlobalCooldown(1000)
 		.setUserCooldown(5000));
 
-	cs.addCommand('video', new FFMpegCommand('vibrato', (command, msg) => {
+	cs.addCommand(new FFMpegCommand('vibrato', (command, msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = '10'; }
 		command.audioFilters(`vibrato=${params[0]}`);
 	})
+		.setCategory('video')
 		.setDescription('applies vibrato to a video, values 100 and up make it sound really distorted')
 		.addAlias('vibr')
 		.addAlias('wibbry')
@@ -144,7 +146,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setGlobalCooldown(1000)
 		.setUserCooldown(5000));
 
-	cs.addCommand('video', new FFMpegCommand('arabic', (command) => {
+	cs.addCommand(new FFMpegCommand('arabic', (command) => {
 		let arabicText = '';
 	
 		// to generate the text we just take random arabic characters and mash them together
@@ -166,24 +168,27 @@ export function addCommands(cs: CommandSystem.System) {
 			])
 			.videoFilters(`drawtext="fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0"`);
 	})
+		.setCategory('video')
 		.setDescription('(arabic text here)')
 		.setGlobalCooldown(1000)
 		.setUserCooldown(3000)
 		.addClientPermission('ATTACH_FILES'));
 
-	cs.addCommand('video', new FFMpegCommand('togif', () => [], 'gif')
+	cs.addCommand(new FFMpegCommand('togif', () => [], 'gif')
+		.setCategory('video')
 		.setDescription('turns a video into an animated gif')
 		.setGlobalCooldown(1000)
 		.setUserCooldown(3000)
 		.addClientPermission('ATTACH_FILES'));
 
-	cs.addCommand('video', new FFMpegCommand('tomp4', () => [], 'mp4')
+	cs.addCommand(new FFMpegCommand('tomp4', () => [], 'mp4')
+		.setCategory('video')
 		.setDescription('turns a video or gif to an mp4 format video')
 		.setGlobalCooldown(500)
 		.setUserCooldown(2000)
 		.addClientPermission('ATTACH_FILES'));
 
-	cs.addCommand('video', new CommandSystem.Command('datamosh', async (msg) => {
+	cs.addCommand(new CommandSystem.Command('datamosh', async (msg) => {
 		const params = util.getParams(msg);
 
 		let intensity = 0.2;
@@ -359,6 +364,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 				}
 			});
 	})
+		.setCategory('video')
 		.setDescription('apply datamoshing effects to a video (aka remove the i-frames and repeat previous ones)\nintensity ranges from 0 to 1, ex. 0 just removes i frames, 1 completely obliterates the video')
 		.setUsage('[number]')
 		.setDisplayUsage('[intensity]')

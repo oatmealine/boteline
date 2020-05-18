@@ -158,18 +158,19 @@ function updateCoins(cs: CommandSystem.System, save = true) {
 		if (v.watchChannel && cs.client.channels.cache.get(v.watchChannel)) {
 			let channel = cs.client.channels.cache.get(v.watchChannel);
 			if (channel instanceof Discord.TextChannel) {
-				cs.commands.coin.cchart.cfunc(new Discord.Message( // janky solution but it should work
-					cs.client,
-					{
-						content: cs.prefix + 'cchart',
-						author: cs.client,
-						embeds: [],
-						attachments: new Discord.Collection(),
-						createdTimestamp: 0,
-						editedTimestamp: 0
-					},
-					channel
-				), cs.client);
+				cs.commands.find(c => c.name === 'cchart')
+					.cfunc(new Discord.Message( // janky solution but it should work
+						cs.client,
+						{
+							content: cs.prefix + 'cchart',
+							author: cs.client,
+							embeds: [],
+							attachments: new Discord.Collection(),
+							createdTimestamp: 0,
+							editedTimestamp: 0
+						},
+						channel
+					), '');
 			}
 		}
 	});
@@ -198,7 +199,7 @@ export function addCommands(cs: CommandSystem.System) {
 	guildSettings = cs.get('guildSettings');
 	userData = cs.get('userData');
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('cinit', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('cinit', msg => {
 		if (!userData[msg.author.id]) userData[msg.author.id] = {};
 
 		userData[msg.author.id].invest = {
@@ -211,9 +212,10 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return 'created/reset an account for you!';
 	})
+		.setCategory('coin')
 		.setDescription('create an account for boteline coin commands'));
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('cbal', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('cbal', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 		let user = userData[msg.author.id].invest;
 		let returnstring = '';
@@ -241,9 +243,10 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return returnstring;
 	})
+		.setCategory('coin')
 		.setDescription('check your balance'));
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('cval', () => {
+	cs.addCommand(new CommandSystem.SimpleCommand('cval', () => {
 		let chartem = coinValue.value < coinValue.pastvalues[coinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
 		let chartemsch = schlattCoinValue.value < schlattCoinValue.pastvalues[schlattCoinValue.pastvalues.length - 1] ? ':chart_with_downwards_trend:' : ':chart_with_upwards_trend:';
 		return `1BC is currently worth ${util.roundNumber(coinValue.value, 2)}$ ${chartem}
@@ -251,9 +254,10 @@ export function addCommands(cs: CommandSystem.System) {
 (boteline coins/schlattcoin are not a real currency/cryptocurrency!)
 The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastCoinUpdateDate)) / 1000, 1)}s`;
 	})
+		.setCategory('coin')
 		.setDescription('check the coin values'));
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('cbuy', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('cbuy', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 		let user = userData[msg.author.id].invest;
 		const params = util.getParams(msg);
@@ -278,12 +282,13 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 
 		return `bought ${util.roundNumber(invmoney / coinValue.value, 2)}BC (${util.roundNumber(invmoney, 2)}$)`;
 	})
+		.setCategory('coin')
 		.setDescription('buy an amount of boteline coins, use `all` to buy as many as possible')
 		.setUsage('(string)')
 		.setDisplayUsage('(coin amount, or dollars)')
 		.addAlias('cinv'));
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('csell', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('csell', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 		const params = util.getParams(msg);
 		let user = userData[msg.author.id].invest;
@@ -301,11 +306,12 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 
 		return `you sold ${params[0]}bc for ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(userData[msg.author.id].invest.balance, 2)}$`;
 	})
+		.setCategory('coin')
 		.setDescription('sell your boteline coins, use `all` to sell every single one you have')
 		.setUsage('(string)')
 		.setDisplayUsage('(coins)'));
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('cbuys', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('cbuys', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 		let user = userData[msg.author.id].invest;
 		const params = util.getParams(msg);
@@ -334,12 +340,13 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 
 		return `bought ${util.roundNumber(invmoney / schlattCoinValue.value, 2)}SC (${util.roundNumber(invmoney, 2)}$)`;
 	})
+		.setCategory('coin')
 		.setDescription('buy an amount of schlattcoin, use `all` to buy as many as possible')
 		.setUsage('(string)')
 		.setDisplayUsage('(coin amount, percentage, or dollars)')
 		.addAlias('cinv'));
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('csells', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('csells', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 		const params = util.getParams(msg);
 		let user = userData[msg.author.id].invest;
@@ -357,11 +364,12 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 
 		return `you sold ${params[0]}SC for ${util.roundNumber(profit, 2)}$! your balance is now ${util.roundNumber(userData[msg.author.id].invest.balance, 2)}$`;
 	})
+		.setCategory('coin')
 		.setDescription('sell your schlattcoin, use `all` to sell every single one you have')
 		.setUsage('(string)')
 		.setDisplayUsage('(coins)'));
 
-	cs.addCommand('coin', new CommandSystem.Command('cchart', msg => {
+	cs.addCommand(new CommandSystem.Command('cchart', msg => {
 		msg.channel.startTyping();
 
 		let bcchartdata = {
@@ -407,11 +415,12 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 			}]
 		}).then(m => { if (m instanceof Discord.Message) m.channel.stopTyping(); });
 	})
+		.setCategory('coin')
 		.setDescription('view coin history via a chart')
 		.addClientPermission('ATTACH_FILES')
 		.setGlobalCooldown(1500));
 
-	cs.addCommand('coin', new CommandSystem.Command('ctop', msg => {
+	cs.addCommand(new CommandSystem.Command('ctop', msg => {
 		let leaderboard = Object.keys(userData)
 			.filter(a => userData[a].invest)
 			.sort(
@@ -432,27 +441,30 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 			.setDescription(leaderboard);
 
 		msg.channel.send(embed);
-	}));
+	})
+		.setCategory('coin'));
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('cwatch', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('cwatch', msg => {
 		if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
 
 		guildSettings[msg.guild.id].watchChannel = msg.channel.id;
 
 		return 'done, will now log all updates here';
 	})
+		.setCategory('coin')
 		.setDescription('send all updates to the current channel, use unwatch to stop')
 		.setGlobalCooldown(5000)
 		.addUserPermission('MANAGE_CHANNELS')
 		.setGuildOnly());
 
-	cs.addCommand('coin', new CommandSystem.SimpleCommand('cunwatch', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('cunwatch', msg => {
 		if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
 
 		delete guildSettings[msg.guild.id].watchChannel;
 
 		return 'done, will now stop loging all updates';
 	})
+		.setCategory('coin')
 		.setDescription('stop sending all updates to this guild\'s update channel')
 		.setGlobalCooldown(2000)
 		.addUserPermission('MANAGE_CHANNELS')

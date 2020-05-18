@@ -7,7 +7,7 @@ Discord; // fuck you ts
 export function addCommands(cs: CommandSystem.System) {
 	let userData = cs.get('userData');
 
-	cs.addCommand('moderating', new CommandSystem.SimpleCommand('ban', (msg) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('ban', (msg) => {
 		const params = util.getParams(msg);
 		const banMember = msg.guild.members.cache.get(util.parseUser(cs.client, params[0], msg.guild).id);
 
@@ -26,6 +26,7 @@ export function addCommands(cs: CommandSystem.System) {
 			return 'i don\'t know that person!';
 		}
 	})
+		.setCategory('moderating')
 		.setUsage('(user)')
 		.setDescription('ban a user')
 		.addAlias('banuser')
@@ -35,7 +36,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addUserPermission('BAN_MEMBERS')
 		.setGuildOnly());
 
-	cs.addCommand('moderating', new CommandSystem.SimpleCommand('kick', (message) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('kick', (message) => {
 		const params = message.content.split(' ').slice(1, message.content.length);
 		const banMember = message.guild.members.cache.get(util.parseUser(cs.client, params[0], message.guild).id);
 
@@ -54,6 +55,7 @@ export function addCommands(cs: CommandSystem.System) {
 			return 'i don\'t know that person!';
 		}
 	})
+		.setCategory('moderating')
 		.setUsage('(user)')
 		.addAlias('kickuser')
 		.addAlias('kickmember')
@@ -63,7 +65,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addUserPermission('KICK_MEMBERS')
 		.setGuildOnly());
 	
-	cs.addCommand('moderating', new CommandSystem.SimpleCommand('blacklistuser', msg => {
+	cs.addCommand(new CommandSystem.SimpleCommand('blacklistuser', msg => {
 		const params = util.getParams(msg);
 		let blacklistcmds = [];
 
@@ -80,6 +82,7 @@ export function addCommands(cs: CommandSystem.System) {
 			return `ok, removed blacklist from userid ${params[0]}`;
 		}
 	})
+		.setCategory('moderating')
 		.addExample('209765088196821012 .')
 		.addExample('209765088196821012 translate autotranslate masstranslate')
 		.setOwnerOnly()

@@ -46,7 +46,7 @@ async function getStats(content: string) {
 
 export function addCommands(cs: CommandSystem.System) {
 
-	cs.addCommand('corona', new CommandSystem.SimpleCommand('corona', async (msg, content) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('corona', async (msg, content) => {
 		let stats = await getStats(content);
 
 		let embed = new Discord.MessageEmbed()
@@ -66,6 +66,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return embed;
 	})
+		.setCategory('corona')
 		.setDescription('corona')
 		.addExample('Russia')
 		.addExample('Michigan')
@@ -75,7 +76,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setUserCooldown(1000)
 		.setGlobalCooldown(700));
 
-	cs.addCommand('corona', new CommandSystem.SimpleCommand('relativecorona', async (msg, content) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('relativecorona', async (msg, content) => {
 		let stats = await getStats(content);
 
 		if (stats.recovered && stats.deaths && stats.casesPerOneMillion && stats.testsPerOneMillion) {
@@ -108,6 +109,7 @@ export function addCommands(cs: CommandSystem.System) {
 			return 'There isn\'t enough data to do the measurements!';
 		}
 	})
+		.setCategory('corona')
 		.setDescription('corona with relative stats, so every country is rated fairly')
 		.addAliases(['rcovid', 'rcorona', 'relcovid', 'relcorona'])
 		.addExample('Russia')

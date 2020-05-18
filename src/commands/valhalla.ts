@@ -8,7 +8,7 @@ const valhallaDrinks = JSON.parse(fs.readFileSync('./src/valhalla.json', {encodi
 export function addCommands(cs: CommandSystem.System) {
 	let logger = cs.get('logger');
 
-	cs.addCommand('fun', new CommandSystem.Command('valhalla', (msg) => {
+	cs.addCommand(new CommandSystem.Command('valhalla', (msg) => {
 		const params = util.getParams(msg);
 		
 		if (params[0] === 'search') {
@@ -116,6 +116,7 @@ export function addCommands(cs: CommandSystem.System) {
 			});
 		}
 	})
+		.setCategory('fun')
 		.addAlias('va11halla')
 		.setUsage('(string) (string) [string] [string] [string]')
 		.setDisplayUsage('valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [mixed?] [on the rocks?] [aged?])')

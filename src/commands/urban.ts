@@ -5,7 +5,7 @@ import * as Discord from 'discord.js';
 
 export function addCommands(cs: CommandSystem.System) {
 
-	cs.addCommand('utilities', new CommandSystem.Command('urban', msg => {
+	cs.addCommand(new CommandSystem.Command('urban', msg => {
 		const params = util.getParams(msg);
 		let word = urban(params.join(' '));
 		if (!params[0]) word = urban.random();
@@ -30,6 +30,7 @@ export function addCommands(cs: CommandSystem.System) {
 			}
 		});
 	})
+		.setCategory('utilities')
 		.addAlias('urb')
 		.addAlias('urbandict')
 		.addExample('discord')

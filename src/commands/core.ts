@@ -16,7 +16,7 @@ export function addCommands(cs: CommandSystem.System) {
 		});
 	});
 
-	cs.addCommand('core', new CommandSystem.Command('latencymeasure', async (msg) => {
+	cs.addCommand(new CommandSystem.Command('latencymeasure', async (msg) => {
 		// testing
 		let testingMessageSentAt = Date.now();
 		const testingMessage: Discord.Message = await msg.channel.send('Measuring... [#\\_\\_\\_]');
@@ -52,13 +52,14 @@ export function addCommands(cs: CommandSystem.System) {
 
 		msg.channel.send(embed);
 	})
+		.setCategory('core')
 		.setGlobalCooldown(10000)
 		.setDescription('measure the latency of the discord api')
 		.addClientPermission('EMBED_LINKS')
 		.addAlias('fancyping'));
 
 
-	cs.addCommand('core', new CommandSystem.SimpleCommand('prefix', (msg) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('prefix', (msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = prefix; }
 
@@ -78,6 +79,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return `changed prefix to ${params[0]}`;
 	})
+		.setCategory('core')
 		.addAlias('setprefix')
 		.addAlias('customprefix')
 		.setDescription('set a custom prefix for boteline')
@@ -85,9 +87,10 @@ export function addCommands(cs: CommandSystem.System) {
 		.addUserPermission('MANAGE_GUILD')
 		.setGuildOnly());
 
-	cs.addCommand('core', new CommandSystem.SimpleCommand('invite', () => {
+	cs.addCommand(new CommandSystem.SimpleCommand('invite', () => {
 		return `Invite me here: <https://discordapp.com/oauth2/authorize?client_id=${application.id}&scope=bot&permissions=314432>`;
 	})
+		.setCategory('core')
 		.setDescription('get the bot\'s invite')
 		.addAlias('invitelink'));
 }

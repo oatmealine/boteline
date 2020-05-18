@@ -24,7 +24,7 @@ function getFullLang(code: string) : string {
 export function addCommands(cs: CommandSystem.System) {
 
 	if (yt !== null) {
-		cs.addCommand('utilities', new CommandSystem.Command('autotranslate', async (msg: Discord.Message) => {
+		cs.addCommand(new CommandSystem.Command('autotranslate', async (msg: Discord.Message) => {
 			let params = util.getParams(msg);
 			let lang = params[0];
 			params.shift();
@@ -48,6 +48,7 @@ export function addCommands(cs: CommandSystem.System) {
 					msg.channel.stopTyping();
 				});
 		})
+			.setCategory('utilities')
 			.addClientPermission('EMBED_LINKS')
 			.setDescription(prefix + 'translate, but with the first language set to auto')
 			.addAlias('atransl')
@@ -58,7 +59,7 @@ export function addCommands(cs: CommandSystem.System) {
 			.setGlobalCooldown(500)
 			.setUserCooldown(1000));
 
-		cs.addCommand('utilities', new CommandSystem.Command('translate', (msg: Discord.Message) => {
+		cs.addCommand(new CommandSystem.Command('translate', (msg: Discord.Message) => {
 			let params = util.getParams(msg);
 			let langfrom = params[0];
 			let langto = params[1];
@@ -80,6 +81,7 @@ export function addCommands(cs: CommandSystem.System) {
 					msg.channel.stopTyping();
 				});
 		})
+			.setCategory('utilities')
 			.addClientPermission('EMBED_LINKS')
 			.setDescription('translate some text, get accepted langs list with ' + prefix + 'langs')
 			.addAlias('transl')
@@ -90,7 +92,7 @@ export function addCommands(cs: CommandSystem.System) {
 			.setGlobalCooldown(500)
 			.setUserCooldown(1000));
 
-		cs.addCommand('fun', new CommandSystem.Command('masstranslate', async (msg: Discord.Message) => {
+		cs.addCommand(new CommandSystem.Command('masstranslate', async (msg: Discord.Message) => {
 			let params = util.getParams(msg);
 			let times = Number(params[0]);
 
@@ -181,6 +183,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 				.setColor('#FF0000');
 			progMessage.edit('', { embed: translateEmbed });
 		})
+			.setCategory('fun')
 			.addClientPermission('EMBED_LINKS')
 			.setDescription(`translate a piece of text back and forth a certain amount of times to random languages before translating it back to english. will mostly return gibberish if set to a high value
 modes are normal, hard, curated, (langname), legacy`)
@@ -193,9 +196,10 @@ modes are normal, hard, curated, (langname), legacy`)
 			.setGlobalCooldown(700)
 			.setUserCooldown(3000));
 
-		cs.addCommand('utilities', new CommandSystem.Command('langs', (msg: Discord.Message) => {
+		cs.addCommand(new CommandSystem.Command('langs', (msg: Discord.Message) => {
 			msg.channel.send('The supported languages for ' + prefix + 'translate are:\n' + Object.keys(yandex_langs).map(k => k + ' (' + yandex_langs[k] + ')').join(', '));
 		})
+			.setCategory('utilities')
 			.setDescription('get the available languages for ' + prefix + 'translate'));
 	}
 }

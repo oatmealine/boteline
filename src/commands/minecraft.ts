@@ -4,17 +4,18 @@ import * as util from '../lib/util';
 import * as mcServer from 'minecraft-server-util';
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('fun', new CommandSystem.Command('achievement', (msg) => {
+	cs.addCommand(new CommandSystem.Command('achievement', (msg) => {
 		const params = util.getParams(msg);
 		msg.channel.send('', { files: [{ attachment: 'https://minecraftskinstealer.com/achievement/1/Achievement+Get%21/' + encodeURI(params.join('+')), name: 'achievement.png' }] });
 	})
+		.setCategory('fun')
 		.addAlias('advancement')
 		.setDescription('make a minecraft achievement')
 		.setUsage('(string)')
 		.addExample('Made an example!')
 		.addClientPermission('ATTACH_FILES'));
 
-	cs.addCommand('utilities', new CommandSystem.Command('mcping', (msg) => {
+	cs.addCommand(new CommandSystem.Command('mcping', (msg) => {
 		const params = util.getParams(msg);
 		msg.channel.startTyping();
 	
@@ -51,5 +52,6 @@ export function addCommands(cs: CommandSystem.System) {
 
 				msg.channel.send(err.toString());
 			});
-	}));
+	})
+		.setCategory('utilities'));
 }

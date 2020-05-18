@@ -18,7 +18,7 @@ export function addCommands(cs: CommandSystem.System) {
 	}
 
 	if (wiki) {
-		cs.addCommand('wiki', new CommandSystem.Command('wiki', async msg => {
+		cs.addCommand(new CommandSystem.Command('wiki', async msg => {
 			const params = util.getParams(msg);
 			let page_data = await wiki.page(params.join(' '));
 
@@ -28,6 +28,7 @@ export function addCommands(cs: CommandSystem.System) {
 				msg.channel.send(`https://en.wikipedia.org/wiki/${encodeURI(page_data.title.split(' ').join('_'))}`);
 			}
 		})
+			.setCategory('wiki')
 			.addExample('Cock and ball torture')
 			.setDescription('looks up an article in Wikipedia')
 			.setUsage('(string)')
@@ -37,7 +38,7 @@ export function addCommands(cs: CommandSystem.System) {
 	}
 
 	if (wikimc) {
-		cs.addCommand('wiki', new CommandSystem.Command('mcwiki', async msg => {
+		cs.addCommand(new CommandSystem.Command('mcwiki', async msg => {
 			const params = util.getParams(msg);
 			let page_data = await wikimc.page(params.join(' '));
 
@@ -47,6 +48,7 @@ export function addCommands(cs: CommandSystem.System) {
 				msg.channel.send(`https://minecraft.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
 			}
 		})
+			.setCategory('wiki')
 			.addExample('Bee')
 			.setDescription('looks up an article in the minecraft gamepedia')
 			.setUsage('(string)')
@@ -55,7 +57,7 @@ export function addCommands(cs: CommandSystem.System) {
 	}
 
 	if (wikiterraria) {
-		cs.addCommand('wiki', new CommandSystem.Command('terrariawiki', async msg => {
+		cs.addCommand(new CommandSystem.Command('terrariawiki', async msg => {
 			const params = util.getParams(msg);
 			let page_data = await wikiterraria.page(params.join(' '));
 
@@ -65,6 +67,7 @@ export function addCommands(cs: CommandSystem.System) {
 				msg.channel.send(`https://terraria.gamepedia.com/${encodeURI(page_data.title.split(' ').join('_'))}`);
 			}
 		})
+			.setCategory('wiki')
 			.addExample('Slime')
 			.setDescription('looks up an article in the terraria gamepedia')
 			.setUsage('(string)')

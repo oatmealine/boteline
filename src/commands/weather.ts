@@ -3,7 +3,7 @@ import * as CommandSystem from 'cumsystem';
 const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('utilities', new CommandSystem.Command('weather', (msg, content) => {
+	cs.addCommand(new CommandSystem.Command('weather', (msg, content) => {
 		got(`http://api.weatherstack.com/current?access_key=${process.env.WEATHERSTACKKEY}&query=${encodeURI(content)}`).then((res, err) => {
 			if (err) return msg.channel.send(err);
 
@@ -28,6 +28,7 @@ export function addCommands(cs: CommandSystem.System) {
 			return msg.channel.send(embed);
 		});
 	})
+		.setCategory('utilities')
 		.setDescription('fetch the weather for a city, if it doesnt respond then it likely didnt find the city')
 		.setUsage('(string)')
 		.setDisplayUsage('(city)')

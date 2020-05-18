@@ -5,7 +5,7 @@ import * as CommandSystem from 'cumsystem';
 Discord; // fuck you ts
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('moderating', new CommandSystem.SimpleCommand('colorrole', (msg : Discord.Message) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('colorrole', (msg : Discord.Message) => {
 		const params = util.getParams(msg);
 
 		const hexRegex = /^#[0-9a-f]{3,6}$/i;
@@ -47,6 +47,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return 'should have worked';
 	})
+		.setCategory('moderating')
 		.setDescription('sets a color role for you')
 		.setUsage('(string)')
 		.setDisplayUsage('(hex color)')

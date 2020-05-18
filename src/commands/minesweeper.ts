@@ -3,7 +3,7 @@ import * as util from '../lib/util';
 import * as minesweeper from 'minesweeper';
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('fun', new CommandSystem.SimpleCommand('minesweeper', (msg) => {
+	cs.addCommand(new CommandSystem.SimpleCommand('minesweeper', (msg) => {
 		const params = util.getParams(msg);
 		const board = new minesweeper.Board(minesweeper.generateMineArray({
 			rows: Math.min(100, Number(params[0])),
@@ -23,6 +23,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		return gridstring;
 	})
+		.setCategory('fun')
 		.addAlias('msw')
 		.addExample('10 10 6')
 		.setUsage('(number) (number) (number)')

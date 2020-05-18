@@ -51,7 +51,7 @@ function handleReactions(reaction, user) {
 export function addCommands(cs: CommandSystem.System) {
 	guildSettings = cs.get('guildSettings');
 
-	cs.addCommand('moderating', new CommandSystem.Command('starboard', (msg : Discord.Message) => {
+	cs.addCommand(new CommandSystem.Command('starboard', (msg : Discord.Message) => {
 		let params = util.getParams(msg);
 
 		let channel = msg.guild.channels.cache.find(c => c.id === params[0].replace('<#','').replace('>',''));
@@ -77,6 +77,7 @@ export function addCommands(cs: CommandSystem.System) {
 			return msg.channel.send('removed starboard from server!');
 		}
 	})
+		.setCategory('moderating')
 		.addAlias('board')
 		.addAlias('setStarboard')
 		.addUserPermission('MANAGE_CHANNELS')

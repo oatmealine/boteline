@@ -18,7 +18,7 @@ function getSites() {
 }
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('booru', new CommandSystem.Command('boorufetch', msg => {
+	cs.addCommand(new CommandSystem.Command('boorufetch', msg => {
 		const params = util.getParams(msg);
 
 		let tags = params.slice(1);
@@ -48,15 +48,17 @@ export function addCommands(cs: CommandSystem.System) {
 			return msg.channel.send('That site isn\'t supported!');
 		}
 	})
+		.setCategory('booru')
 		.setDescription('searches a booru site for tags\nthe available sites can be checked w/ m.boorusites')
 		.setUsage('(string) (string)')
 		.addAlias('booru')
 		.setDisplayUsage('(site) (tags..)'));
 
-	cs.addCommand('booru', new CommandSystem.SimpleCommand('boorusites', () => 
+	cs.addCommand(new CommandSystem.SimpleCommand('boorusites', () => 
 		Object.keys(getSites())
 			.sort((a, b) => a.charCodeAt(0) - b.charCodeAt(0))
 			.map(s => `${s}${getSites()[s].nsfw ? ' (NSFW)' : ''}`).join(', ') // im sorry
 	)
+		.setCategory('booru')
 		.setDescription('see what sites are available for m.boorusites'));
 }

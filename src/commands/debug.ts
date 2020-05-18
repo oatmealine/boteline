@@ -16,7 +16,7 @@ try {
 }
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand('debug', new CommandSystem.Command('eval', (msg, content) => {
+	cs.addCommand(new CommandSystem.Command('eval', (msg, content) => {
 		try {
 			let evaled = eval(content);
 
@@ -52,6 +52,7 @@ export function addCommands(cs: CommandSystem.System) {
 			return msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
 		}
 	})
+		.setCategory('debug')
 		.setOwnerOnly()
 		.setUsage('(string)')
 		.setDisplayUsage('(code)')
@@ -60,7 +61,7 @@ export function addCommands(cs: CommandSystem.System) {
 		
 	
 	if (pm2 !== null) {
-		cs.addCommand('debug', new CommandSystem.Command('restart', msg => {
+		cs.addCommand(new CommandSystem.Command('restart', msg => {
 			msg.react('🆗').then(() => {
 				pm2.restart('boteline', () => {});
 			});
@@ -69,7 +70,7 @@ export function addCommands(cs: CommandSystem.System) {
 			.setDescription('Restart the bot (only if launched with pm2)')
 			.addAlias('reboot'));
 	
-		cs.addCommand('debug', new CommandSystem.Command('update', async (msg) => {
+		cs.addCommand(new CommandSystem.Command('update', async (msg) => {
 			await msg.react('⏱️');
 			let progMessage = await msg.channel.send('Downloading update...');
 			
@@ -105,12 +106,13 @@ export function addCommands(cs: CommandSystem.System) {
 				return 'a'; // wow i hate ts
 			});
 		})
+			.setCategory('debug')
 			.setOwnerOnly()
 			.setDescription('git pull, npm install, npm run build and pm2 restart')
 			.addAlias('up'));	
 	}
 
-	cs.addCommand('debug', new CommandSystem.Command('exec', (msg, content) => {
+	cs.addCommand(new CommandSystem.Command('exec', (msg, content) => {
 		exec(content, (err, stdout) => {
 			if (err) {
 				if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('```' + err + '```');
@@ -121,6 +123,7 @@ export function addCommands(cs: CommandSystem.System) {
 			}
 		});
 	})
+		.setCategory('debug')
 		.setOwnerOnly()
 		.setDescription('Execute a command prompt command')
 		.addAlias('sexec'));
