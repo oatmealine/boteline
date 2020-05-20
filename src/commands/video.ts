@@ -111,7 +111,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 	}
 
 	setDescription(desc: string) {
-		this.description = '_This command will fetch input from above messages, putting links as arguments won\'t work!_\n' + desc;
+		this.description = desc + '\n_This command will fetch input from above messages, putting links as arguments won\'t work!_';
 		return this;
 	}
 }
@@ -376,7 +376,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 			});
 	})
 		.setCategory('video')
-		.setDescription('apply datamoshing effects to a video (aka remove the i-frames and repeat previous ones)\nintensity ranges from 0 to 1, ex. 0 just removes i frames, 1 completely obliterates the video')
+		.setDescription('apply datamoshing effects to a video (aka remove the i-frames and repeat previous ones)\nintensity ranges from 0 to 1, ex. 0 just removes i frames, 1 completely obliterates the video\n_This command will fetch input from above messages, putting links as arguments won\'t work!_')
 		.setUsage('[number]')
 		.setDisplayUsage('[intensity]')
 		.addAlias('dm')
