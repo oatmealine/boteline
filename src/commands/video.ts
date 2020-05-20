@@ -188,6 +188,17 @@ export function addCommands(cs: CommandSystem.System) {
 		.setUserCooldown(2000)
 		.addClientPermission('ATTACH_FILES'));
 
+	cs.addCommand(new FFMpegCommand('reverb', (command) => {
+		command
+			.outputOptions(['-map 0', '-c:v copy'])
+			.audioFilters('aecho=1.0:1.0:50:1.0');
+	}, 'mp4')
+		.setCategory('video')
+		.setDescription('adds echo to videos')
+		.setGlobalCooldown(500)
+		.setUserCooldown(2000)
+		.addClientPermission('ATTACH_FILES'));
+
 	cs.addCommand(new CommandSystem.Command('datamosh', async (msg) => {
 		const params = util.getParams(msg);
 
