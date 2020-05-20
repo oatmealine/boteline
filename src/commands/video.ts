@@ -122,7 +122,9 @@ export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new FFMpegCommand('compress', (command, msg) => {
 		const params = util.getParams(msg);
 		if (!params[0]) { params[0] = '20'; }
-		command.outputOptions([`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]) - 3)}k`, '-c:a aac']);
+		command
+			.outputOptions([`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]))}k`, '-c:a aac'])
+			.audioFilters({filter: 'acrusher', options: {bits: 1, level_in: 1, level_out: 2}}, 'highpass');
 	})
 		.setCategory('video')
 		.setDescription('compresses a video')
