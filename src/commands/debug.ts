@@ -66,6 +66,7 @@ export function addCommands(cs: CommandSystem.System) {
 				pm2.restart('boteline', () => {});
 			});
 		})
+			.setCategory('debug')
 			.setOwnerOnly()
 			.setDescription('Restart the bot (only if launched with pm2)')
 			.addAlias('reboot'));
