@@ -4,6 +4,8 @@ import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as util from '../lib/util';
 
+const got = require('got');
+
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.Command('icon', (message) => {
 		message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
@@ -173,4 +175,50 @@ export function addCommands(cs: CommandSystem.System) {
 		.setUsage('(string)')
 		.setDisplayUsage('(code)')
 		.setDescription('a limited interpreter of [78](https://github.com/oatmealine/78)'));
+
+	cs.addCommand(new CommandSystem.SimpleCommand('define', async (msg, content) => {
+		try {
+			let def;
+
+			if (content === '') {
+				let defs = await got(`https://api.wordnik.com/v4/words.json/wordOfTheDay?api_key=${process.env.WORDNIK_KEY}`);
+				def = JSON.parse(defs.body);
+
+				def.text = def.definitions[0].text;
+				def.partOfSpeech = def.definitions[0].partOfSpeech;
+				if (!def.exampleUses) def.exampleUses = [];
+			} else {
+				let defs = await got(`https://api.wordnik.com/v4/word.json/${encodeURI(content)}/definitions?limit=200&includeRelated=false&sourceDictionaries=all&useCanonical=true&includeTags=false&api_key=${process.env.WORDNIK_KEY}`);
+				let defsObj = JSON.parse(defs.body);
+
+				def = defsObj.filter(d => d.text).sort(() => Math.random() - 0.5).sort((a, b) => b.score - a.score)[0];
+			}
+
+			let embed = new Discord.MessageEmbed()
+				.setTitle(`${def.word} *${def.partOfSpeech}*`)
+				.setURL(def.attributionUrl)
+				.setDescription(def.text)
+				.setFooter(def.attributionText);
+
+			if (def.exampleUses.length > 0)
+				embed.addField('Examples', def.exampleUses.map(e => '> ' + e.text).join('\n'));
+
+			return embed;
+		} catch(err) {
+			return `Error: \`${err}\``;
+		}
+	}));
+
+	cs.addCommand(new CommandSystem.SimpleCommand('pronounce', async (msg, content) => {
+		try {
+			let pronouns = await got(`https://api.wordnik.com/v4/word.json/${encodeURI(content)}/audio?useCanonical=false&limit=50&api_key=${process.env.WORDNIK_KEY}`);
+			let pronounsObj = JSON.parse(pronouns.body);
+
+			let pronoun = pronounsObj.sort(() => Math.random() - 0.5)[0];
+
+			return {files: [pronoun.fileUrl]};
+		} catch(err) {
+			return `Error: \`${err}\``;
+		}
+	}));
 }
