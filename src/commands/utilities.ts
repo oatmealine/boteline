@@ -207,7 +207,11 @@ export function addCommands(cs: CommandSystem.System) {
 		} catch(err) {
 			return `Error: \`${err}\``;
 		}
-	}));
+	})
+		.setCategory('dictionary')
+		.setDescription('get the definition of a word')
+		.setUsage('[string]')
+		.setDisplayUsage('[word]'));
 
 	cs.addCommand(new CommandSystem.SimpleCommand('pronounce', async (msg, content) => {
 		try {
@@ -220,5 +224,9 @@ export function addCommands(cs: CommandSystem.System) {
 		} catch(err) {
 			return `Error: \`${err}\``;
 		}
-	}));
+	})
+		.setCategory('dictionary')
+		.setDescription('get the pronounciation for a word')
+		.setUsage('(string)')
+		.setDisplayUsage('(word)'));
 }
