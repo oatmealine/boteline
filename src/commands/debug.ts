@@ -18,6 +18,8 @@ try {
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.Command('eval', (msg, content) => {
 		try {
+			if (content.startsWith('```')) content = content.split('\n').slice(1, -1).join('\n');
+
 			let evaled = eval(content);
 
 			if (typeof evaled !== 'string') {
@@ -30,23 +32,7 @@ export function addCommands(cs: CommandSystem.System) {
 				return msg.channel.send('Bot token found in result, aborting');
 			}
 
-			const embed = {
-				title: 'Eval',
-				color: '990000',
-				fields: [{
-					name: 'Input',
-					value: '```xl\n' + util.shortenStr(content, 1000) + '\n```',
-					inline: true,
-				},
-				{
-					name: 'Output',
-					value: '```xl\n' + util.shortenStr(evaled, 1000) + '\n```',
-					inline: true,
-				},
-				],
-			};
-
-			if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('', { embed });
+			if (msg.content.startsWith(cs.prefix + 'v')) msg.channel.send('```xl\n' + util.shortenStr(evaled, 1500) + '\n```');
 			return msg.react('☑');
 		} catch (err) {
 			return msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
@@ -57,7 +43,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setUsage('(string)')
 		.setDisplayUsage('(code)')
 		.setDescription('Execute JS code')
-		.addAliases(['eval', 'sdebug', 'seval']));
+		.addAliases(['eval', 'vdebug', 'veval']));
 		
 	
 	if (pm2 !== null) {
