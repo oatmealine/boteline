@@ -195,4 +195,46 @@ export function addCommands(cs: CommandSystem.System) {
 		.setCategory('fun')
 		.setDescription('hi')
 		.setHidden());
+
+	// listen, i coded this on a fucking phone in discord and this temporary command is now a permanent command
+	// the only reason its formatted properly is because eslint was screaming at me
+	cs.addCommand(new CommandSystem.SimpleCommand('notlights', async (msg, content) => {
+		let params = content.split(' ');
+
+		let agents = ['Black Mesa Security PC', 'GUCCI SmartToilet', 'Twitter for Android', 'Samsung SmartToaster', 'de boa', 'NotITG Browser', 'Tabletop Simulator Tablet', 'iPod Touch 4', 'FBI Research Facility', 'usa.gov', 'Air', 'NGINX', 'BotNite', 'if u see this ure gay', 'TV Remote', 'Nintendo 3DS Browser', 'Nintendo Wii U Browser', 'Samsung SmartMicrowave', 'Australia Government PC', 'Nintendo Switch 2', 'the', 'undefined', 'null', 'NaN', 'The Pentagon', 'jill\'s mouse', 'big chungus', 'the chinese government', 'Internet Explorer 6.0', 'iPhone 3GP Safari'];
+		let userAgent = `${agents[Math.floor(Math.random() * agents.length)]} (https://github.com/oatmealine/boteline, command ran by ${msg.author.username}#${msg.author.discriminator}${params[5] ? `. They said: "${params.slice(5).join(' ')}"` : ''})`;
+
+		let response = await got(`https://soulja-boy-told.me/light?r=${params[0]}&g=${params[1]}&b=${params[2]}&bri=${params[3]}&on=${params[4]}`, {headers: {'user-agent': userAgent}});
+		
+		msg.react('✅');
+		return `sent with useragent \`${userAgent}\`\nr: ${params[0]} g: ${params[1]} b: ${params[2]} brightness: ${params[3]} on: ${(params[4] === 'true') ? 'yes' : 'no'}\nresponse:\n\`\`\`\n${response.body}\`\`\``;
+	})
+		.setCategory('fun')
+		.setDescription('Control the Not Nite Lights.')
+		.setHidden()
+		.addAlias('notnitelights')
+		.setUsage('(number) (number) (number) (number) (string) [string]')
+		.setDisplayUsage('(r) (g) (b) (brightness) (on true/false) [comment]'));
+
+	cs.addCommand(new CommandSystem.Command('jok', (msg) => {
+		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': 'https://github.com/oatmealine/boteline/'}}).then(res => {
+			let joke = JSON.parse(res.body);
+		 
+			let jokeParts = joke.joke.split(/[?.!]/);
+			msg.channel.send(jokeParts[0].toLowerCase());
+		});
+	})
+		.setDescription('yoooooo joke with no punchline')
+		.setCategory('fun'));
+
+	cs.addCommand(new CommandSystem.Command('oke', (msg) => {
+		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': 'https://github.com/oatmealine/boteline/'}}).then(res => {
+			let joke = JSON.parse(res.body);
+	 
+			let jokeParts = joke.joke.split(/[?.!]/);
+			msg.channel.send(jokeParts.slice(-2)[0].toLowerCase());
+		});
+	})
+		.setDescription('yoooooo joke with no buildup')
+		.setCategory('fun'));
 }

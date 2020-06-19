@@ -168,7 +168,7 @@ export function addCommands(cs: CommandSystem.System) {
 				// trim the video
 				'-shortest'
 			])
-			.videoFilters(`drawtext="fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0"`);
+			.addOption(`-vf drawtext="fontfile=./node_modules/dejavu-fonts-ttf/ttf/DejaVuSans-Bold.ttf: text='${arabicText}': fontcolor=black: fontsize=140: box=1: boxcolor=white: x=(w-text_w)/2: y=0"`);
 	})
 		.setCategory('video')
 		.setDescription('(arabic text here)')
