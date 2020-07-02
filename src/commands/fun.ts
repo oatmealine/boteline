@@ -199,22 +199,48 @@ export function addCommands(cs: CommandSystem.System) {
 	// listen, i coded this on a fucking phone in discord and this temporary command is now a permanent command
 	// the only reason its formatted properly is because eslint was screaming at me
 	cs.addCommand(new CommandSystem.SimpleCommand('notlights', async (msg, content) => {
+		function componentToHex(c) {
+			let hex = c.toString(16);
+			return hex.length === 1 ? '0' + hex : hex;
+		}
+		
+		function rgbToHex(r, g, b) {
+			return componentToHex(r) + componentToHex(g) + componentToHex(b);
+		}
+
 		let params = content.split(' ');
 
-		let agents = ['Black Mesa Security PC', 'GUCCI SmartToilet', 'Twitter for Android', 'Samsung SmartToaster', 'de boa', 'NotITG Browser', 'Tabletop Simulator Tablet', 'iPod Touch 4', 'FBI Research Facility', 'usa.gov', 'Air', 'NGINX', 'BotNite', 'if u see this ure gay', 'TV Remote', 'Nintendo 3DS Browser', 'Nintendo Wii U Browser', 'Samsung SmartMicrowave', 'Australia Government PC', 'Nintendo Switch 2', 'the', 'undefined', 'null', 'NaN', 'The Pentagon', 'jill\'s mouse', 'big chungus', 'the chinese government', 'Internet Explorer 6.0', 'iPhone 3GP Safari'];
-		let userAgent = `${agents[Math.floor(Math.random() * agents.length)]} (https://github.com/oatmealine/boteline, command ran by ${msg.author.username}#${msg.author.discriminator}${params[5] ? `. They said: "${params.slice(5).join(' ')}"` : ''})`;
+		let userAgent = `${msg.client.user.username + '#' + msg.client.user.discriminator} https://github.com/oatmealine/boteline (Command ran by ${msg.author.username}#${msg.author.discriminator}${params[4] ? `. They said: "${params.slice(4).join(' ')}"` : ''})`;
 
-		let response = await got(`https://soulja-boy-told.me/light?r=${params[0]}&g=${params[1]}&b=${params[2]}&bri=${params[3]}&on=${params[4]}`, {headers: {'user-agent': userAgent}});
+		await got(`https://soulja-boy-told.me/light?r=${params[0]}&g=${params[1]}&b=${params[2]}&bri=${params[3]}`, {headers: {'user-agent': userAgent}});
 		
 		msg.react('✅');
-		return `sent with useragent \`${userAgent}\`\nr: ${params[0]} g: ${params[1]} b: ${params[2]} brightness: ${params[3]} on: ${(params[4] === 'true') ? 'yes' : 'no'}\nresponse:\n\`\`\`\n${response.body}\`\`\``;
+
+		let r = Number(params[0]);
+		let g = Number(params[1]);
+		let b = Number(params[2]);
+		let bri = Number(params[3]);
+
+		let hexColor = rgbToHex(r, g, b);
+		params[4] = params[4] || 'No comment';
+
+		let embed = new Discord.MessageEmbed()
+			.setTitle('Lights set!')
+			.addField('Color', `rgb(${r}, ${g}, ${b}) #${hexColor}`, true)
+			.addField('Brightness', bri, true)
+			.addField('Comment', params.slice(4).join(' '))
+			.setImage(`https://dummyimage.com/200x200/${hexColor}/fff&text=+`)
+			.setColor([r, g, b])
+			.setFooter('API via https://soulja-boy-told.me/light - You are controlling NotNite#0001\'s lights');
+
+		return embed;
 	})
 		.setCategory('fun')
-		.setDescription('Control the Not Nite Lights.')
+		.setDescription('Control the Not Nite Lights.\nnote: your full username (username#tag) will be sent to prevent abuse')
 		.setHidden()
 		.addAlias('notnitelights')
-		.setUsage('(number) (number) (number) (number) (string) [string]')
-		.setDisplayUsage('(r) (g) (b) (brightness) (on true/false) [comment]'));
+		.setUsage('(number) (number) (number) (number) [string]')
+		.setDisplayUsage('(r) (g) (b) (brightness) [comment]'));
 
 	cs.addCommand(new CommandSystem.Command('jok', (msg) => {
 		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': 'https://github.com/oatmealine/boteline/'}}).then(res => {
