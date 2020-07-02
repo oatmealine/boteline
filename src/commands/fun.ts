@@ -241,7 +241,7 @@ export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.SimpleCommand('thiscompanydoesnotexist', () => {
 		// this code is terrible becuase it was a challenge to myself to make code without if's
 		// sorry
-		
+
 		// name
 		let words = require('an-array-of-english-words');
 
@@ -285,5 +285,11 @@ export function addCommands(cs: CommandSystem.System) {
 		return `${logo} ${name}`.split('\\').join('\\\\'); // discord un-fuckuper
 	})
 		.setDescription('a generic 2020 company name + logo generator')
+		.setCategory('fun'));
+
+	cs.addCommand(new CommandSystem.Command('thispersondoesnotexist', (msg) => {
+		msg.channel.send('', new Discord.MessageAttachment('https://thispersondoesnotexist.com/image', 'person.jpg'));
+	})
+		.setDescription('https://thispersondoesnotexist.com/ as a command')
 		.setCategory('fun'));
 }
