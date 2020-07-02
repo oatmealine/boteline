@@ -20,6 +20,7 @@
   "license": "MIT",
   "dependencies": {
     "@types/parse5": "^5.0.3",
+    "an-array-of-english-words": "^2.0.0",
     "booru": "^2.2.3",
     "buffer-split": "^1.0.0",
     "canvas": "^2.6.1",

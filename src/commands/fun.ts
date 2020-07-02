@@ -237,4 +237,53 @@ export function addCommands(cs: CommandSystem.System) {
 	})
 		.setDescription('yoooooo joke with no buildup')
 		.setCategory('fun'));
+
+	cs.addCommand(new CommandSystem.SimpleCommand('thiscompanydoesnotexist', () => {
+		// this code is terrible becuase it was a challenge to myself to make code without if's
+		// sorry
+		
+		// name
+		let words = require('an-array-of-english-words');
+
+		words = words.filter(w => w.length < 6);
+
+		let word1 = words[Math.floor(Math.random() * words.length)];
+		let word1capitalized = Math.random() > 0.4;
+		let word2 = words[Math.floor(Math.random() * words.length)];
+		let word2capitalized = Math.random() > 0.5;
+
+		let twoWords = word1.length < 5 && Math.random() > 0.5;
+
+		let name = `${word1capitalized ? word1.split('').map((v,i) => (i === 0) ? v.toUpperCase() : v.toLowerCase()).join('') : word1}${twoWords ? (word2capitalized ? word2.split('').map((v,i) => (i === 0) ? v.toUpperCase() : v.toLowerCase()).join('') : word2) : ''}`;
+
+		// logo
+		let bordersLeft = ['\\', '/', '|', ':', '.', '-', '[', ']', '(', ')', '\''];
+		let bordersRight = ['/', '\\', '|', ':', '.', '-', ']', '[', ')', '(', '\''];
+
+		let hasBorder = Math.random() > 0.1;
+		let borderSymmetrical = Math.random() > 0.1;
+
+		let borderNum = Math.floor(Math.random() * bordersLeft.length);
+
+		let hasUnderline = Math.random() > 0.1;
+		let underlineMiddle = Math.random() > 0.3;
+
+		let middlePatterns = [':', '-', '=', '', 'l', 'o', '_', name[0].toUpperCase(), '*' + name[0].toLowerCase() + '*'];
+		let doublePattern = Math.random() > 0.6;
+		let doublePatternSymmetrical = Math.random() > 0.1;
+
+		let middlePattern1 = middlePatterns[Math.floor(Math.random() * middlePatterns.length)].repeat(Math.floor(Math.random() * 2 + 1));
+		let middlePattern2 = middlePatterns[Math.floor(Math.random() * middlePatterns.length)];
+
+		let middlePattern = `${middlePattern1}${doublePattern ? middlePattern2 : ''}${(doublePattern && doublePatternSymmetrical) ? middlePattern1 : ''}`;
+		let leftBorder = `${hasBorder ? bordersLeft[borderNum] : ''}`;
+		let rightBorder = `${hasBorder ? (borderSymmetrical ? bordersRight[borderNum] : bordersLeft[borderNum]) : ''}`;
+
+		let logo = `${(hasUnderline && !underlineMiddle) ? '__' : ''}${leftBorder}${(hasUnderline && underlineMiddle) ? '__' : ''}${middlePattern}${(hasUnderline && underlineMiddle) ? '__' : ''}${rightBorder}${(hasUnderline && !underlineMiddle) ? '__' : ''}`;
+
+		// put together
+		return `${logo} ${name}`.split('\\').join('\\\\'); // discord un-fuckuper
+	})
+		.setDescription('a generic 2020 company name + logo generator')
+		.setCategory('fun'));
 }
