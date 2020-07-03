@@ -6,6 +6,24 @@ import * as util from '../lib/util';
 
 const got = require('got');
 
+async function shadertoyEmbed(id: string): Promise<Discord.MessageEmbed> {
+	let resp = await got(`https://www.shadertoy.com/api/v1/shaders/${id}?key=${process.env.SHADERTOYKEY}`);
+	let data = JSON.parse(resp.body).Shader;
+
+	if (!data || data.Error) return null;
+	let embed = new Discord.MessageEmbed()
+		.setTitle(data.info.name)
+		.setAuthor(data.info.username)
+		.setThumbnail(`https://www.shadertoy.com/media/shaders/${id}.jpg`)
+		.setDescription(data.info.description + '\nTags: ' + data.info.tags.map(t => `\`${t}\``).join(', ')) // this is terrible i know
+		.addField('Views', data.info.viewed.toLocaleString(), true)
+		.addField('Likes', data.info.likes.toLocaleString(), true)
+		.setTimestamp(new Date(Number(data.info.date) * 1000))
+		.setURL(`https://www.shadertoy.com/view/${id}`);
+
+	return embed;
+}
+
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.Command('icon', (message) => {
 		message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
@@ -229,4 +247,26 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('get the pronounciation for a word')
 		.setUsage('(string)')
 		.setDisplayUsage('(word)'));
+
+	// shadertoy shenanigans
+	cs.client.on('message', async (msg) => {
+		let shadertoyRegex = /https?:\/\/(www\.)?shadertoy\.com\/view\/\w{6}/;
+		let match = msg.content.match(shadertoyRegex);
+
+		if (match) {
+			let embed = await shadertoyEmbed(match[0].split('/').pop());
+			if (embed) msg.channel.send(embed);
+		}
+	});
+
+	cs.addCommand(new CommandSystem.SimpleCommand('shadertoy', async (msg, content) => {
+		let resp = await got(`https://www.shadertoy.com/api/v1/shaders/query/${encodeURI(content)}?key=${process.env.SHADERTOYKEY}`);
+		let data = JSON.parse(resp.body);
+
+		if (data.Shaders < 1 || !data.Results) {
+			return 'No shaders found';
+		} else {
+			return shadertoyEmbed(data.Results[0]);
+		}
+	}));
 }
