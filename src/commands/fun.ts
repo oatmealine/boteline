@@ -318,4 +318,10 @@ export function addCommands(cs: CommandSystem.System) {
 	})
 		.setDescription('https://thispersondoesnotexist.com/ as a command')
 		.setCategory('fun'));
+
+	cs.addCommand(new CommandSystem.SimpleCommand('pronouns', () => {
+		return 'pronouns: it/its, she/her';
+	})
+		.setDescription('returns the bot\'s pronouns, semi-joke')
+		.setCategory('fun'));
 }
