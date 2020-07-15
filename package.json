@@ -1,7 +1,7 @@
 {
   "name": "boteline",
-  "version": "1.9.1",
-  "description": "a fun bot tm",
+  "version": "1.10.0",
+  "description": "a friendly swiss knife discord bot from celeste mountain built on cumsystem mostly focusing on fun or utility commands",
   "main": "built/main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -21,7 +21,7 @@
   "dependencies": {
     "@types/parse5": "^5.0.3",
     "an-array-of-english-words": "^2.0.0",
-    "booru": "^2.2.3",
+    "booru": "^2.3.1",
     "buffer-split": "^1.0.0",
     "canvas": "^2.6.1",
     "chalk": "^2.4.2",
@@ -38,16 +38,14 @@
     "parse5": "^5.1.1",
     "systeminformation": "^4.26.9",
     "timeago.js": "^4.0.2",
-    "typescript": "^3.9.5",
-    "urban": "^0.3.2",
-    "wikiapi": "^1.10.0",
-    "winston": "^3.2.1",
+    "typescript": "^3.9.6",
+    "winston": "^3.3.3",
     "yet-another-yandex-translate": "^1.2.3"
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "^2.1.14",
     "@types/got": "^9.6.11",
-    "@types/node": "^12.12.47",
+    "@types/node": "^12.12.50",
     "@typescript-eslint/eslint-plugin": "^2.34.0",
     "@typescript-eslint/parser": "^2.34.0",
     "eslint": "^6.8.0"
