@@ -39,6 +39,7 @@ export function addCommands(cs: CommandSystem.System) {
 	})
 		.setCategory('debug')
 		.setOwnerOnly()
+		.setHidden()
 		.setUsage('(string)')
 		.setDisplayUsage('(code)')
 		.setDescription('Execute JS code'));
@@ -52,6 +53,7 @@ export function addCommands(cs: CommandSystem.System) {
 		})
 			.setCategory('debug')
 			.setOwnerOnly()
+			.setHidden()
 			.setDescription('Restart the bot (only if launched with pm2)')
 			.addAlias('reboot'));
 	
@@ -93,6 +95,7 @@ export function addCommands(cs: CommandSystem.System) {
 		})
 			.setCategory('debug')
 			.setOwnerOnly()
+			.setHidden()
 			.setDescription('git pull, npm install, npm run build and pm2 restart')
 			.addAlias('up'));	
 	}
@@ -110,6 +113,7 @@ export function addCommands(cs: CommandSystem.System) {
 	})
 		.setCategory('debug')
 		.setOwnerOnly()
+		.setHidden()
 		.setDescription('Execute a command prompt command')
 		.addAlias('sexec'));
 

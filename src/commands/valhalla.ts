@@ -151,6 +151,7 @@ export function addCommands(cs: CommandSystem.System) {
 	})
 		.setCategory('fun')
 		.addAlias('va11halla')
+		.setHidden()
 		.setUsage('(string) (string) [string] [string] [string]')
 		.setDisplayUsage('valhalla ((search) (drink name) | (make) (ingredients marked by their first letter) [mixed?] [on the rocks?] [aged?])')
 		.addExample('search Frothy Water')

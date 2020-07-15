@@ -15,6 +15,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('make a minecraft achievement')
 		.setUsage('(string)')
 		.addExample('Made an example!')
+		.setHidden()
 		.addClientPermission('ATTACH_FILES'));
 
 	cs.addCommand(new CommandSystem.Command('mcping', (msg) => {

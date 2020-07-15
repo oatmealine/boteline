@@ -75,6 +75,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('eat the Burger')
 		.setUsage('[any]')
 		.addAlias('burger')
+		.setHidden()
 		.addClientPermission('USE_EXTERNAL_EMOJIS'));
 		
 	cs.addCommand(new CommandSystem.SimpleCommand('rate', (msg) => {
@@ -95,6 +96,7 @@ export function addCommands(cs: CommandSystem.System) {
 	})
 		.setCategory('fun')
 		.setDescription('rates something')
+		.setHidden()
 		.setUsage('(string)')
 		.addExample('me'));
 		
@@ -124,6 +126,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addAlias('choose')
 		.setDescription('rates 2 objects, and picks one of them')
 		.setUsage('(string) (string)')
+		.setHidden()
 		.addExample('njs python'));
 		
 	cs.addCommand(new CommandSystem.SimpleCommand('ask', (msg) => {
@@ -137,6 +140,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setCategory('fun')
 		.setDescription('ask the bot a question')
 		.setUsage('(string)')
+		.setHidden()
 		.addAlias('askquestion')
 		.addAlias('question')
 		.addExample('is this a good example'));
@@ -174,6 +178,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('check if something is lgbtq or not and which part it is')
 		.addExample('jill')
 		.setUsage('(string)')
+		.setHidden()
 		.setDisplayUsage('(thing to test)'));
 
 	cs.addCommand(new CommandSystem.Command('inspirobot', msg => {
@@ -316,6 +321,7 @@ export function addCommands(cs: CommandSystem.System) {
 		return `${logo} ${name}`.split('\\').join('\\\\'); // discord un-fuckuper
 	})
 		.setDescription('a generic 2020 company name + logo generator')
+		.setHidden()
 		.setCategory('fun'));
 
 	cs.addCommand(new CommandSystem.Command('thispersondoesnotexist', (msg) => {
@@ -328,5 +334,6 @@ export function addCommands(cs: CommandSystem.System) {
 		return 'pronouns: it/its, she/her';
 	})
 		.setDescription('returns the bot\'s pronouns, semi-joke')
+		.setHidden()
 		.setCategory('fun'));
 }

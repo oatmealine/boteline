@@ -85,7 +85,8 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('puts a gay (homosexual) flag over your (or someone else\'s) icon')
 		.addAlias('gayoverlay')
 		.setGlobalCooldown(100)
-		.setUserCooldown(1000));
+		.setUserCooldown(1000)
+		.setHidden());
 
 	cs.addCommand(new CanvasGradientApplyCommand('trans',
 		['rgba(85,205,252,0.6)',
@@ -98,7 +99,8 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('puts a trans (transgender) flag over your (or someone else\'s) icon')
 		.addAlias('transoverlay')
 		.setGlobalCooldown(100)
-		.setUserCooldown(1000));
+		.setUserCooldown(1000)
+		.setHidden());
 
 	cs.addCommand(new CanvasGradientApplyCommand('bi',
 		['rgba(214,2,112,0.6)',
@@ -111,7 +113,8 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('puts a bi (bisexual) flag over your (or someone else\'s) icon')
 		.addAlias('bioverlay')
 		.setGlobalCooldown(100)
-		.setUserCooldown(1000));
+		.setUserCooldown(1000)
+		.setHidden());
 
 	cs.addCommand(new CanvasGradientApplyCommand('enby',
 		['rgba(255,244,51,0.6)',
@@ -123,7 +126,8 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('puts an enby (non-binary) flag over your (or someone else\'s) icon')
 		.addAlias('enbyoverlay')
 		.setGlobalCooldown(100)
-		.setUserCooldown(1000));
+		.setUserCooldown(1000)
+		.setHidden());
 
 	cs.addCommand(new CanvasGradientApplyCommand('pan',
 		['rgba(255, 27, 141,0.6)',
@@ -134,7 +138,8 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('puts a pan (pansexual) flag over your (or someone else\'s) icon')
 		.addAlias('panoverlay')
 		.setGlobalCooldown(100)
-		.setUserCooldown(1000));
+		.setUserCooldown(1000)
+		.setHidden());
 
 	cs.addCommand(new CanvasGradientApplyCommand('ace',
 		['rgba(0, 0, 0,0.6)',
@@ -146,7 +151,8 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('puts a ace (asexual) flag over your (or someone else\'s) icon')
 		.addAlias('aceoverlay')
 		.setGlobalCooldown(100)
-		.setUserCooldown(1000));
+		.setUserCooldown(1000)
+		.setHidden());
 
 	cs.addCommand(new CanvasGradientApplyCommand('lesbian',
 		['rgba(214, 41, 0,0.6)',
@@ -159,5 +165,6 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('puts a lesbian flag over your (or someone else\'s) icon')
 		.addAlias('lesbianoverlay')
 		.setGlobalCooldown(100)
-		.setUserCooldown(1000));
+		.setUserCooldown(1000)
+		.setHidden());
 }

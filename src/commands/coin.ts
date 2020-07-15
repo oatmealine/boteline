@@ -214,6 +214,7 @@ export function addCommands(cs: CommandSystem.System) {
 		return 'created/reset an account for you!';
 	})
 		.setCategory('coin')
+		.setHidden()
 		.setDescription('create an account for boteline coin commands'));
 
 	cs.addCommand(new CommandSystem.SimpleCommand('cbal', msg => {
@@ -245,6 +246,7 @@ export function addCommands(cs: CommandSystem.System) {
 		return returnstring;
 	})
 		.setCategory('coin')
+		.setHidden()
 		.setDescription('check your balance'));
 
 	cs.addCommand(new CommandSystem.SimpleCommand('cval', () => {
@@ -256,6 +258,7 @@ export function addCommands(cs: CommandSystem.System) {
 The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastCoinUpdateDate)) / 1000, 1)}s`;
 	})
 		.setCategory('coin')
+		.setHidden()
 		.setDescription('check the coin values'));
 
 	cs.addCommand(new CommandSystem.SimpleCommand('cbuy', msg => {
@@ -286,6 +289,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 		.setCategory('coin')
 		.setDescription('buy an amount of boteline coins, use `all` to buy as many as possible')
 		.setUsage('(string)')
+		.setHidden()
 		.setDisplayUsage('(coin amount, or dollars)')
 		.addAlias('cinv'));
 
@@ -310,6 +314,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 		.setCategory('coin')
 		.setDescription('sell your boteline coins, use `all` to sell every single one you have')
 		.setUsage('(string)')
+		.setHidden()
 		.setDisplayUsage('(coins)'));
 
 	cs.addCommand(new CommandSystem.SimpleCommand('cbuys', msg => {
@@ -344,6 +349,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 		.setCategory('coin')
 		.setDescription('buy an amount of schlattcoin, use `all` to buy as many as possible')
 		.setUsage('(string)')
+		.setHidden()
 		.setDisplayUsage('(coin amount, percentage, or dollars)')
 		.addAlias('cinv'));
 
@@ -368,6 +374,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 		.setCategory('coin')
 		.setDescription('sell your schlattcoin, use `all` to sell every single one you have')
 		.setUsage('(string)')
+		.setHidden()
 		.setDisplayUsage('(coins)'));
 
 	cs.addCommand(new CommandSystem.Command('cchart', msg => {
@@ -419,6 +426,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 		.setCategory('coin')
 		.setDescription('view coin history via a chart')
 		.addClientPermission('ATTACH_FILES')
+		.setHidden()
 		.setGlobalCooldown(1500));
 
 	cs.addCommand(new CommandSystem.Command('ctop', msg => {
@@ -443,7 +451,8 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 
 		msg.channel.send(embed);
 	})
-		.setCategory('coin'));
+		.setCategory('coin')
+		.setHidden());
 
 	cs.addCommand(new CommandSystem.SimpleCommand('cwatch', msg => {
 		if (!guildSettings[msg.guild.id]) guildSettings[msg.guild.id] = {};
@@ -456,6 +465,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 		.setDescription('send all updates to the current channel, use unwatch to stop')
 		.setGlobalCooldown(5000)
 		.addUserPermission('MANAGE_CHANNELS')
+		.setHidden()
 		.setGuildOnly());
 
 	cs.addCommand(new CommandSystem.SimpleCommand('cunwatch', msg => {
@@ -469,5 +479,6 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 		.setDescription('stop sending all updates to this guild\'s update channel')
 		.setGlobalCooldown(2000)
 		.addUserPermission('MANAGE_CHANNELS')
+		.setHidden()
 		.setGuildOnly());
 }
