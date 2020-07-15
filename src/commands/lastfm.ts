@@ -47,7 +47,8 @@ export function addCommands(cs: CommandSystem.System) {
 
 			return embed;
 		} catch(err) {
-			return err;
+			console.log(err);
+			return `error: ${err}`;
 		}
 	})
 		.addAlias('np')
@@ -100,9 +101,9 @@ export function addCommands(cs: CommandSystem.System) {
 
 			paginator.setLimit(maxRecentPages);
 			paginator.start(msg.channel);
-
 		} catch(err) {
-			return err;
+			console.log(err);
+			msg.channel.send(`error: ${err}`);
 		}
 	})
 		.setDescription('check what a user has been listening to on last.fm')
