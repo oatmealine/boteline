@@ -71,33 +71,36 @@ export class Paginator {
 	 * @param channel The channel in which to post it to
 	 */
 	async start(channel: Discord.TextChannel | Discord.DMChannel | Discord.NewsChannel) {
-		this.working = true;
 		this.message = await channel.send(await this.func(this.count));
-		this.collector = this.message.createReactionCollector((r, u) => 
-			u.id === this.author.id && this.buttons.map(b => b.emote).includes(r.emoji.name),
-		{time: 30000}
-		)
-			.on('collect', (r, u) => {
-				let button = this.buttons.find(b => b.emote === r.emoji.name);
-				if (button) {
-					this.buttonPushed(button);
-					r.users.remove(u);
-				}
-			})
-			.on('dispose', (r, u) => { // incase the bot doesnt have manage message perms to make scrolling faster
-				if (u.id === r.message.author.id) return;
-				
-				let button = this.buttons.find(b => b.emote === r.emoji.name);
-				if (button) {
-					this.buttonPushed(button);
-				}
-			})
-			.on('end', () => {
-				this.end();
-			});
 
-		for (let b of this.buttons)
-			await this.message.react(b.emote);
+		if (this.limit !== 1) {
+			this.working = true;
+			this.collector = this.message.createReactionCollector((r, u) => 
+				u.id === this.author.id && this.buttons.map(b => b.emote).includes(r.emoji.name),
+			{time: 30000}
+			)
+				.on('collect', (r, u) => {
+					let button = this.buttons.find(b => b.emote === r.emoji.name);
+					if (button) {
+						this.buttonPushed(button);
+						r.users.remove(u);
+					}
+				})
+				.on('dispose', (r, u) => { // incase the bot doesnt have manage message perms to make scrolling faster
+					if (u.id === r.message.author.id) return;
+				
+					let button = this.buttons.find(b => b.emote === r.emoji.name);
+					if (button) {
+						this.buttonPushed(button);
+					}
+				})
+				.on('end', () => {
+					this.end();
+				});
+
+			for (let b of this.buttons)
+				await this.message.react(b.emote);
+		}
 	}
 
 	/**
