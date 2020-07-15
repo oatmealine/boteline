@@ -25,6 +25,8 @@ async function shadertoyEmbed(id: string): Promise<Discord.MessageEmbed> {
 }
 
 export function addCommands(cs: CommandSystem.System) {
+	let brandColor = cs.get('brandColor');
+
 	cs.addCommand(new CommandSystem.Command('icon', (message) => {
 		message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
 	})
@@ -216,6 +218,7 @@ export function addCommands(cs: CommandSystem.System) {
 				.setTitle(`${def.word} *${def.partOfSpeech}*`)
 				.setURL(def.attributionUrl)
 				.setDescription(def.text)
+				.setColor(brandColor)
 				.setFooter(def.attributionText);
 
 			if (def.exampleUses.length > 0)

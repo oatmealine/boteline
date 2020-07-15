@@ -18,6 +18,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addClientPermission('ATTACH_FILES'));
 
 	cs.addCommand(new CommandSystem.Command('mcping', (msg) => {
+		let brandColor = cs.get('brandColor');
 		const params = discordutil.getParams(msg);
 		msg.channel.startTyping();
 	
@@ -28,6 +29,7 @@ export function addCommands(cs: CommandSystem.System) {
 				const embed = new Discord.MessageEmbed()
 					.setTitle(res.host + ':' + res.port)
 					.setDescription(format.formatMinecraftCode(res.descriptionText))
+					.setColor(brandColor)
 					.addField('Version', `${res.version} (protocol version: ${res.protocolVersion})`, true);
 			
 				if (res.samplePlayers !== null && res.samplePlayers.length > 0) {

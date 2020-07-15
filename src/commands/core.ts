@@ -10,6 +10,7 @@ let application: Discord.ClientApplication;
 export function addCommands(cs: CommandSystem.System) {
 	let guildSettings = cs.get('guildSettigs');
 	let logger = cs.get('logger');
+	let brandColor = cs.get('brandColor');
 
 	cs.client.on('ready', () => {
 		logger.info('fetching application...');
@@ -97,7 +98,6 @@ export function addCommands(cs: CommandSystem.System) {
 		.addAlias('invitelink'));
 
 	cs.commands = cs.commands.filter(c => c.name !== 'help'); // remove help
-
 	cs.addCommand(new CommandSystem.SimpleCommand('help', (message) => {
 		const params = message.content.split(' ');
 
@@ -117,7 +117,7 @@ export function addCommands(cs: CommandSystem.System) {
 					.setTitle(`**${format.grammar(command.name)}** (${format.grammar(command.category)})`)
 					.addField('Usage', cs.prefix + command.name + ' ' + command.displayUsage)
 					.setDescription(command.description)
-					.setColor(Math.floor(Math.random() * 16777215));
+					.setColor(brandColor);
 
 				let commandExamplesPatched = command.examples.map(v => cs.prefix + command.name + ' ' + v);
 
@@ -132,7 +132,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 				const embed = new Discord.MessageEmbed()
 					.setTitle(`**${format.grammar(params[1].toLowerCase())}** [${categoryCommands.length}]`)
-					.setColor('#8663de');
+					.setColor(brandColor);
 
 				embed.addField('Commands', categoryCommands.map(c => c.name).join('\n'));
 
@@ -141,7 +141,7 @@ export function addCommands(cs: CommandSystem.System) {
 		} else {
 			const embed = new Discord.MessageEmbed()
 				.setTitle('**All Commands**')
-				.setColor(Math.floor(Math.random() * 16777215))
+				.setColor(brandColor)
 				.setFooter('Do help (category) to get all commands for a category!');
 
 			let categorizedCommands: any = {};

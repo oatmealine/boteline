@@ -5,6 +5,7 @@ import * as Discord from 'discord.js';
 const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
+	let brandColor = cs.get('brandColor');
 
 	cs.addCommand(new CommandSystem.Command('urban', async (msg, content) => {
 		let res = await got(`https://api.urbandictionary.com/v0/define?term=${encodeURI(content)}`);
@@ -20,6 +21,7 @@ export function addCommands(cs: CommandSystem.System) {
 			let embed = new Discord.MessageEmbed()
 				.setTitle(json.word)
 				.setURL(json.permalink)
+				.setColor(brandColor)
 			// the written_on thing is like that because of the date format being:
 			// YYYY-mm-ddT00:00:00.000Z
 			// note that the last time is always 0:00

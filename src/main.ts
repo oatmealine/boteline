@@ -56,6 +56,8 @@ const logger = winston.createLogger({
 const prefix : string = process.env.PREFIX;
 
 const version : string = packageJson.version + ' alpha';
+const brandColor = '#f16260'; // i hate referring to boteline as a brand but i guess it kind of is a brand
+// this will be used for lots of embeds
 
 logger.info(ch.red.bold(`boteline v${version}`));
 if (process.env.DEBUG) { logger.debug(ch.grey('debug printing on')); }
@@ -82,6 +84,7 @@ cs.set('userData', userData);
 cs.set('guildSettings', guildSettings);
 cs.set('logger', logger);
 cs.set('version', version);
+cs.set('brandColor', brandColor);
 
 commands.addCommands(cs);
 

@@ -49,12 +49,14 @@ setInterval(() => {
 }, 60000);
 
 export function addCommands(cs: CommandSystem.System) {
+	let brandColor = cs.get('brandColor');
 
 	cs.addCommand(new CommandSystem.Command('info', (msg) => {
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, cs.client.user.displayAvatarURL({dynamic: true}))
 			.setTitle(`${cs.client.user.username} v${packageJson.version} stats`)
 			.setURL(packageJson.repository)
+			.setColor(brandColor)
 			.setDescription(`Currently in ${cs.client.guilds.cache.size.toLocaleString()} servers, with ${cs.client.channels.cache.size.toLocaleString()} cached channels and ${cs.client.users.cache.size.toLocaleString()} cached users`)
 			.addField('Memory Usage', format.formatFileSize(process.memoryUsage().rss), true)
 			.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 2)}%**
@@ -77,6 +79,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 			.setFooter(`Running on ${systemInfo.os.platform} - ${systemInfo.os.distro} (kernel version ${systemInfo.os.kernel}) (${systemInfo.os.arch}) ${systemInfo.os.release}`)
 			.setTitle(`Host's stats - ${systemInfo.os.hostname}`)
 			.setDescription('Stats for the bot\'s host')
+			.setColor(brandColor)
 			.addField('Uptime', format.formatMiliseconds(os.uptime()), true)
 			.addField('BIOS', `${systemInfo.bios.vendor} ${systemInfo.bios.version}`, true)
 			.addField('Baseboard', `${systemInfo.baseboard.manufacturer} ${systemInfo.baseboard.model} v${systemInfo.baseboard.version}`, true)
@@ -93,7 +96,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 	cs.addCommand(new CommandSystem.Command('listdependencies', (msg) => {
 		let dependencyEmbed = new Discord.MessageEmbed()
 			.setTitle('Boteline Dependencies')
-			.setColor('#FFFF00')
+			.setColor(brandColor)
 			.setDescription('Dependencies taken from package.json, dependency versions taken from package-lock.json');
 
 		Object.keys(packageJson.dependencies).forEach((dependency: string) => {

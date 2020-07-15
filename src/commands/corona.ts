@@ -45,6 +45,7 @@ async function getStats(content: string) {
 }
 
 export function addCommands(cs: CommandSystem.System) {
+	let brandColor = cs.get('brandColor');
 
 	cs.addCommand(new CommandSystem.SimpleCommand('corona', async (msg, content) => {
 		let stats = await getStats(content);
@@ -54,6 +55,7 @@ export function addCommands(cs: CommandSystem.System) {
 			.setFooter('Data from disease.sh')
 			.setTimestamp(stats.updated)
 			.setTitle(stats.country || stats.continent || 'Worldwide')
+			.setColor(brandColor)
 			.addField('Cases', `${stats.cases.toLocaleString()} ${stats.todayCases ? `*+${stats.todayCases.toLocaleString()} today*` : ''}`, true)
 			.addField('Deaths', `${stats.deaths.toLocaleString()} ${stats.todayDeaths ? `*+${stats.todayDeaths.toLocaleString()} today*` : ''}`, true)
 			.addField('Recovered', `${stats.recovered.toLocaleString()} ${stats.todayRecovered ? `*+${stats.todayRecovered.toLocaleString()} today*` : ''}`, true);

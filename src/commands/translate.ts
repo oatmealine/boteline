@@ -23,6 +23,7 @@ function getFullLang(code: string) : string {
 }
 
 export function addCommands(cs: CommandSystem.System) {
+	let brandColor = cs.get('brandColor');
 
 	if (yt !== null) {
 		cs.addCommand(new CommandSystem.Command('autotranslate', async (msg: Discord.Message) => {
@@ -40,7 +41,7 @@ export function addCommands(cs: CommandSystem.System) {
 					.setDescription(util.shortenStr(translated, 2000))
 					.setTitle(`\`${util.shortenStr(text, 50).split('\n').join(' ')}\` translated from ${getFullLang(fromlang)} to ${getFullLang(lang)} will be...`)
 					.setFooter('Powered by Yandex.Translate')
-					.setColor('#FF0000');
+					.setColor(brandColor);
 				msg.channel.send('', { embed: translateEmbed });
 				msg.channel.stopTyping();
 			})
@@ -73,7 +74,7 @@ export function addCommands(cs: CommandSystem.System) {
 					.setDescription(util.shortenStr(translated, 2000))
 					.setTitle(`\`${util.shortenStr(params.join(' '), 50).split('\n').join(' ')}\` translated from ${getFullLang(langfrom)} to ${getFullLang(langto)} will be...`)
 					.setFooter('Powered by Yandex.Translate')
-					.setColor('#FF0000');
+					.setColor(brandColor);
 				msg.channel.send('', { embed: translateEmbed });
 				msg.channel.stopTyping();
 			})
@@ -181,7 +182,7 @@ ${randLangs.map((lang, ind) => (ind === i) ? '**' + lang + '**' : lang).join(', 
 				.setDescription(util.shortenStr(text, 2000))
 				.setTitle(`\`${util.shortenStr(params.join(' '), 100).split('\n').join(' ')}\` translated ${times} times will be...`)
 				.setFooter('Powered by Yandex.Translate, mode ' + mode)
-				.setColor('#FF0000');
+				.setColor(brandColor);
 			progMessage.edit('', { embed: translateEmbed });
 		})
 			.setCategory('translate')
