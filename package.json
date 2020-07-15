@@ -1,6 +1,6 @@
 {
   "name": "boteline",
-  "version": "1.10.0",
+  "version": "1.11.0",
   "description": "a friendly swiss knife discord bot from celeste mountain built on cumsystem mostly focusing on fun or utility commands",
   "main": "built/main.js",
   "scripts": {
