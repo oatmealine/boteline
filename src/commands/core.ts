@@ -1,17 +1,21 @@
 import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as util from '../lib/util';
+import * as fs from 'fs';
 import * as format from '../lib/format';
 import * as discordutil from '../lib/discord';
+import * as os from 'os';
 import { Paginator } from '../lib/paginator';
 
 const prefix = process.env.PREFIX;
 let application: Discord.ClientApplication;
 
 export function addCommands(cs: CommandSystem.System) {
-	let guildSettings = cs.get('guildSettigs');
+	let guildSettings = cs.get('guildSettings');
 	let logger = cs.get('logger');
 	let brandColor = cs.get('brandColor');
+	let userData = cs.get('userData');
+	let botName = cs.get('botName');
 
 	cs.client.on('ready', () => {
 		logger.info('fetching application...');
@@ -183,4 +187,44 @@ export function addCommands(cs: CommandSystem.System) {
 		.addAlias('cmds')
 		.addClientPermission('EMBED_LINKS')
 		.setDescription('see commands, or check out a comnmand in detail'));
+
+	cs.addCommand(new CommandSystem.Command('dumpdata', async (msg) => {
+		if (!userData[msg.author.id]) return msg.channel.send('there isn\'t any data stored for your account');
+
+		let fileName = `${os.tmpdir()}/${msg.author.id}.json`;
+		fs.writeFileSync(fileName, JSON.stringify(userData[msg.author.id]));
+
+		let dumpData = fs.statSync(fileName);
+		await msg.channel.send(`${botName} user data dump - you can request another data dump in 1h\n\`\`\`for  : ${msg.author.id}\nat   : ${msg.createdAt}\nsize : ${format.formatFileSize(dumpData.size)}\`\`\``, new Discord.MessageAttachment(fileName));
+		
+		return fs.unlinkSync(fileName);
+	})
+		.setCategory('core')
+		.setDescription('dumps all of your user data to you\ndata is served in JSON format, same as its stored')
+		.setUserCooldown(60 * 60000) // 60 minutes
+		.setGlobalCooldown(2000)
+		.setDMOnly());
+
+	cs.addCommand(new CommandSystem.Command('deletedata', async (msg) => {
+		if (!userData[msg.author.id]) return msg.channel.send('there isn\'t any data stored for your account');
+
+		await msg.channel.send('are you sure you want to delete all of your userdata? **this action is irreversible!!**\ntype in `y` to continue');
+		let collector = msg.channel.createMessageCollector(() => true, {time: 30000})
+			.on('collect', (msg) => {
+				if (msg.content.toLowerCase() === 'y') {
+					collector.stop('response');
+					delete userData[msg.author.id];
+					msg.channel.send('your userdata has been deleted ! :crab:');
+				} else collector.stop();
+			})
+			.on('end', (c, reason) => {
+				if (reason !== 'response') msg.channel.send('data deletion cancelled');
+			});
+
+		return collector;
+	})
+		.setCategory('core')
+		.setUserCooldown(30000)
+		.setDescription('delete all of your userdata - this is irreversible!!')
+		.setDMOnly());
 }
