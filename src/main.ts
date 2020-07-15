@@ -13,6 +13,10 @@ import * as winston from 'winston';
 // modules
 import * as commands from './commands';
 
+// events
+import * as message from './events/message';
+import * as ready from './events/ready';
+
 const ch = require('chalk');
 // files
 
@@ -77,83 +81,18 @@ const cs = new CommandSystem.System(bot, prefix);
 cs.set('userData', userData);
 cs.set('guildSettings', guildSettings);
 cs.set('logger', logger);
+cs.set('version', version);
 
 commands.addCommands(cs);
 
 logger.info('starting...');
 
 bot.on('message', (msg) => {
-	let content: string = msg.content;
-
-	let thisPrefix: string = prefix;
-
-	if (msg.guild) {
-		if (guildSettings[msg.guild.id]) {
-			thisPrefix = guildSettings[msg.guild.id].prefix;
-			if (thisPrefix === undefined) {thisPrefix = prefix;}
-		}
-	}
-
-	if (!content.startsWith(thisPrefix) && !content.startsWith(prefix)) return;
-
-	if (content.startsWith(thisPrefix)) content = content.slice(thisPrefix.length);
-	if (content.startsWith(prefix)) content = content.slice(prefix.length);
-
-	let cmd = content.split(' ')[0];
-
-	logger.debug('got command ' + cmd);
-
-	// check if user is blacklisted
-	if (userData[msg.author.id] && userData[msg.author.id].blacklist) {
-		let blacklist = userData[msg.author.id].blacklist;
-		if (blacklist.includes(cmd) || blacklist.includes('.')) return;
-	}
-
-	cs.parseMessage(msg, thisPrefix);
+	message.run(msg, cs);
 });
 
-
-let firedReady = false;
-
 bot.on('ready', () => {
-	if (firedReady) {
-		logger.warn('ready event was fired twice');
-		return;
-	}
-
-	logger.info('doing post-login intervals...');
-
-	const presences: [string, Discord.ActivityType][] = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${version}`, 'STREAMING']];
-
-	bot.setInterval(() => {
-		presences.push([`${bot.guilds.cache.size} servers`, 'WATCHING']);
-		presences.push([`with ${bot.users.cache.size} users`, 'PLAYING']);
-
-		const presence : [string, Discord.ActivityType] = presences[Math.floor(Math.random() * presences.length)];
-		bot.user.setPresence({status: 'dnd', activity: {name: presence[0], type: presence[1]}});
-	}, 30000);
-
-	bot.setInterval(() => {
-		logger.debug('saving userdata & guild settings...');
-		fs.writeFile('./data/userdata.json', JSON.stringify(userData), (err) => {
-			if (err) {
-				logger.error('failed saving userdata: ' + err);
-			}
-		});
-
-		fs.writeFile('./data/guildsettings.json', JSON.stringify(guildSettings), (err) => {
-			if (err) {
-				logger.error('failed saving guildsettings: ' + err);
-			}
-		});
-	}, 120000);
-
-	// update boteline coin stuff
-	cs.setClient(bot);
-
-	logger.info('ready!');
-	firedReady = true;
-	process.title = `Boteline v${version}`;
+	ready.run(cs);
 });
 
 cs.on('error', (err, msg, cmd) => {

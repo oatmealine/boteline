@@ -1,5 +1,6 @@
 import * as booru from 'booru';
 import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 import * as Discord from 'discord.js';
 import * as CommandSystem from 'cumsystem';
 

@@ -32,7 +32,7 @@ export function addCommands(cs: CommandSystem.System) {
 				return msg.channel.send('Bot token found in result, aborting');
 			}
 
-			return paginator.autoSplit(msg, evaled, 1900, '```xl\n', '```');
+			return Paginator.autoSplit(msg, evaled, 1900, '```xl\n', '```');
 		} catch (err) {
 			return msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
 		}
