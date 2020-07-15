@@ -67,7 +67,7 @@ const brandColor = '#f16260'; // i hate referring to boteline as a brand but i g
 logger.info(ch.red.bold(`${botName} v${version}`));
 if (process.env.DEBUG) { logger.debug(ch.grey('debug printing on')); }
 
-process.title = `Starting Boteline v${version}`;
+process.title = `Starting ${botName} v${version}`;
 
 // i KNOW this is messy but like ,,, how else would you do this
 console.log(ch.bold(`
@@ -94,6 +94,8 @@ cs.set('botName', botName);
 cs.set('botNameCode', botNameCode);
 cs.set('packageJson', packageJson);
 cs.set('packageJsonLock', packageJsonLock);
+
+cs.set('userAgent', `${botName} v${version} ${packageJson.repository}`);
 
 commands.addCommands(cs);
 

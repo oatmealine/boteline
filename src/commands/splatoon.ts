@@ -18,6 +18,8 @@ const cache = {
 	}
 };
 
+let userAgent: string;
+
 function checkSplatoon() : Promise<any> {
 	return new Promise(resolve => {
 		if (cache.splatoon !== undefined) {
@@ -30,7 +32,7 @@ function checkSplatoon() : Promise<any> {
 		logger.debug('fetching splatoon2.ink data...');
 
 		got('https://splatoon2.ink/data/schedules.json', {
-			'user-agent': 'Boteline (oatmealine#1704)'
+			'user-agent': userAgent
 		}).then(res => {
 			logger.debug('got code ' + res.statusCode);
 			if (res.statusCode === 200) {
@@ -57,7 +59,7 @@ function checkSalmon() : Promise<any> {
 
 		logger.debug('fetching splatoon2.ink data...');
 		got('https://splatoon2.ink/data/schedules.json', {
-			'user-agent': 'Boteline (oatmealine#1704)'
+			'user-agent': userAgent
 		}).then(res => {
 			logger.debug('got code ' + res.statusCode);
 			if (res && res.statusCode === 200) {
@@ -75,6 +77,7 @@ function checkSalmon() : Promise<any> {
 
 export function addCommands(cs: CommandSystem.System) {
 	logger = cs.get('logger');
+	userAgent = cs.get('userAgent');
 
 	cs.addCommand(new CommandSystem.Command('splatoon', (msg) => {
 		checkSplatoon().then(obj => {

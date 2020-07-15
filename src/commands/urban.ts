@@ -6,9 +6,10 @@ const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
 	let brandColor = cs.get('brandColor');
+	let userAgent = cs.get('userAgent');
 
 	cs.addCommand(new CommandSystem.Command('urban', async (msg, content) => {
-		let res = await got(`https://api.urbandictionary.com/v0/define?term=${encodeURI(content)}`);
+		let res = await got(`https://api.urbandictionary.com/v0/define?term=${encodeURI(content)}`, {'user-agent': userAgent});
 		let data = JSON.parse(res.body);
 		
 		if (data.list.length === 0) return msg.channel.send('that word doesnt exist!');

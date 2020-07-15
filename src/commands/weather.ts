@@ -4,7 +4,7 @@ const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.Command('weather', (msg, content) => {
-		got(`http://api.weatherstack.com/current?access_key=${process.env.WEATHERSTACKKEY}&query=${encodeURI(content)}`).then((res, err) => {
+		got(`http://api.weatherstack.com/current?access_key=${process.env.WEATHERSTACKKEY}&query=${encodeURI(content)}`, {'user-agent': userAgent}).then((res, err) => {
 			if (err) return msg.channel.send(err);
 
 			let weather = JSON.parse(res.body);

@@ -6,8 +6,10 @@ import * as discordutil from '../lib/discord';
 
 const got = require('got');
 
+let userAgent: string;
+
 async function shadertoyEmbed(id: string): Promise<Discord.MessageEmbed> {
-	let resp = await got(`https://www.shadertoy.com/api/v1/shaders/${id}?key=${process.env.SHADERTOYKEY}`);
+	let resp = await got(`https://www.shadertoy.com/api/v1/shaders/${id}?key=${process.env.SHADERTOYKEY}`, {'user-agent': userAgent});
 	let data = JSON.parse(resp.body).Shader;
 
 	if (!data || data.Error) return null;
@@ -26,6 +28,7 @@ async function shadertoyEmbed(id: string): Promise<Discord.MessageEmbed> {
 
 export function addCommands(cs: CommandSystem.System) {
 	let brandColor = cs.get('brandColor');
+	userAgent = cs.get('userAgent');
 
 	cs.addCommand(new CommandSystem.Command('icon', (message) => {
 		message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
@@ -201,7 +204,7 @@ export function addCommands(cs: CommandSystem.System) {
 			let def;
 
 			if (content === '') {
-				let defs = await got(`https://api.wordnik.com/v4/words.json/wordOfTheDay?api_key=${process.env.WORDNIK_KEY}`);
+				let defs = await got(`https://api.wordnik.com/v4/words.json/wordOfTheDay?api_key=${process.env.WORDNIK_KEY}`, {'user-agent': userAgent});
 				def = JSON.parse(defs.body);
 
 				def.text = def.definitions[0].text;
@@ -236,7 +239,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 	cs.addCommand(new CommandSystem.SimpleCommand('pronounce', async (msg, content) => {
 		try {
-			let pronouns = await got(`https://api.wordnik.com/v4/word.json/${encodeURI(content)}/audio?useCanonical=false&limit=50&api_key=${process.env.WORDNIK_KEY}`);
+			let pronouns = await got(`https://api.wordnik.com/v4/word.json/${encodeURI(content)}/audio?useCanonical=false&limit=50&api_key=${process.env.WORDNIK_KEY}`, {'user-agent': userAgent});
 			let pronounsObj = JSON.parse(pronouns.body);
 
 			let pronoun = pronounsObj.sort(() => Math.random() - 0.5)[0];
@@ -263,7 +266,7 @@ export function addCommands(cs: CommandSystem.System) {
 	});
 
 	cs.addCommand(new CommandSystem.SimpleCommand('shadertoy', async (msg, content) => {
-		let resp = await got(`https://www.shadertoy.com/api/v1/shaders/query/${encodeURI(content)}?key=${process.env.SHADERTOYKEY}`);
+		let resp = await got(`https://www.shadertoy.com/api/v1/shaders/query/${encodeURI(content)}?key=${process.env.SHADERTOYKEY}`, {'user-agent': userAgent});
 		let data = JSON.parse(resp.body);
 
 		if (data.Shaders < 1 || !data.Results) {

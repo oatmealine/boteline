@@ -17,7 +17,7 @@ export function run(cs: System) {
 
 	logger.info('doing post-login intervals...');
 
-	const presences: [string, Discord.ActivityType][] = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`Boteline v${cs.get('version')}`, 'STREAMING']];
+	const presences: [string, Discord.ActivityType][] = [['Celeste', 'PLAYING'], ['Celeste OST', 'LISTENING'], ['you', 'WATCHING'], ['sleep', 'PLAYING'], [`try ${process.env.PREFIX}help`, 'PLAYING'], [`${cs.get('botName')} v${cs.get('version')}`, 'STREAMING']];
 
 	bot.setInterval(() => {
 		presences.push([`${bot.guilds.cache.size} servers`, 'WATCHING']);
@@ -47,5 +47,5 @@ export function run(cs: System) {
 
 	logger.info('ready!');
 	firedReady = true;
-	process.title = `Boteline v${cs.get('version')}`;
+	process.title = `${cs.get('botName')} v${cs.get('version')}`;
 }

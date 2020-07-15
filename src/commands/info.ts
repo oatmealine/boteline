@@ -48,11 +48,12 @@ export function addCommands(cs: CommandSystem.System) {
 	let brandColor = cs.get('brandColor');
 	let packageJson = cs.get('packageJson');
 	let packageLock = cs.get('packageJsonLock');
+	let botName = cs.get('botName');
 
 	cs.addCommand(new CommandSystem.Command('info', (msg) => {
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, cs.client.user.displayAvatarURL({dynamic: true}))
-			.setTitle(`${cs.client.user.username} v${packageJson.version} stats`)
+			.setTitle(`${botName} v${packageJson.version} stats`)
 			.setURL(packageJson.repository)
 			.setColor(brandColor)
 			.setDescription(`Currently in ${cs.client.guilds.cache.size.toLocaleString()} servers, with ${cs.client.channels.cache.size.toLocaleString()} cached channels and ${cs.client.users.cache.size.toLocaleString()} cached users`)
@@ -93,7 +94,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 
 	cs.addCommand(new CommandSystem.Command('listdependencies', (msg) => {
 		let dependencyEmbed = new Discord.MessageEmbed()
-			.setTitle('Boteline Dependencies')
+			.setTitle(`${botName} Dependencies`)
 			.setColor(brandColor)
 			.setDescription('Dependencies taken from package.json, dependency versions taken from package-lock.json');
 

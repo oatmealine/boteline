@@ -120,6 +120,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 
 export function addCommands(cs: CommandSystem.System) {
 	logger = cs.get('logger');
+	let userAgent = cs.get('userAgent');
 
 	cs.addCommand(new FFMpegCommand('compress', (command, msg) => {
 		const params = discordutil.getParams(msg);
@@ -246,7 +247,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 						});
 					})();
 				} else {
-					await got(videoAttach.url)
+					await got(videoAttach.url, {'user-agent': userAgent})
 						.then(response => {
 							fs.writeFileSync(tempFileIn, response.body);
 						})

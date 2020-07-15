@@ -8,19 +8,21 @@ const got = require('got');
 const maxRecentPages = 10;
 
 export function addCommands(cs: CommandSystem.System) {
+	let userAgent = cs.get('userAgent');
+	
 	cs.addCommand(new CommandSystem.SimpleCommand('nowplaying', async (msg, content) => {
-		let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+		let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
 		let data = JSON.parse(res.body);
 
 		let playingTrack = data.recenttracks.track.find(t => t['@attr'] && t['@attr'].nowplaying === 'true');
 		if (!playingTrack) return 'No track playing';
 
 		// for pfp 
-		let resUser = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+		let resUser = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
 		let userData = JSON.parse(resUser.body);
 
 		// top tracks provides play amount and rank
-		let resTopTracks = await got(`http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURI(content)}&limit=100&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+		let resTopTracks = await got(`http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURI(content)}&limit=100&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
 		let topTracksData = JSON.parse(resTopTracks.body);
 		let playingTrackExtended = topTracksData.toptracks.track.find(t => t.url === playingTrack.url);
 
@@ -52,14 +54,14 @@ export function addCommands(cs: CommandSystem.System) {
 		.setCategory('last.fm'));
 
 	cs.addCommand(new CommandSystem.Command('recent', async (msg, content) => {
-		let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=${maxRecentPages * 10 + 1}&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+		let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=${maxRecentPages * 10 + 1}&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
 		let data = JSON.parse(res.body);
 
 		let playingTrack = data.recenttracks.track.find(t => t['@attr'] && t['@attr'].nowplaying === 'true');
 		let tracks = data.recenttracks.track.filter(t => t !== playingTrack); // filter out current track
 
 		// for pfp 
-		let resUser = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+		let resUser = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
 		let userData = JSON.parse(resUser.body);
 		let pfp = userData.user.image.pop()['#text'];
 		let thumbnail;

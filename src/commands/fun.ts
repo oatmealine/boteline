@@ -7,8 +7,7 @@ const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
 	let brandColor = cs.get('brandColor');
-	let botName = cs.get('botName');
-	let packageJson = cs.get('packageJson');
+	let userAgent = cs.get('userAgent');
 
 	cs.addCommand(new CommandSystem.Command('robloxad', async (msg) => {
 		let url = 'https://www.roblox.com/user-sponsorship/' + (Math.floor(Math.random() * 3) + 1);
@@ -216,9 +215,9 @@ export function addCommands(cs: CommandSystem.System) {
 
 		let params = content.split(' ');
 
-		let userAgent = `${msg.client.user.username + '#' + msg.client.user.discriminator} ${packageJson.repository} (Command ran by ${msg.author.username}#${msg.author.discriminator}${params[4] ? `. They said: "${params.slice(4).join(' ')}"` : ''})`;
+		let useUserAgent = `${userAgent} (Command ran by ${msg.author.username}#${msg.author.discriminator}${params[4] ? `. They said: "${params.slice(4).join(' ')}"` : ''})`;
 
-		await got(`https://soulja-boy-told.me/light?r=${params[0]}&g=${params[1]}&b=${params[2]}&bri=${params[3]}`, {headers: {'user-agent': userAgent}});
+		await got(`https://soulja-boy-told.me/light?r=${params[0]}&g=${params[1]}&b=${params[2]}&bri=${params[3]}`, {headers: {'user-agent': useUserAgent}});
 		
 		msg.react('✅');
 
@@ -249,7 +248,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDisplayUsage('(r) (g) (b) (brightness) [comment]'));
 
 	cs.addCommand(new CommandSystem.Command('jok', (msg) => {
-		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': `${botName} ${packageJson.repository}`}}).then(res => {
+		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': userAgent}}).then(res => {
 			let joke = JSON.parse(res.body);
 		 
 			let jokeParts = joke.joke.split(/[?.!]/);
@@ -260,7 +259,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setCategory('fun'));
 
 	cs.addCommand(new CommandSystem.Command('oke', (msg) => {
-		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': `${botName} ${packageJson.repository}`}}).then(res => {
+		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': userAgent}}).then(res => {
 			let joke = JSON.parse(res.body);
 	 
 			let jokeParts = joke.joke.split(/[?.!]/);
