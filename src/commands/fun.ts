@@ -3,14 +3,12 @@ import * as Discord from 'discord.js';
 import * as parse5 from 'parse5';
 import * as util from '../lib/util';
 import * as discordutil from '../lib/discord';
-import * as fs from 'fs';
 const got = require('got');
-
-const packageJson = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }));
 
 export function addCommands(cs: CommandSystem.System) {
 	let brandColor = cs.get('brandColor');
 	let botName = cs.get('botName');
+	let packageJson = cs.get('packageJson');
 
 	cs.addCommand(new CommandSystem.Command('robloxad', async (msg) => {
 		let url = 'https://www.roblox.com/user-sponsorship/' + (Math.floor(Math.random() * 3) + 1);

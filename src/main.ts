@@ -25,6 +25,7 @@ const ch = require('chalk');
 // files
 
 const packageJson = JSON.parse(fs.readFileSync('./package.json', {encoding: 'utf8'}));
+const packageJsonLock = JSON.parse(fs.readFileSync('./package-lock.json', {encoding: 'utf8'}));
 
 const userData = JSON.parse(util.readIfExists('./data/userdata.json', {encoding: 'utf8'}, '{}'));
 const guildSettings = JSON.parse(util.readIfExists('./data/guildsettings.json', {encoding: 'utf8'}, '{}'));
@@ -91,6 +92,8 @@ cs.set('version', version);
 cs.set('brandColor', brandColor);
 cs.set('botName', botName);
 cs.set('botNameCode', botNameCode);
+cs.set('packageJson', packageJson);
+cs.set('packageJsonLock', packageJsonLock);
 
 commands.addCommands(cs);
 

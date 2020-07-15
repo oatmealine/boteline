@@ -1,15 +1,11 @@
 import * as Discord from 'discord.js';
 import * as os from 'os';
-import * as fs from 'fs';
 import * as util from '../lib/util';
 import * as format from '../lib/format';
 import * as CommandSystem from 'cumsystem';
 
 import * as si from 'systeminformation';
 import * as osu from 'node-os-utils';
-
-const packageJson = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }));
-const packageLock = JSON.parse(fs.readFileSync('./package-lock.json', { encoding: 'utf8' }));
 
 // statistics
 
@@ -50,6 +46,8 @@ setInterval(() => {
 
 export function addCommands(cs: CommandSystem.System) {
 	let brandColor = cs.get('brandColor');
+	let packageJson = cs.get('packageJson');
+	let packageLock = cs.get('packageJsonLock');
 
 	cs.addCommand(new CommandSystem.Command('info', (msg) => {
 		msg.channel.send(new Discord.MessageEmbed()
