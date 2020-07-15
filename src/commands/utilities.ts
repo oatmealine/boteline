@@ -1,6 +1,5 @@
 /* eslint-disable no-fallthrough */
 import * as CommandSystem from 'cumsystem';
-// eslint-disable-next-line no-unused-vars
 import * as Discord from 'discord.js';
 import * as discordutil from '../lib/discord';
 

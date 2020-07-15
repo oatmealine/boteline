@@ -28,7 +28,6 @@ async function getStats(content: string) {
 					deaths: jhucsseStats.stats.deaths,
 					recovered: jhucsseStats.stats.recovered,
 					country: `${jhucsseStats.country}, ${jhucsseStats.province instanceof Array ? jhucsseStats.province.join(' ') : jhucsseStats.province}`,
-					// @ts-ignore the types are fucked for some reason and its a date
 					updated: Number(Date.parse(jhucsseStats.updatedAt).toPrecision())
 				};
 			} else {
