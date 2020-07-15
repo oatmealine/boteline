@@ -5,7 +5,7 @@ import * as timeago from 'timeago.js';
 import * as Paginator from '../lib/paginator';
 const got = require('got');
 
-const maxRecentPages = 10;
+const maxRecentPages = 5;
 
 export function addCommands(cs: CommandSystem.System) {
 	let userAgent = cs.get('userAgent');
