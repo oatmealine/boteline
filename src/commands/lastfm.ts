@@ -61,7 +61,8 @@ export function addCommands(cs: CommandSystem.System) {
 		let resUser = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
 		let userData = JSON.parse(resUser.body);
 		let pfp = userData.user.image.pop()['#text'];
-		let thumbnail = playingTrack.image.pop()['#text'];
+		let thumbnail;
+		if (playingTrack) thumbnail = playingTrack.image.pop()['#text'];
 
 		let paginator = new util.Paginator((page) => {
 			let embed = new Discord.MessageEmbed()
