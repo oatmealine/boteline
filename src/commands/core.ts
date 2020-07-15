@@ -101,7 +101,7 @@ export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.SimpleCommand('help', (message) => {
 		const params = message.content.split(' ');
 
-		if (params[1]) {
+		if (params[1] && params[1] !== 'hidden') {
 			let command: CommandSystem.Command;
 
 			cs.commands.forEach(cmd => {
@@ -140,14 +140,14 @@ export function addCommands(cs: CommandSystem.System) {
 			}
 		} else {
 			const embed = new Discord.MessageEmbed()
-				.setTitle('**All Commands**')
+				.setTitle(`**All ${params[1] === 'hidden' ? 'Hidden ': ''}Commands**`)
 				.setColor(brandColor)
 				.setFooter('Do help (category) to get all commands for a category!');
 
 			let categorizedCommands: any = {};
 
 			cs.commands.forEach(command => {
-				if (!command.hidden) {
+				if ((params[1] !== 'hidden' && !command.hidden) || (params[1] === 'hidden' && command.hidden)) {
 					if (!categorizedCommands[command.category]) categorizedCommands[command.category] = [];
 					categorizedCommands[command.category].push(command);
 				}
