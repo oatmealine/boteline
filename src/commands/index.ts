@@ -11,6 +11,7 @@ import * as debug from './debug';
 import * as fun from './fun';
 import * as gay from './gay';
 import * as info from './info';
+import * as lastfm from './lastfm';
 import * as minecraft from './minecraft';
 import * as minesweeper from './minesweeper';
 import * as moderation from './moderation';
@@ -25,7 +26,7 @@ import * as weather from './weather';
 import * as wiki from './wiki';
 
 export function addCommands(cs: System) {
-	let modules = [booru, coin, color, convert, core, corona, debug, fun, gay, info, minecraft, minesweeper, moderation, splatoon, starboard, translate, urban, utilities, valhalla, video, weather, wiki];
+	let modules = [booru, coin, color, convert, core, corona, debug, fun, gay, info, lastfm, minecraft, minesweeper, moderation, splatoon, starboard, translate, urban, utilities, valhalla, video, weather, wiki];
 
 	modules.forEach(m => {
 		m.addCommands(cs);

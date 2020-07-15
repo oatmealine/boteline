@@ -439,6 +439,14 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 	}
 }
 
+export function rankNum(num: number) {
+	let suffixes = ['th', 'st', 'nd', 'rd', 'th'];
+	let digit = Math.floor(Math.abs(num % 10));
+	let suffix = suffixes[Math.min(digit, suffixes.length - 1)];
+	if (num % 100 > 10 && num % 100 < 20) suffix = 'th';
+	return `${num}${suffix}`;
+}
+
 export function setLogger(log) {
 	logger = log;
 }
