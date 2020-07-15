@@ -32,16 +32,7 @@ export function addCommands(cs: CommandSystem.System) {
 				return msg.channel.send('Bot token found in result, aborting');
 			}
 
-			let message = await msg.channel.send('```xl\n' + util.shortenStr(evaled, 1500) + '\n```');
-			await message.react('❌');
-
-			return message.createReactionCollector((r, u) => r.emoji.name === '❌' && u.id === msg.author.id, {time: 30000})
-				.on('collect', () => {
-					message.delete();
-				})
-				.on('end', () => {
-					message.reactions.removeAll();
-				});
+			return util.autoSplit(msg, evaled, 1900, '```xl\n', '```');
 		} catch (err) {
 			return msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
 		}
@@ -112,8 +103,8 @@ export function addCommands(cs: CommandSystem.System) {
 				if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('```' + err + '```');
 				msg.react('❌');
 			} else {
-				if (!msg.content.startsWith(cs.prefix + 's')) msg.channel.send('```' + stdout + '```');
 				msg.react('☑');
+				util.autoSplit(msg, stdout, 1900, '```xl\n', '```');
 			}
 		});
 	})

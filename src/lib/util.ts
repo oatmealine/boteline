@@ -598,6 +598,20 @@ export class Paginator {
 	}
 }
 
+export function autoSplit(message: Discord.Message, content: string, amt = 1024, startWith = '', endWith = '') {
+	if (content.length > amt) {
+		let paginator = new Paginator((count) => {
+			let off = (count - 1) * amt;
+			return startWith + content.slice(0 + off, amt + off) + endWith + `\n${count}/${paginator.limit}`;
+		}, message.author);
+
+		paginator.setLimit(Math.ceil(content.length / amt));
+		paginator.start(message.channel);
+	} else {
+		message.channel.send(startWith + content + endWith);
+	}
+}
+
 export function setLogger(log) {
 	logger = log;
 }
