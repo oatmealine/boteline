@@ -25,7 +25,7 @@ export function normalDistribution(x: number) : number {
 }
 
 export function seedAndRate(str: string) : number {
-	const exclusions = {boteline: 0, mankind: 0, fox: 10, thefox: 10};
+	const exclusions = {boteline: 0, mankind: 0};
 
 	if (Object.keys(str).includes('str')) {
 		return exclusions[str];
