@@ -11,7 +11,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 	cs.addCommand(new CommandSystem.Command('robloxad', async (msg) => {
 		let url = 'https://www.roblox.com/user-sponsorship/' + (Math.floor(Math.random() * 3) + 1);
-		let document = await got(url);
+		let document = await got(url, {'user-agent': userAgent});
 
 		let parsedDocument = parse5.parse(document.body);
 
@@ -179,7 +179,7 @@ export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.Command('inspirobot', msg => {
 		msg.channel.startTyping();
 	
-		got('http://inspirobot.me/api?generate=true')
+		got('http://inspirobot.me/api?generate=true', {'user-agent': userAgent})
 			.then(res => {
 				if (res && res.statusCode == 200) {
 					msg.channel.send({files: [res.body]}).then(() => {

@@ -3,6 +3,8 @@ import * as CommandSystem from 'cumsystem';
 const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
+	let userAgent = cs.get('userAgent');
+
 	cs.addCommand(new CommandSystem.Command('weather', (msg, content) => {
 		got(`http://api.weatherstack.com/current?access_key=${process.env.WEATHERSTACKKEY}&query=${encodeURI(content)}`, {'user-agent': userAgent}).then((res, err) => {
 			if (err) return msg.channel.send(err);
