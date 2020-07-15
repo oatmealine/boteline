@@ -6,6 +6,7 @@ import * as Paginator from '../lib/paginator';
 const got = require('got');
 
 const maxRecentPages = 5;
+const resultsPerPage = 10;
 
 export function addCommands(cs: CommandSystem.System) {
 	let userAgent = cs.get('userAgent');
@@ -90,16 +91,16 @@ export function addCommands(cs: CommandSystem.System) {
 					description += `**Scrobbling now**: ${playingTrack.loved === '1' ? '❤️ ' : ''}${playingTrack.artist.name} - ${playingTrack.name}\n\n`;
 				}
 
-				let off = (page - 1) * 10;
+				let off = (page - 1) * resultsPerPage;
 
-				description += tracks.slice(0 + off, 10 + off).map((t, i) => `${i + 1 + off}. ${t.loved === '1' ? '❤️ ' : ''}${t.artist.name} - ${t.name} ${timeago.format(t.date.uts * 1000)}`).join('\n');
+				description += tracks.slice(0 + off, resultsPerPage + off).map((t, i) => `${i + 1 + off}. ${t.loved === '1' ? '❤️ ' : ''}${t.artist.name} - ${t.name} ${timeago.format(t.date.uts * 1000)}`).join('\n');
 
 				embed.setDescription(description);
 
 				return embed;
 			}, msg.author);
 
-			paginator.setLimit(maxRecentPages);
+			paginator.setLimit(Math.ceil(tracks.length / resultsPerPage));
 			paginator.start(msg.channel);
 		} catch(err) {
 			console.log(err);
