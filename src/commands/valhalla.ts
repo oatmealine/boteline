@@ -1,15 +1,48 @@
 import * as CommandSystem from 'cumsystem';
-import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 import * as Discord from 'discord.js';
 import * as fs from 'fs';
 
 const valhallaDrinks = JSON.parse(fs.readFileSync('./src/valhalla.json', {encoding: 'utf8'}));
 
+function makeDrinkEmbed(drink: any) : Discord.MessageEmbed {
+	const embed = new Discord.MessageEmbed({
+		title: drink.name,
+		fields: [
+			{
+				name: 'Description',
+				value: '"' + drink.blurb + '"',
+			},
+			{
+				name: 'Flavor',
+				value: drink.flavour,
+				inline: true,
+			},
+			{
+				name: 'Type',
+				value: drink.type.join(', '),
+				inline: true,
+			},
+			{
+				name: 'Price',
+				value: '$' + drink.price,
+				inline: true,
+			},
+			{
+				name: 'Preparation',
+				value: `A **${drink.name}** is **${drink.ingredients.adelhyde}** Adelhyde, **${drink.ingredients.bronson_extract}** Bronson Extract, **${drink.ingredients.powdered_delta}** Powdered Delta, **${drink.ingredients.flangerine}** Flangerine ${drink.ingredients.karmotrine === 'optional' ? 'with *(optional)*' : `and **${drink.ingredients.karmotrine}**`} Karmotrine. All ${drink.aged ? `aged${drink.iced ? ', ' : ' and '}` : ''}${drink.iced ? 'on the rocks and ' : ''}${drink.blended ? 'blended' : 'mixed'}.`,
+			},
+		],
+		footer: { text: 'CALICOMP 1.1' }
+	}).setColor([255, 0, 255]);
+	return embed;
+}
+
 export function addCommands(cs: CommandSystem.System) {
 	let logger = cs.get('logger');
 
 	cs.addCommand(new CommandSystem.Command('valhalla', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		
 		if (params[0] === 'search') {
 			const foundDrinks: any[] = [];
@@ -30,7 +63,7 @@ export function addCommands(cs: CommandSystem.System) {
 			if (foundDrinks.length < 1) {
 				msg.channel.send(`Found no matches for \`${params[1]}\``);
 			} else if (foundDrinks.length === 1) {
-				msg.channel.send('', util.makeDrinkEmbed(foundDrinks[0]));
+				msg.channel.send('', makeDrinkEmbed(foundDrinks[0]));
 			} else {
 				let founddrinksstr = '\n';
 				foundDrinks.slice(0, 5).forEach((d) => {
@@ -110,7 +143,7 @@ export function addCommands(cs: CommandSystem.System) {
 						if (drink === undefined) {
 							editmsg.edit('Failed to make drink!');
 						} else {
-							editmsg.edit('Successfully made drink!' + (drinkBig ? ' (its big too, woah)' : ''), util.makeDrinkEmbed(drink));
+							editmsg.edit('Successfully made drink!' + (drinkBig ? ' (its big too, woah)' : ''), makeDrinkEmbed(drink));
 						}
 					}, blended ? 7000 : 3000);
 			});

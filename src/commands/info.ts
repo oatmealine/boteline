@@ -2,6 +2,7 @@ import * as Discord from 'discord.js';
 import * as os from 'os';
 import * as fs from 'fs';
 import * as util from '../lib/util';
+import * as format from '../lib/format';
 import * as CommandSystem from 'cumsystem';
 
 import * as si from 'systeminformation';
@@ -55,35 +56,35 @@ export function addCommands(cs: CommandSystem.System) {
 			.setTitle(`${cs.client.user.username} v${packageJson.version} stats`)
 			.setURL(packageJson.repository)
 			.setDescription(`Currently in ${cs.client.guilds.cache.size.toLocaleString()} servers, with ${cs.client.channels.cache.size.toLocaleString()} cached channels and ${cs.client.users.cache.size.toLocaleString()} cached users`)
-			.addField('Memory Usage', util.formatFileSize(process.memoryUsage().rss), true)
+			.addField('Memory Usage', format.formatFileSize(process.memoryUsage().rss), true)
 			.addField('CPU Usage', `Last second: **${util.roundNumber(cpuUsage1sec, 2)}%**
 Last 30 seconds: **${util.roundNumber(cpuUsage30sec, 2)}%**
 Last minute: **${util.roundNumber(cpuUsageMin, 2)}%**
 Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000), 2)}%**`, true)
-			.addField('Uptime', util.formatMiliseconds(process.uptime()), true));
+			.addField('Uptime', format.formatMiliseconds(process.uptime()), true));
 	})
 		.setCategory('core')
 		.addAlias('stats')
 		.setDescription('get some info and stats about the bot'));
 
 	cs.addCommand(new CommandSystem.Command('hoststats', (msg) => {
-		let memtotal = util.formatFileSize(os.totalmem());
-		let memused = util.formatFileSize(os.totalmem() - os.freemem());
-		let swaptotal = util.formatFileSize(systemInfo.mem.swaptotal);
-		let swapused = util.formatFileSize(systemInfo.mem.swapused);
+		let memtotal = format.formatFileSize(os.totalmem());
+		let memused = format.formatFileSize(os.totalmem() - os.freemem());
+		let swaptotal = format.formatFileSize(systemInfo.mem.swaptotal);
+		let swapused = format.formatFileSize(systemInfo.mem.swapused);
 
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Running on ${systemInfo.os.platform} - ${systemInfo.os.distro} (kernel version ${systemInfo.os.kernel}) (${systemInfo.os.arch}) ${systemInfo.os.release}`)
 			.setTitle(`Host's stats - ${systemInfo.os.hostname}`)
 			.setDescription('Stats for the bot\'s host')
-			.addField('Uptime', util.formatMiliseconds(os.uptime()), true)
+			.addField('Uptime', format.formatMiliseconds(os.uptime()), true)
 			.addField('BIOS', `${systemInfo.bios.vendor} ${systemInfo.bios.version}`, true)
 			.addField('Baseboard', `${systemInfo.baseboard.manufacturer} ${systemInfo.baseboard.model} v${systemInfo.baseboard.version}`, true)
 			.addField('Memory', `${memused}/${memtotal} used \`${util.progress(os.totalmem() - os.freemem(), os.totalmem())}\``)
 			.addField('Swap', `${swapused}/${swaptotal} used \`${util.progress(systemInfo.mem.swapused, systemInfo.mem.swaptotal)}\``)
 			.addField('CPU', `${systemInfo.cpu.manufacturer} ${systemInfo.cpu.brand} model ${systemInfo.cpu.model} @${systemInfo.cpu.speedmax}GHz (${systemInfo.cpu.cores} cores) \nUsage: ${cpuUsage}% \`${util.progress(cpuUsage, 100)}\``)
 			.addField('GPU', `${systemInfo.graphics.controllers[0].vendor} ${systemInfo.graphics.controllers[0].model} w/ ${systemInfo.graphics.controllers[0].vram}MB VRAM`)
-			.addField(`Disk(s) (${systemInfo.fsSize.length} mounted)`, systemInfo.diskLayout.filter(d => !(d.name === '' || d.device.startsWith('/dev/ram'))).map(d => `${d.vendor} ${d.type} - ${d.device || d.name}, ${util.formatFileSize(d.size)}`)));
+			.addField(`Disk(s) (${systemInfo.fsSize.length} mounted)`, systemInfo.diskLayout.filter(d => !(d.name === '' || d.device.startsWith('/dev/ram'))).map(d => `${d.vendor} ${d.type} - ${d.device || d.name}, ${format.formatFileSize(d.size)}`)));
 	})
 		.setCategory('core')
 		.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])

@@ -1,12 +1,83 @@
-import * as util from '../lib/util.js';
+import * as format from '../lib/format';
 import * as Discord from 'discord.js';
 import * as CommandSystem from 'cumsystem';
+const got = require('got');
 
 Discord; // fuck you ts
 
+let logger;
+
+const cache = {
+	'splatoon': {
+		timer: new Date(0),
+		data: {}
+	},
+	'salmon': {
+		timer: new Date(0),
+		data: {}
+	}
+};
+
+function checkSplatoon() : Promise<any> {
+	return new Promise(resolve => {
+		if (cache.splatoon !== undefined) {
+			if (cache.splatoon.timer.getHours() >= new Date().getHours() && new Date(cache.splatoon.timer.getTime()+1200000) >= new Date()) {
+				resolve(cache.splatoon);
+				return;
+			}
+		}
+
+		logger.debug('fetching splatoon2.ink data...');
+
+		got('https://splatoon2.ink/data/schedules.json', {
+			'user-agent': 'Boteline (oatmealine#1704)'
+		}).then(res => {
+			logger.debug('got code ' + res.statusCode);
+			if (res.statusCode === 200) {
+				logger.debug('done!');
+				cache.splatoon.data = JSON.parse(res.body);
+				cache.splatoon.timer = new Date();
+				resolve(cache.splatoon);
+			} else {
+				logger.warn('failed to fetch splatoon2.ink data, using potentially outdated data');
+				resolve(cache.splatoon);
+			}
+		});
+	});
+}
+
+function checkSalmon() : Promise<any> {
+	return new Promise(resolve => {
+		if (cache.salmon !== undefined) {
+			if (cache.salmon.timer.getHours() >= new Date().getHours() && new Date(cache.salmon.timer.getTime()+1200000) >= new Date()) {
+				resolve(cache.salmon);
+				return;
+			}
+		}
+
+		logger.debug('fetching splatoon2.ink data...');
+		got('https://splatoon2.ink/data/schedules.json', {
+			'user-agent': 'Boteline (oatmealine#1704)'
+		}).then(res => {
+			logger.debug('got code ' + res.statusCode);
+			if (res && res.statusCode === 200) {
+				logger.debug('done!');
+				cache.salmon.data = JSON.parse(res.body);
+				cache.salmon.timer = new Date();
+				resolve(cache.salmon);
+			} else {
+				logger.warn('failed to fetch splatoon2.ink data, using potentially outdated data');
+				resolve(cache.salmon);
+			}
+		});
+	});
+}
+
 export function addCommands(cs: CommandSystem.System) {
+	logger = cs.get('logger');
+
 	cs.addCommand(new CommandSystem.Command('splatoon', (msg) => {
-		util.checkSplatoon().then(obj => {
+		checkSplatoon().then(obj => {
 			let data = obj.data;
 
 			let timeLeft = Math.floor(data.league[0].end_time - Date.now() / 1000);
@@ -27,11 +98,11 @@ ${data.gachi[0].rule.name}`)
 					`${data.league[0].stage_a.name}, ${data.league[0].stage_b.name}
 ${data.league[0].rule.name}`)
 				.setColor('22FF22')
-				.setDescription(`${util.formatTime(new Date(data.league[0].start_time * 1000))} - ${util.formatTime(new Date(data.league[0].end_time * 1000))}
+				.setDescription(`${format.formatTime(new Date(data.league[0].start_time * 1000))} - ${format.formatTime(new Date(data.league[0].end_time * 1000))}
 ${Math.floor(timeLeft / 60 / 60) % 24}h ${Math.floor(timeLeft / 60) % 60}m ${timeLeft % 60}s left`)
 				.setURL('https://splatoon2.ink/')
 				.setImage('https://splatoon2.ink/assets/splatnet' + data.regular[0].stage_a.image)
-				.setFooter('Data last fetched ' + obj.timer.toDateString() + ', ' + util.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
+				.setFooter('Data last fetched ' + obj.timer.toDateString() + ', ' + format.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
 
 			msg.channel.send('', embed);
 		});
@@ -43,7 +114,7 @@ ${Math.floor(timeLeft / 60 / 60) % 24}h ${Math.floor(timeLeft / 60) % 60}m ${tim
 		.addClientPermission('EMBED_LINKS'));
 
 	cs.addCommand(new CommandSystem.Command('salmonrun', (msg) => {
-		util.checkSalmon().then(obj => {
+		checkSalmon().then(obj => {
 			let data = obj.data;
 
 			let timeLeftEnd = Math.floor(data.details[0].end_time - Date.now() / 1000);
@@ -65,7 +136,7 @@ ${Math.floor(timeLeft / 60 / 60) % 24}h ${Math.floor(timeLeft / 60) % 60}m ${tim
 ${timeLeftStart < 0 ? `${Math.floor(timeLeftEnd / 60 / 60) % 24}h ${Math.floor(timeLeftEnd / 60) % 60}m ${timeLeftEnd % 60}s left until end` : `${Math.floor(timeLeftStart / 60 / 60) % 24}h ${Math.floor(timeLeftStart / 60) % 60}m ${timeLeftStart % 60}s left until start`}`)
 				.setURL('https://splatoon2.ink/')
 				.setImage('https://splatoon2.ink/assets/splatnet' + data.details[0].stage.image)
-				.setFooter('Data last fetched ' + obj.timer.toDateString() + ', ' + util.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
+				.setFooter('Data last fetched ' + obj.timer.toDateString() + ', ' + format.formatTime(obj.timer) + ' - Data provided by splatoon2.ink');
 
 			msg.channel.send('', embed);
 		});

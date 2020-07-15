@@ -5,11 +5,9 @@ const bot = new Discord.Client({
 });
 
 import * as CommandSystem from 'cumsystem';
-
 import * as util from './lib/util.js';
-
+import * as format from './lib/format';
 import * as fs from 'fs';
-
 import * as winston from 'winston';
 
 // modules
@@ -32,7 +30,7 @@ const logger = winston.createLogger({
 	level: 'info',
 	format: winston.format.combine(
 		winston.format.timestamp(),
-		winston.format.printf(log => `${util.formatTime(new Date(log.timestamp))} | ${log.message}`)
+		winston.format.printf(log => `${format.formatTime(new Date(log.timestamp))} | ${log.message}`)
 	),
 	transports: [
 		new winston.transports.File({filename: 'boteline-error.log', level: 'error'}),
@@ -42,7 +40,7 @@ const logger = winston.createLogger({
 				winston.format.colorize(),
 				winston.format.timestamp(),
 				winston.format.printf(log => 
-					`${util.formatTime(new Date(log.timestamp))} - [${log.level}] ${log.message}`
+					`${format.formatTime(new Date(log.timestamp))} - [${log.level}] ${log.message}`
 				)
 			),
 			level: process.env.DEBUG === 'true' ? 'silly' : 'info'
@@ -79,8 +77,6 @@ const cs = new CommandSystem.System(bot, prefix);
 cs.set('userData', userData);
 cs.set('guildSettings', guildSettings);
 cs.set('logger', logger);
-
-util.setLogger(logger);
 
 commands.addCommands(cs);
 

@@ -2,7 +2,7 @@
 import * as CommandSystem from 'cumsystem';
 // eslint-disable-next-line no-unused-vars
 import * as Discord from 'discord.js';
-import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 
 const got = require('got');
 
@@ -36,11 +36,11 @@ export function addCommands(cs: CommandSystem.System) {
 		.setGuildOnly());
 
 	cs.addCommand(new CommandSystem.Command('pfp', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		let user: Discord.User;
 
 		if (params[0] !== undefined) {
-			user = util.parseUser(cs.client, params[0], msg.guild);
+			user = discordutil.parseUser(cs.client, params[0], msg.guild);
 		} else {
 			user = msg.author;
 		}

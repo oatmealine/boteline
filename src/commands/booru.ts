@@ -19,7 +19,7 @@ function getSites() {
 
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.Command('boorufetch', msg => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 
 		let tags = params.slice(1);
 		let sites = getSites();

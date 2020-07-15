@@ -1,4 +1,4 @@
-import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 import * as CommandSystem from 'cumsystem';
 // eslint-disable-next-line no-unused-vars
 import * as Discord from 'discord.js';
@@ -25,7 +25,7 @@ function handleReactions(reaction, user) {
 			let channel = reaction.message.guild.channels.cache.find(ch => ch.id === starboardSettings.channel);
 
 			if (channel) {
-				let embed = util.starboardEmbed(reaction.message, starboardSettings, false, reaction);
+				let embed = discordutil.starboardEmbed(reaction.message, starboardSettings, false, reaction);
 
 				if(reaction.message.attachments) {
 					let image = reaction.message.attachments.filter(at => at.width !== null).first();
@@ -52,7 +52,7 @@ export function addCommands(cs: CommandSystem.System) {
 	guildSettings = cs.get('guildSettings');
 
 	cs.addCommand(new CommandSystem.Command('starboard', (msg : Discord.Message) => {
-		let params = util.getParams(msg);
+		let params = discordutil.getParams(msg);
 
 		let channel = msg.guild.channels.cache.find(c => c.id === params[0].replace('<#','').replace('>',''));
 		if(!channel) {
@@ -94,7 +94,7 @@ export function addCommands(cs: CommandSystem.System) {
 			let starboardSettings = guildSettings[msg.guild.id].starboard;
 
 			if (starboardBinds[msg.id]) {
-				let embed = util.starboardEmbed(msg, starboardSettings, true);
+				let embed = discordutil.starboardEmbed(msg, starboardSettings, true);
 
 				starboardBinds[msg.id].edit('', {embed: embed});
 			}

@@ -1,4 +1,4 @@
-import * as util from '../lib/util.js';
+import * as discordutil from '../lib/discord';
 import * as Discord from 'discord.js';
 import * as CommandSystem from 'cumsystem';
 
@@ -8,8 +8,8 @@ export function addCommands(cs: CommandSystem.System) {
 	let userData = cs.get('userData');
 
 	cs.addCommand(new CommandSystem.SimpleCommand('ban', (msg) => {
-		const params = util.getParams(msg);
-		const banMember = msg.guild.members.cache.get(util.parseUser(cs.client, params[0], msg.guild).id);
+		const params = discordutil.getParams(msg);
+		const banMember = msg.guild.members.cache.get(discordutil.parseUser(cs.client, params[0], msg.guild).id);
 
 		if (banMember !== undefined) {
 			if (banMember.id === msg.author.id) {
@@ -38,7 +38,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 	cs.addCommand(new CommandSystem.SimpleCommand('kick', (message) => {
 		const params = message.content.split(' ').slice(1, message.content.length);
-		const banMember = message.guild.members.cache.get(util.parseUser(cs.client, params[0], message.guild).id);
+		const banMember = message.guild.members.cache.get(discordutil.parseUser(cs.client, params[0], message.guild).id);
 
 		if (banMember !== undefined) {
 			if (banMember.id === message.member.id) {
@@ -66,7 +66,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setGuildOnly());
 	
 	cs.addCommand(new CommandSystem.SimpleCommand('blacklistuser', msg => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		let blacklistcmds = [];
 
 		if (params[0] === process.env.OWNER) return 'you can\'t blacklist the owner!';

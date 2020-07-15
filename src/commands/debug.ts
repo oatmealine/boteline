@@ -1,7 +1,7 @@
 import * as CommandSystem from 'cumsystem';
 import * as util from '../lib/util';
 import {exec} from 'child_process';
-
+import * as Paginator from '../lib/paginator';
 
 // hardcoded, but cant do anything about it
 let pm2;
@@ -32,7 +32,7 @@ export function addCommands(cs: CommandSystem.System) {
 				return msg.channel.send('Bot token found in result, aborting');
 			}
 
-			return util.autoSplit(msg, evaled, 1900, '```xl\n', '```');
+			return paginator.autoSplit(msg, evaled, 1900, '```xl\n', '```');
 		} catch (err) {
 			return msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
 		}
@@ -104,7 +104,7 @@ export function addCommands(cs: CommandSystem.System) {
 				msg.react('❌');
 			} else {
 				msg.react('☑');
-				util.autoSplit(msg, stdout, 1900, '```xl\n', '```');
+				Paginator.autoSplit(msg, stdout, 1900, '```xl\n', '```');
 			}
 		});
 	})
@@ -114,7 +114,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addAlias('sexec'));
 
 	cs.addCommand(new CommandSystem.Command('paginatortest', (msg) => {
-		let paginator = new util.Paginator((count) => {
+		let paginator = new Paginator.Paginator((count) => {
 			return `${count}/${paginator.limit}!!!! Poggers`;
 		}, msg.author, [
 			{emote: '🖼️', callback: (count) => {paginator.end(); return count;}},

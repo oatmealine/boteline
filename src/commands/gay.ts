@@ -1,7 +1,7 @@
-import * as util from '../lib/util.js';
 import * as Discord from 'discord.js';
 import * as CommandSystem from 'cumsystem';
 import { createCanvas, loadImage } from 'canvas';
+import * as discordutil from '../lib/discord';
 
 Discord;
 
@@ -20,12 +20,12 @@ class CanvasGradientApplyCommand extends CommandSystem.Command {
 
 		this.cfunc = (msg: Discord.Message) => {
 			msg.channel.startTyping();
-			let params = util.getParams(msg);
+			let params = discordutil.getParams(msg);
 
 			const canvas = createCanvas(300, 390);
 			const ctx = canvas.getContext('2d');
 
-			let user = params.length === 0 ? msg.author : util.parseUser(bot, params[0], msg.guild);
+			let user = params.length === 0 ? msg.author : discordutil.parseUser(bot, params[0], msg.guild);
 
 			if (user === null) {
 				msg.channel.send('User not found');

@@ -2,6 +2,7 @@ import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as parse5 from 'parse5';
 import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 const got = require('got');
 
 export function addCommands(cs: CommandSystem.System) {
@@ -38,7 +39,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDescription('ква'));
 		
 	cs.addCommand(new CommandSystem.Command('eat', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		
 		const eat = cs.client.emojis.cache.get('612360473928663040').toString();
 		const hamger1 = cs.client.emojis.cache.get('612360474293567500').toString();
@@ -73,7 +74,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addClientPermission('USE_EXTERNAL_EMOJIS'));
 		
 	cs.addCommand(new CommandSystem.SimpleCommand('rate', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		let thingToRate = params.join(' ').toLowerCase().split(' ').join('');
 		
 		if (thingToRate.startsWith('me') || thingToRate.startsWith('my')) {
@@ -94,7 +95,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addExample('me'));
 		
 	cs.addCommand(new CommandSystem.SimpleCommand('pick', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		
 		let thingToRate1: string = params[0].toLowerCase();
 		let thingToRate2: string = params[1].toLowerCase();
@@ -122,7 +123,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addExample('njs python'));
 		
 	cs.addCommand(new CommandSystem.SimpleCommand('ask', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		const thingToRate = params.join(' ').toLowerCase();
 		const options = ['ohh fuck yea', 'yes', 'maybe', 'no', 'god no'];
 		let rating = Math.round((1 - util.normalDistribution((Math.abs(util.hashCode(thingToRate)) / 10) % 2 - 1)) / 2 * 8);
@@ -137,7 +138,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addExample('is this a good example'));
 
 	cs.addCommand(new CommandSystem.SimpleCommand('isgay', (msg) => {
-		let params = util.getParams(msg);
+		let params = discordutil.getParams(msg);
 		let ratingThing = params.join(' ').toLowerCase();
 
 		const transOverride = ['duck', 'oatmealine', 'oat', 'jill', 'ladizi', 'lavie', 'arceus', 'leah', 'skye'];

@@ -2,7 +2,7 @@ import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as ffmpeg from 'fluent-ffmpeg';
 import * as fs from 'fs';
-import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 import * as bufferSplit from 'buffer-split';
 import * as os from 'os';
 const got = require('got');
@@ -30,8 +30,8 @@ class FFMpegCommand extends CommandSystem.Command {
 		this.format = format;
 
 		this.cfunc = async (msg) => {
-			const params = util.getParams(msg);
-			util.fetchAttachment(msg, videoFormats)
+			const params = discordutil.getParams(msg);
+			discordutil.fetchAttachment(msg, videoFormats)
 				.then(videoAttach => {
 					let progMessage: Discord.Message;
 					let lastEdit = 0; // to avoid ratelimiting
@@ -122,7 +122,7 @@ export function addCommands(cs: CommandSystem.System) {
 	logger = cs.get('logger');
 
 	cs.addCommand(new FFMpegCommand('compress', (command, msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		if (!params[0]) { params[0] = '20'; }
 		command
 			.outputOptions([`-b:v ${Math.abs(Number(params[0]))}k`, `-b:a ${Math.abs(Number(params[0]))}k`, '-c:a aac'])
@@ -137,7 +137,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setUserCooldown(5000));
 
 	cs.addCommand(new FFMpegCommand('vibrato', (command, msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		if (!params[0]) { params[0] = '10'; }
 		command.audioFilters(`vibrato=${params[0]}`);
 	})
@@ -204,7 +204,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addClientPermission('ATTACH_FILES'));
 
 	cs.addCommand(new CommandSystem.Command('datamosh', async (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 
 		let intensity = 0.2;
 		if (params[0]) intensity = Number(params[0]);
@@ -212,7 +212,7 @@ export function addCommands(cs: CommandSystem.System) {
 		const progMessage = await msg.channel.send('downloading video...');
 		let lastEdit = 0;
 
-		util.fetchAttachment(msg, videoFormats)
+		discordutil.fetchAttachment(msg, videoFormats)
 			.then(async (videoAttach) => {
 				let tempFileIn = temp + '/' + genName() + '.avi';
 

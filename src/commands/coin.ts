@@ -1,6 +1,7 @@
 import * as CommandSystem from 'cumsystem';
 import * as fs from 'fs';
 import * as Discord from 'discord.js';
+import * as discordutil from '../lib/discord';
 import * as util from '../lib/util';
 
 const coinValue = JSON.parse(util.readIfExists('./data/coinvalue.json', { encoding: 'utf8' }, '{"value": 3, "direction": "up", "strength": 0.2, "speed": 2, "remaining": 4, "pastvalues": []}'));
@@ -260,7 +261,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 	cs.addCommand(new CommandSystem.SimpleCommand('cbuy', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 		let user = userData[msg.author.id].invest;
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		let invmoney = Number(params[0]) * coinValue.value;
 
 		if (user.balance <= 0) return 'you have no money in your account! create a new one with `cinit` (bankrupt fuck)';
@@ -290,7 +291,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 
 	cs.addCommand(new CommandSystem.SimpleCommand('csell', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		let user = userData[msg.author.id].invest;
 
 		if (user.invested === 0) return 'you havent bought any coins yet!';
@@ -314,7 +315,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 	cs.addCommand(new CommandSystem.SimpleCommand('cbuys', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
 		let user = userData[msg.author.id].invest;
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		let invmoney = Number(params[0]) * schlattCoinValue.value;
 
 		if (user.balance <= 0) return 'you have no money in your account! create a new one with `cinit` (bankrupt fuck)';
@@ -348,7 +349,7 @@ The values should be updated in ${util.roundNumber((110000 - (Date.now() - lastC
 
 	cs.addCommand(new CommandSystem.SimpleCommand('csells', msg => {
 		if (!userData[msg.author.id] || !userData[msg.author.id].invest) return 'you dont have an account! create a new one with `cinit`';
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		let user = userData[msg.author.id].invest;
 
 		if (user.investeds === 0) return 'you havent bought any coins yet!';

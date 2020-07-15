@@ -1,6 +1,7 @@
 import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 
 const prefix = process.env.PREFIX;
 let application: Discord.ClientApplication;
@@ -60,7 +61,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 
 	cs.addCommand(new CommandSystem.SimpleCommand('prefix', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		if (!params[0]) { params[0] = prefix; }
 
 		params[0] = params[0].toLowerCase();

@@ -1,10 +1,11 @@
 import * as CommandSystem from 'cumsystem';
 import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 import * as minesweeper from 'minesweeper';
 
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.SimpleCommand('minesweeper', (msg) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 		const board = new minesweeper.Board(minesweeper.generateMineArray({
 			rows: Math.min(100, Number(params[0])),
 			cols: Math.min(100, Number(params[1])),

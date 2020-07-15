@@ -1,5 +1,6 @@
 import * as CommandSystem from 'cumsystem';
 import * as util from '../lib/util';
+import * as Paginator from '../lib/paginator';
 import * as Discord from 'discord.js';
 const got = require('got');
 
@@ -11,7 +12,7 @@ export function addCommands(cs: CommandSystem.System) {
 		
 		if (data.list.length === 0) return msg.channel.send('that word doesnt exist!');
 
-		let paginator = new util.Paginator((count) => {
+		let paginator = new Paginator.Paginator((count) => {
 			let json = data.list[count];
 
 			if (json.example === '') {json.example = '(no example given)';}

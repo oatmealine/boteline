@@ -1,6 +1,7 @@
 import YandexTranslate from 'yet-another-yandex-translate';
 import * as Discord from 'discord.js';
 import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 import * as CommandSystem from 'cumsystem';
 
 const yandex_langs = { 'Afrikaans': 'af', 'Albanian': 'sq', 'Amharic': 'am', 'Arabic': 'ar', 'Armenian': 'hy', 'Azerbaijan': 'az', 'Bashkir': 'ba', 'Basque': 'eu', 'Belarusian': 'be', 'Bengali': 'bn', 'Bosnian': 'bs', 'Bulgarian': 'bg', 'Burmese': 'my', 'Catalan': 'ca', 'Cebuano': 'ceb', 'Chinese': 'zh', 'Croatian': 'hr', 'Czech': 'cs', 'Danish': 'da', 'Dutch': 'nl', 'English': 'en', 'Esperanto': 'eo', 'Estonian': 'et', 'Finnish': 'fi', 'French': 'fr', 'Galician': 'gl', 'Georgian': 'ka', 'German': 'de', 'Greek': 'el', 'Gujarati': 'gu', 'Haitian (Creole)': 'ht', 'Hebrew': 'he', 'Hill Mari': 'mrj', 'Hindi': 'hi', 'Hungarian': 'hu', 'Icelandic': 'is', 'Indonesian': 'id', 'Irish': 'ga', 'Italian': 'it', 'Japanese': 'ja', 'Javanese': 'jv', 'Kannada': 'kn', 'Kazakh': 'kk', 'Khmer': 'km', 'Korean': 'ko', 'Kyrgyz': 'ky', 'Laotian': 'lo', 'Latin': 'la', 'Latvian': 'lv', 'Lithuanian': 'lt', 'Luxembourgish': 'lb', 'Macedonian': 'mk', 'Malagasy': 'mg', 'Malay': 'ms', 'Malayalam': 'ml', 'Maltese': 'mt', 'Maori': 'mi', 'Marathi': 'mr', 'Mari': 'mhr', 'Mongolian': 'mn', 'Nepali': 'ne', 'Norwegian': 'no', 'Papiamento': 'pap', 'Persian': 'fa', 'Polish': 'pl', 'Portuguese': 'pt', 'Punjabi': 'pa', 'Romanian': 'ro', 'Russian': 'ru', 'Scottish': 'gd', 'Serbian': 'sr', 'Sinhala': 'si', 'Slovakian': 'sk', 'Slovenian': 'sl', 'Spanish': 'es', 'Sundanese': 'su', 'Swahili': 'sw', 'Swedish': 'sv', 'Tagalog': 'tl', 'Tajik': 'tg', 'Tamil': 'ta', 'Tatar': 'tt', 'Telugu': 'te', 'Thai': 'th', 'Turkish': 'tr', 'Udmurt': 'udm', 'Ukrainian': 'uk', 'Urdu': 'ur', 'Uzbek': 'uz', 'Vietnamese': 'vi', 'Welsh': 'cy', 'Xhosa': 'xh', 'Yiddish': 'yi' };
@@ -25,7 +26,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 	if (yt !== null) {
 		cs.addCommand(new CommandSystem.Command('autotranslate', async (msg: Discord.Message) => {
-			let params = util.getParams(msg);
+			let params = discordutil.getParams(msg);
 			let lang = params[0];
 			params.shift();
 
@@ -60,7 +61,7 @@ export function addCommands(cs: CommandSystem.System) {
 			.setUserCooldown(1000));
 
 		cs.addCommand(new CommandSystem.Command('translate', (msg: Discord.Message) => {
-			let params = util.getParams(msg);
+			let params = discordutil.getParams(msg);
 			let langfrom = params[0];
 			let langto = params[1];
 			params.splice(0, 2);
@@ -93,7 +94,7 @@ export function addCommands(cs: CommandSystem.System) {
 			.setUserCooldown(1000));
 
 		cs.addCommand(new CommandSystem.Command('masstranslate', async (msg: Discord.Message) => {
-			let params = util.getParams(msg);
+			let params = discordutil.getParams(msg);
 			let times = Number(params[0]);
 
 			if (times > 25) {

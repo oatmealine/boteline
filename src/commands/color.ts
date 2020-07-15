@@ -1,4 +1,4 @@
-import * as util from '../lib/util';
+import * as discordutil from '../lib/discord';
 import * as Discord from 'discord.js';
 import * as CommandSystem from 'cumsystem';
 
@@ -6,7 +6,7 @@ Discord; // fuck you ts
 
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.SimpleCommand('colorrole', (msg : Discord.Message) => {
-		const params = util.getParams(msg);
+		const params = discordutil.getParams(msg);
 
 		const hexRegex = /^#[0-9a-f]{3,6}$/i;
 		if (!hexRegex.test(params[0])) return 'not valid hex!';

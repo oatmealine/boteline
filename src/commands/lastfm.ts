@@ -2,6 +2,7 @@ import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as util from '../lib/util';
 import * as timeago from 'timeago.js';
+import * as Paginator from '../lib/paginator';
 const got = require('got');
 
 const maxRecentPages = 10;
@@ -64,7 +65,7 @@ export function addCommands(cs: CommandSystem.System) {
 		let thumbnail;
 		if (playingTrack) thumbnail = playingTrack.image.pop()['#text'];
 
-		let paginator = new util.Paginator((page) => {
+		let paginator = new Paginator.Paginator((page) => {
 			let embed = new Discord.MessageEmbed()
 				.setTitle('Recent scrobbles')
 				.setColor('#63de54')
