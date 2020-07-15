@@ -23,10 +23,9 @@ import * as utilities from './utilities';
 import * as valhalla from './valhalla';
 import * as video from './video';
 import * as weather from './weather';
-import * as wiki from './wiki';
 
 export function addCommands(cs: System) {
-	let modules = [booru, coin, color, convert, core, corona, debug, fun, gay, info, lastfm, minecraft, minesweeper, moderation, splatoon, starboard, translate, urban, utilities, valhalla, video, weather, wiki];
+	let modules = [booru, coin, color, convert, core, corona, debug, fun, gay, info, lastfm, minecraft, minesweeper, moderation, splatoon, starboard, translate, urban, utilities, valhalla, video, weather];
 
 	modules.forEach(m => {
 		m.addCommands(cs);
