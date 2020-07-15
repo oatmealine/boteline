@@ -121,4 +121,17 @@ export function addCommands(cs: CommandSystem.System) {
 		.setOwnerOnly()
 		.setDescription('Execute a command prompt command')
 		.addAlias('sexec'));
+
+	cs.addCommand(new CommandSystem.Command('paginatortest', (msg) => {
+		let paginator = new util.Paginator((count) => {
+			return `${count}/${paginator.limit}!!!! Poggers`;
+		}, msg.author, [
+			{emote: '🖼️', callback: (count) => {paginator.end(); return count;}},
+			{emote: '🎐', callback: () => 'Yeah!! penis'}
+		]);
+
+		paginator.setLimit(5);
+		paginator.start(msg.channel);
+	})
+		.setHidden());
 }
