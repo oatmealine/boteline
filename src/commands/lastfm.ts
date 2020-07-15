@@ -61,7 +61,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 	cs.addCommand(new CommandSystem.Command('recent', async (msg, content) => {
 		try {
-			let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=${maxRecentPages * 10 + 1}&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
+			let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=${maxRecentPages * 10}&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
 			let data = JSON.parse(res.body);
 
 			let playingTrack = data.recenttracks.track.find(t => t['@attr'] && t['@attr'].nowplaying === 'true');
