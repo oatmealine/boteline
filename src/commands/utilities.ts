@@ -2,6 +2,7 @@
 import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as discordutil from '../lib/discord';
+import { Paginator } from '../lib/paginator';
 
 const got = require('got');
 
@@ -198,43 +199,38 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDisplayUsage('(code)')
 		.setDescription('a limited interpreter of [78](https://github.com/oatmealine/78)'));
 
-	cs.addCommand(new CommandSystem.SimpleCommand('define', async (msg, content) => {
+	cs.addCommand(new CommandSystem.Command('define', async (msg, content) => {
 		try {
-			let def;
+			let res = await got(`https://api.wordnik.com/v4/word.json/${encodeURI(content)}/definitions?limit=50&includeRelated=false&sourceDictionaries=all&useCanonical=true&includeTags=false&api_key=${process.env.WORDNIK_KEY}`);
+			let defsObj = JSON.parse(res.body);
 
-			if (content === '') {
-				let defs = await got(`https://api.wordnik.com/v4/words.json/wordOfTheDay?api_key=${process.env.WORDNIK_KEY}`, {'user-agent': userAgent});
-				def = JSON.parse(defs.body);
+			let defs = defsObj.filter(d => d.text).sort((a, b) => b.score - a.score);
 
-				def.text = def.definitions[0].text;
-				def.partOfSpeech = def.definitions[0].partOfSpeech;
-				if (!def.exampleUses) def.exampleUses = [];
-			} else {
-				let defs = await got(`https://api.wordnik.com/v4/word.json/${encodeURI(content)}/definitions?limit=200&includeRelated=false&sourceDictionaries=all&useCanonical=true&includeTags=false&api_key=${process.env.WORDNIK_KEY}`);
-				let defsObj = JSON.parse(defs.body);
+			let paginator = new Paginator(count => {
+				let def = defs[count];
+				let embed = new Discord.MessageEmbed()
+					.setTitle(`${def.word} *${def.partOfSpeech || 'unknown'}*`)
+					.setURL(def.attributionUrl)
+					.setDescription(def.text)
+					.setColor(brandColor)
+					.setFooter(`${def.attributionText} | ${count}/${paginator.limit}`);
+	
+				if (def.exampleUses.length > 0)
+					embed.addField('Examples', def.exampleUses.map(e => '> ' + e.text).join('\n'));
 
-				def = defsObj.filter(d => d.text).sort(() => Math.random() - 0.5).sort((a, b) => b.score - a.score)[0];
-			}
-
-			let embed = new Discord.MessageEmbed()
-				.setTitle(`${def.word} *${def.partOfSpeech}*`)
-				.setURL(def.attributionUrl)
-				.setDescription(def.text)
-				.setColor(brandColor)
-				.setFooter(def.attributionText);
-
-			if (def.exampleUses.length > 0)
-				embed.addField('Examples', def.exampleUses.map(e => '> ' + e.text).join('\n'));
-
-			return embed;
+				return embed;
+			}, msg.author);
+			paginator.setLimit(defs.length);
+			paginator.start(msg.channel);
 		} catch(err) {
-			return `Error: \`${err}\``;
+			msg.channel.send(`Error: \`${err}\``);
 		}
 	})
 		.setCategory('dictionary')
+		.addAlias('def')
 		.setDescription('get the definition of a word')
-		.setUsage('[string]')
-		.setDisplayUsage('[word]'));
+		.setUsage('(string)')
+		.setDisplayUsage('(word)'));
 
 	cs.addCommand(new CommandSystem.SimpleCommand('pronounce', async (msg, content) => {
 		try {
