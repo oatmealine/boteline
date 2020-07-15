@@ -1,6 +1,7 @@
 import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
 import * as util from '../lib/util';
+import * as format from '../lib/format';
 import * as discordutil from '../lib/discord';
 
 const prefix = process.env.PREFIX;
@@ -94,4 +95,79 @@ export function addCommands(cs: CommandSystem.System) {
 		.setCategory('core')
 		.setDescription('get the bot\'s invite')
 		.addAlias('invitelink'));
+
+	cs.commands = cs.commands.filter(c => c.name !== 'help'); // remove help
+
+	cs.addCommand(new CommandSystem.SimpleCommand('help', (message) => {
+		const params = message.content.split(' ');
+
+		if (params[1]) {
+			let command: CommandSystem.Command;
+
+			cs.commands.forEach(cmd => {
+				if (command) { return; }
+
+				if (cmd.name === params[1] || cmd.aliases.includes(params[1])) {
+					command = cmd;
+				}
+			});
+
+			if (command) {
+				let embed = new Discord.MessageEmbed()
+					.setTitle(`**${format.grammar(command.name)}** (${format.grammar(command.category)})`)
+					.addField('Usage', cs.prefix + command.name + ' ' + command.displayUsage)
+					.setDescription(command.description)
+					.setColor(Math.floor(Math.random() * 16777215));
+
+				let commandExamplesPatched = command.examples.map(v => cs.prefix + command.name + ' ' + v);
+
+				if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + commandExamplesPatched.join('`,\n`') + '`'); }
+				if (command.aliases.length !== 0) { embed = embed.addField('Aliases', '`' + command.aliases.join('`, `') + '`'); }
+
+				return {embed};
+			} else {
+				let categoryCommands: CommandSystem.Command[] = cs.commands.filter(c => c.category === params[1].toLowerCase());
+
+				if (categoryCommands.length === 0) return `Command or category \`${params[1]}\` not found!`;
+
+				const embed = new Discord.MessageEmbed()
+					.setTitle(`**${format.grammar(params[1].toLowerCase())}** [${categoryCommands.length}]`)
+					.setColor('#8663de');
+
+				embed.addField('Commands', categoryCommands.map(c => c.name).join('\n'));
+
+				return {embed};
+			}
+		} else {
+			const embed = new Discord.MessageEmbed()
+				.setTitle('**All Commands**')
+				.setColor(Math.floor(Math.random() * 16777215))
+				.setFooter('Do help (category) to get all commands for a category!');
+
+			let categorizedCommands: any = {};
+
+			cs.commands.forEach(command => {
+				if (!command.hidden) {
+					if (!categorizedCommands[command.category]) categorizedCommands[command.category] = [];
+					categorizedCommands[command.category].push(command);
+				}
+			});
+
+			Object.keys(categorizedCommands).forEach(cat => {
+				let commands = categorizedCommands[cat];
+
+				if (commands.length !== 0)
+					embed.addField(`${format.grammar(cat)} [${commands.length}]`,
+						`\`${commands.map((c: CommandSystem.Command) => c.name.toLowerCase()).join('`, `')}\``);
+			});
+
+			return {embed};
+		}
+	})
+		.setCategory('core')
+		.setUsage('[string]')
+		.setIgnorePrefix()
+		.addAlias('cmds')
+		.addClientPermission('EMBED_LINKS')
+		.setDescription('see commands, or check out a comnmand in detail'));
 }

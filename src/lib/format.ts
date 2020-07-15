@@ -102,3 +102,8 @@ export function formatDate(date : Date) : string {
 
 	return `${day}/${month+1}/${year} ${formatTime(date)}`;
 }
+
+export function grammar(str: string) : string {
+	const newstring = str.slice(1, str.length);
+	return str[0].toUpperCase() + newstring;
+}
