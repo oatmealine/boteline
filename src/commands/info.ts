@@ -109,5 +109,5 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 		.addAlias('dependencies')
 		.addAlias('depends')
 		.addClientPermission('EMBED_LINKS')
-		.setDescription('list the dependencies boteline uses, and their versions'));
+		.setDescription('list the dependencies the bot uses, and their versions'));
 }

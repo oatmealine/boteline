@@ -5,14 +5,16 @@ import * as CommandSystem from 'cumsystem';
 Discord; // fuck you ts
 
 export function addCommands(cs: CommandSystem.System) {
+	let botNameCode = cs.get('botNameCode');
+
 	cs.addCommand(new CommandSystem.SimpleCommand('colorrole', (msg : Discord.Message) => {
 		const params = discordutil.getParams(msg);
 
 		const hexRegex = /^#[0-9a-f]{3,6}$/i;
 		if (!hexRegex.test(params[0])) return 'not valid hex!';
 
-		let colorRole = msg.guild.roles.cache.find(r => r.name === 'boteline.' + params[0]);
-		let userColorRole = msg.member.roles.cache.find(r => r.name.startsWith('boteline.'));
+		let colorRole = msg.guild.roles.cache.find(r => r.name === `${botNameCode}.` + params[0]);
+		let userColorRole = msg.member.roles.cache.find(r => r.name.startsWith(`${botNameCode}.`));
 
 		if (colorRole && userColorRole && colorRole.id === userColorRole.id) return 'you already have this same color role!';
 
@@ -35,7 +37,7 @@ export function addCommands(cs: CommandSystem.System) {
 		} else {
 			msg.guild.roles.create({
 				data: {
-					name: 'boteline.' + params[0],
+					name: `${botNameCode}.` + params[0],
 					color: params[0],
 					position: 1
 				}

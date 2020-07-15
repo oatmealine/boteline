@@ -85,7 +85,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setCategory('core')
 		.addAlias('setprefix')
 		.addAlias('customprefix')
-		.setDescription('set a custom prefix for boteline')
+		.setDescription('set a custom prefix for the bot to use')
 		.setUsage('[string]')
 		.addUserPermission('MANAGE_GUILD')
 		.setGuildOnly());

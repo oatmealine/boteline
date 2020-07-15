@@ -3,9 +3,15 @@ import * as Discord from 'discord.js';
 import * as parse5 from 'parse5';
 import * as util from '../lib/util';
 import * as discordutil from '../lib/discord';
+import * as fs from 'fs';
 const got = require('got');
 
+const packageJson = JSON.parse(fs.readFileSync('./package.json', { encoding: 'utf8' }));
+
 export function addCommands(cs: CommandSystem.System) {
+	let brandColor = cs.get('brandColor');
+	let botName = cs.get('botName');
+
 	cs.addCommand(new CommandSystem.Command('robloxad', async (msg) => {
 		let url = 'https://www.roblox.com/user-sponsorship/' + (Math.floor(Math.random() * 3) + 1);
 		let document = await got(url);
@@ -20,6 +26,7 @@ export function addCommands(cs: CommandSystem.System) {
 		let embed = new Discord.MessageEmbed()
 			.setTitle(attrs[1].value)
 			.setURL(link)
+			.setColor(brandColor)
 			.setImage(attrs[0].value)
 			.setDescription(`ads fetched from [here](${url})`);
 
@@ -211,7 +218,7 @@ export function addCommands(cs: CommandSystem.System) {
 
 		let params = content.split(' ');
 
-		let userAgent = `${msg.client.user.username + '#' + msg.client.user.discriminator} https://github.com/oatmealine/boteline (Command ran by ${msg.author.username}#${msg.author.discriminator}${params[4] ? `. They said: "${params.slice(4).join(' ')}"` : ''})`;
+		let userAgent = `${msg.client.user.username + '#' + msg.client.user.discriminator} ${packageJson.repository} (Command ran by ${msg.author.username}#${msg.author.discriminator}${params[4] ? `. They said: "${params.slice(4).join(' ')}"` : ''})`;
 
 		await got(`https://soulja-boy-told.me/light?r=${params[0]}&g=${params[1]}&b=${params[2]}&bri=${params[3]}`, {headers: {'user-agent': userAgent}});
 		
@@ -244,7 +251,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDisplayUsage('(r) (g) (b) (brightness) [comment]'));
 
 	cs.addCommand(new CommandSystem.Command('jok', (msg) => {
-		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': 'https://github.com/oatmealine/boteline/'}}).then(res => {
+		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': `${botName} ${packageJson.repository}`}}).then(res => {
 			let joke = JSON.parse(res.body);
 		 
 			let jokeParts = joke.joke.split(/[?.!]/);
@@ -255,7 +262,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setCategory('fun'));
 
 	cs.addCommand(new CommandSystem.Command('oke', (msg) => {
-		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': 'https://github.com/oatmealine/boteline/'}}).then(res => {
+		got('https://icanhazdadjoke.com/', {headers: {'Accept': 'application/json', 'user-agent': `${botName} ${packageJson.repository}`}}).then(res => {
 			let joke = JSON.parse(res.body);
 	 
 			let jokeParts = joke.joke.split(/[?.!]/);
