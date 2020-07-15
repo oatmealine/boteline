@@ -608,7 +608,16 @@ export function autoSplit(message: Discord.Message, content: string, amt = 1024,
 		paginator.setLimit(Math.ceil(content.length / amt));
 		paginator.start(message.channel);
 	} else {
-		message.channel.send(startWith + content + endWith);
+		message.channel.send(startWith + content + endWith).then(m => {
+			m.react('❌');
+			m.createReactionCollector((e, u) => e.emoji.name === '❌' && u.id === message.author.id, {time: 15000})
+				.on('collect', () => {
+					m.delete();
+				})
+				.on('end', () => {
+					m.reactions.cache.forEach(r => r.users.remove());
+				});
+		});
 	}
 }
 
