@@ -16,7 +16,7 @@ try {
 }
 
 export function addCommands(cs: CommandSystem.System) {
-	cs.addCommand(new CommandSystem.Command('eval', (msg, content) => {
+	cs.addCommand(new CommandSystem.Command('eval', async (msg, content) => {
 		try {
 			if (content.startsWith('```')) content = content.split('\n').slice(1, -1).join('\n');
 
@@ -32,8 +32,16 @@ export function addCommands(cs: CommandSystem.System) {
 				return msg.channel.send('Bot token found in result, aborting');
 			}
 
-			if (msg.content.startsWith(cs.prefix + 'v')) msg.channel.send('```xl\n' + util.shortenStr(evaled, 1500) + '\n```');
-			return msg.react('☑');
+			let message = await msg.channel.send('```xl\n' + util.shortenStr(evaled, 1500) + '\n```');
+			await message.react('❌');
+
+			return message.createReactionCollector((r, u) => r.emoji.name === '❌' && u.id === msg.author.id, {time: 30000})
+				.on('collect', () => {
+					message.delete();
+				})
+				.on('end', () => {
+					message.reactions.removeAll();
+				});
 		} catch (err) {
 			return msg.channel.send(`:warning: \`ERROR\` \`\`\`xl\n${err}\n\`\`\``);
 		}
@@ -42,8 +50,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.setOwnerOnly()
 		.setUsage('(string)')
 		.setDisplayUsage('(code)')
-		.setDescription('Execute JS code')
-		.addAliases(['eval', 'vdebug', 'veval']));
+		.setDescription('Execute JS code'));
 		
 	
 	if (pm2 !== null) {
