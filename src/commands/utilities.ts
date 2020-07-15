@@ -268,5 +268,9 @@ export function addCommands(cs: CommandSystem.System) {
 		} else {
 			return shadertoyEmbed(data.Results[0]);
 		}
-	}));
+	})
+		.setUsage('(string)')
+		.setDisplayUsage('(search)')
+		.setGlobalCooldown(1000)
+		.setCategory('utilities'));
 }
