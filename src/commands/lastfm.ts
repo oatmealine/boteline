@@ -4,6 +4,8 @@ import * as util from '../lib/util';
 import * as timeago from 'timeago.js';
 const got = require('got');
 
+const maxRecentPages = 10;
+
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.SimpleCommand('nowplaying', async (msg, content) => {
 		let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=1&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
@@ -48,8 +50,8 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDisplayUsage('(username)')
 		.setCategory('last.fm'));
 
-	cs.addCommand(new CommandSystem.SimpleCommand('recent', async (msg, content) => {
-		let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=11&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
+	cs.addCommand(new CommandSystem.Command('recent', async (msg, content) => {
+		let res = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&limit=${maxRecentPages * 10 + 1}&extended=1&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
 		let data = JSON.parse(res.body);
 
 		let playingTrack = data.recenttracks.track.find(t => t['@attr'] && t['@attr'].nowplaying === 'true');
@@ -58,27 +60,37 @@ export function addCommands(cs: CommandSystem.System) {
 		// for pfp 
 		let resUser = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURI(content)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
 		let userData = JSON.parse(resUser.body);
+		let pfp = userData.user.image.pop()['#text'];
+		let thumbnail = playingTrack.image.pop()['#text'];
 
-		let embed = new Discord.MessageEmbed()
-			.setTitle('Recent scrobbles')
-			.setColor('#63de54')
-			.setURL(userData.user.url)
-			.setAuthor(userData.user.name, userData.user.image.pop()['#text'], userData.user.url)
-			.setTimestamp()
-			.addField('Total scrobbles', data.recenttracks['@attr'].total);
+		let paginator = new util.Paginator((page) => {
+			let embed = new Discord.MessageEmbed()
+				.setTitle('Recent scrobbles')
+				.setColor('#63de54')
+				.setURL(userData.user.url)
+				.setAuthor(userData.user.name, pfp, userData.user.url)
+				.setTimestamp()
+				.addField('Total scrobbles', data.recenttracks['@attr'].total)
+				.setFooter(`${page}/${paginator.limit}`);
 
-		let description = '';
+			let description = '';
 
-		if (playingTrack) {
-			embed.setThumbnail(playingTrack.image.pop()['#text']);
-			description += `**Scrobbling now**: ${playingTrack.loved === '1' ? '❤️ ' : ''}${playingTrack.artist.name} - ${playingTrack.name}\n\n`;
-		}
+			if (playingTrack) {
+				embed.setThumbnail(thumbnail);
+				description += `**Scrobbling now**: ${playingTrack.loved === '1' ? '❤️ ' : ''}${playingTrack.artist.name} - ${playingTrack.name}\n\n`;
+			}
 
-		description += tracks.slice(0, 10).map((t, i) => `${i + 1}. ${t.loved === '1' ? '❤️ ' : ''}${t.artist.name} - ${t.name} ${timeago.format(t.date.uts * 1000)}`).join('\n');
+			let off = (page - 1) * 10;
 
-		embed.setDescription(description);
+			description += tracks.slice(0 + off, 10 + off).map((t, i) => `${i + 1 + off}. ${t.loved === '1' ? '❤️ ' : ''}${t.artist.name} - ${t.name} ${timeago.format(t.date.uts * 1000)}`).join('\n');
 
-		return embed;
+			embed.setDescription(description);
+
+			return embed;
+		}, msg.author);
+
+		paginator.setLimit(maxRecentPages);
+		paginator.start(msg.channel);		
 	})
 		.setDescription('check what a user has been listening to on last.fm')
 		.setGlobalCooldown(1500)
