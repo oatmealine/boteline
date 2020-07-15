@@ -94,6 +94,8 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 								if (progMessage) {
 									progMessage.delete();
 								}
+
+								fs.unlinkSync(tempFile);
 							});
 						});
 				
@@ -365,6 +367,9 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 						await msg.channel.send(`${warnings} :warning: (the more, the better)`, {files: [tempFileOutput]});
 
 						progMessage.delete();
+						fs.unlinkSync(tempFileIn);
+						fs.unlinkSync(tempFileAvi);
+						fs.unlinkSync(tempFileOutput);
 					})
 					.save(tempFileOutput);
 			})
