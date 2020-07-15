@@ -3,6 +3,7 @@ import * as Discord from 'discord.js';
 import * as util from '../lib/util';
 import * as format from '../lib/format';
 import * as discordutil from '../lib/discord';
+import { Paginator } from '../lib/paginator';
 
 const prefix = process.env.PREFIX;
 let application: Discord.ClientApplication;
@@ -98,7 +99,7 @@ export function addCommands(cs: CommandSystem.System) {
 		.addAlias('invitelink'));
 
 	cs.commands = cs.commands.filter(c => c.name !== 'help'); // remove help
-	cs.addCommand(new CommandSystem.SimpleCommand('help', (message) => {
+	cs.addCommand(new CommandSystem.Command('help', (message) => {
 		const params = message.content.split(' ');
 
 		if (params[1] && params[1] !== 'hidden') {
@@ -124,11 +125,11 @@ export function addCommands(cs: CommandSystem.System) {
 				if (command.examples.length !== 0) { embed = embed.addField('Examples', '`' + commandExamplesPatched.join('`,\n`') + '`'); }
 				if (command.aliases.length !== 0) { embed = embed.addField('Aliases', '`' + command.aliases.join('`, `') + '`'); }
 
-				return {embed};
+				return message.channel.send(embed);
 			} else {
 				let categoryCommands: CommandSystem.Command[] = cs.commands.filter(c => c.category === params[1].toLowerCase());
 
-				if (categoryCommands.length === 0) return `Command or category \`${params[1]}\` not found!`;
+				if (categoryCommands.length === 0) return message.channel.send(`Command or category \`${params[1]}\` not found!`);
 
 				const embed = new Discord.MessageEmbed()
 					.setTitle(`**${format.grammar(params[1].toLowerCase())}** [${categoryCommands.length}]`)
@@ -136,14 +137,9 @@ export function addCommands(cs: CommandSystem.System) {
 
 				embed.addField('Commands', categoryCommands.map(c => c.name).join('\n'));
 
-				return {embed};
+				return message.channel.send(embed);
 			}
 		} else {
-			const embed = new Discord.MessageEmbed()
-				.setTitle(`**All ${params[1] === 'hidden' ? 'Hidden ': ''}Commands**`)
-				.setColor(brandColor)
-				.setFooter('Do help (category) to get all commands for a category!');
-
 			let categorizedCommands: any = {};
 
 			cs.commands.forEach(command => {
@@ -153,15 +149,32 @@ export function addCommands(cs: CommandSystem.System) {
 				}
 			});
 
-			Object.keys(categorizedCommands).forEach(cat => {
-				let commands = categorizedCommands[cat];
+			let pages = Math.ceil(Object.keys(categorizedCommands).length / 5);
 
-				if (commands.length !== 0)
-					embed.addField(`${format.grammar(cat)} [${commands.length}]`,
-						`\`${commands.map((c: CommandSystem.Command) => c.name.toLowerCase()).join('`, `')}\``);
-			});
+			let paginator = new Paginator((count) => {
+				const embed = new Discord.MessageEmbed()
+					.setTitle(`**All ${params[1] === 'hidden' ? 'Hidden ': ''}Commands**`)
+					.setColor(brandColor)
+					.setDescription('Do help (category) to get all commands for a category!')
+					.setFooter(`${count}/${pages}`);
 
-			return {embed};
+				let off = (count - 1) * 5;
+				let commands = {};
+				Object.keys(categorizedCommands).slice(0 + off, 5 + off).forEach(k => commands[k] = categorizedCommands[k]);
+
+				Object.keys(commands).forEach(cat => {
+					let commands = categorizedCommands[cat];
+
+					if (commands.length !== 0)
+						embed.addField(`${format.grammar(cat)} [${commands.length}]`,
+							`\`${commands.map((c: CommandSystem.Command) => c.name.toLowerCase()).join('`, `')}\``);
+				});
+
+				return embed;
+			}, message.author);
+
+			paginator.setLimit(pages);
+			return paginator.start(message.channel);
 		}
 	})
 		.setCategory('core')
