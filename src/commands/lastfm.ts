@@ -126,6 +126,58 @@ export function addCommands(cs: CommandSystem.System) {
 		.setDisplayUsage('[username]')
 		.setCategory('last.fm'));
 
+	cs.addCommand(new CommandSystem.Command('fmtop', async (msg, content) => {
+		try {
+			let username = content;
+			if (content.length === 0 && userData[msg.author.id] && userData[msg.author.id].lastfm) {
+				username = userData[msg.author.id].lastfm;
+			}
+			if (username.length === 0) return msg.channel.send(`No account found! Either pass in a username or link your account with ${process.env.PREFIX}lastfm`);
+	
+			let resTopTracks = await got(`http://ws.audioscrobbler.com/2.0/?method=user.gettoptracks&user=${encodeURI(username)}&limit=100&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
+			let data = JSON.parse(resTopTracks.body);
+			let tracks = data.toptracks.track;
+
+			// for pfp 
+			let resUser = await got(`http://ws.audioscrobbler.com/2.0/?method=user.getinfo&user=${encodeURI(username)}&api_key=${process.env.LASTFM_API_KEY}&format=json`, {'user-agent': userAgent});
+			let user = JSON.parse(resUser.body);
+			let pfp = user.user.image.pop()['#text'];
+
+			let paginator = new Paginator.Paginator((page) => {
+				let embed = new Discord.MessageEmbed()
+					.setTitle('Top scrobbled songs')
+					.setColor('#63de54')
+					.setURL(user.user.url)
+					.setAuthor(user.user.name, pfp, user.user.url)
+					.setTimestamp()
+					.addField('Total scrobbles', data.toptracks['@attr'].total)
+					.setFooter(`${page}/${paginator.limit}`);
+	
+				let description = '';
+	
+				let off = (page - 1) * resultsPerPage;
+	
+				description += tracks.slice(0 + off, resultsPerPage + off).map(t => `${util.rankNum(t['@attr'].rank)}: ${t.loved === '1' ? '❤️ ' : ''}${t.artist.name} - ${t.name}, ${t.playcount} play${t.playcount === '1' ? '' : 's'}`).join('\n');
+	
+				embed.setDescription(description);
+	
+				return embed;
+			}, msg.author);
+	
+			paginator.setLimit(Math.ceil(tracks.length / resultsPerPage));
+			return paginator.start(msg.channel);
+		} catch(err) {
+			console.log(err);
+			msg.channel.send(`error: ${err}`);
+		}
+	})
+		.setDescription('check what a user\'s most listened tracks are on last.fm')
+		.setGlobalCooldown(1500)
+		.setUsage('[string]')
+		.setDisplayUsage('[username]')
+		.setCategory('last.fm'));
+	
+
 	cs.addCommand(new CommandSystem.SimpleCommand('lastfm', (msg, content) => {
 		if (!userData[msg.author.id]) userData[msg.author.id] = {};
 		userData[msg.author.id].lastfm = content;
