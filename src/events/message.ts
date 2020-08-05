@@ -4,6 +4,8 @@ import { System } from 'cumsystem';
 Discord; System; // ts moment
 
 export function run(msg: Discord.Message, cs: System) {
+	cs.ownerID = process.env.OWNER; // this is terrible
+
 	let guildSettings = cs.get('guildSettings');
 	let userData = cs.get('userData');
 	let prefix = process.env.PREFIX;
