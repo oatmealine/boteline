@@ -51,9 +51,11 @@ export function addCommands(cs: CommandSystem.System) {
 	let botName = cs.get('botName');
 
 	cs.addCommand(new CommandSystem.Command('info', (msg) => {
+		let commit = cs.get('commit');
+
 		msg.channel.send(new Discord.MessageEmbed()
 			.setFooter(`Made using Node.JS ${process.version}, TypeScript ${packageLock.dependencies['typescript'].version}, Discord.JS v${packageLock.dependencies['discord.js'].version}`, cs.client.user.displayAvatarURL({dynamic: true}))
-			.setTitle(`${botName} v${packageJson.version} stats`)
+			.setTitle(`${botName} v${packageJson.version} (commit ${(commit || 'unknown').slice(0, 7)}) stats`)
 			.setURL(packageJson.repository)
 			.setColor(brandColor)
 			.setDescription(`Currently in ${cs.client.guilds.cache.size.toLocaleString()} servers, with ${cs.client.channels.cache.size.toLocaleString()} cached channels and ${cs.client.users.cache.size.toLocaleString()} cached users`)

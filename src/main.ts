@@ -20,6 +20,7 @@ import * as commands from './commands';
 // events
 import * as message from './events/message';
 import * as ready from './events/ready';
+import { exec } from 'child_process';
 
 const ch = require('chalk');
 // files
@@ -61,6 +62,16 @@ const logger = winston.createLogger({
 const prefix : string = process.env.PREFIX;
 
 const version : string = packageJson.version + ' alpha';
+
+let commit;
+exec('git rev-parse HEAD', (err, stdout) => {
+	if (err) return logger.error('something went wrong while fetching commit! is git in path?: ' + err);
+	stdout = stdout.split('\n').join('');
+	logger.info(`commit ${stdout}`);
+	commit = stdout;
+	return cs.set('commit', commit);
+});
+
 const brandColor = '#f16260'; // i hate referring to boteline as a brand but i guess it kind of is a brand
 // this will be used for lots of embeds
 
