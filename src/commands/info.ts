@@ -76,7 +76,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 		let swaptotal = format.formatFileSize(systemInfo.mem.swaptotal);
 		let swapused = format.formatFileSize(systemInfo.mem.swapused);
 
-		msg.channel.send(new Discord.MessageEmbed()
+		let embed = new Discord.MessageEmbed()
 			.setFooter(`Running on ${systemInfo.os.platform} - ${systemInfo.os.distro} (kernel version ${systemInfo.os.kernel}) (${systemInfo.os.arch}) ${systemInfo.os.release}`)
 			.setTitle(`Host's stats - ${systemInfo.os.hostname}`)
 			.setDescription('Stats for the bot\'s host')
@@ -85,10 +85,16 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 			.addField('BIOS', `${systemInfo.bios.vendor} ${systemInfo.bios.version}`, true)
 			.addField('Baseboard', `${systemInfo.baseboard.manufacturer} ${systemInfo.baseboard.model} v${systemInfo.baseboard.version}`, true)
 			.addField('Memory', `${memused}/${memtotal} used \`${util.progress(os.totalmem() - os.freemem(), os.totalmem())}\``)
-			.addField('Swap', `${swapused}/${swaptotal} used \`${util.progress(systemInfo.mem.swapused, systemInfo.mem.swaptotal)}\``)
 			.addField('CPU', `${systemInfo.cpu.manufacturer} ${systemInfo.cpu.brand} model ${systemInfo.cpu.model} @${systemInfo.cpu.speedmax}GHz (${systemInfo.cpu.cores} cores) \nUsage: ${cpuUsage}% \`${util.progress(cpuUsage, 100)}\``)
-			.addField('GPU', `${(systemInfo.graphics.controllers[0] || {}).vendor} ${(systemInfo.graphics.controllers[0] || {}).model} w/ ${(systemInfo.graphics.controllers[0] || {}).vram}MB VRAM`)
-			.addField(`Disk(s) (${systemInfo.fsSize.length} mounted)`, systemInfo.diskLayout.filter(d => !(d.name === '' || d.device.startsWith('/dev/ram'))).map(d => `${d.vendor} ${d.type} - ${d.device || d.name}, ${format.formatFileSize(d.size)}`)));
+			.addField(`Disk(s) (${systemInfo.fsSize.length} mounted)`, systemInfo.diskLayout.filter(d => !(d.name === '' || d.device.startsWith('/dev/ram'))).map(d => `${d.vendor} ${d.type} - ${d.device || d.name}, ${format.formatFileSize(d.size)}`));
+
+		if (systemInfo.mem.swaptotal > 0)
+			embed.addField('Swap', `${swapused}/${swaptotal} used \`${util.progress(systemInfo.mem.swapused, systemInfo.mem.swaptotal)}\``);
+
+		if (systemInfo.graphics.controllers[0])
+			embed.addField('GPU', `${systemInfo.graphics.controllers[0].vendor} ${systemInfo.graphics.controllers[0].model} w/ ${systemInfo.graphics.controllers[0].vram}MB VRAM`);
+
+		msg.channel.send(embed);
 	})
 		.setCategory('core')
 		.addAliases(['matstatsoatedition', 'oatstats', 'host', 'neofetch'])
