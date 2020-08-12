@@ -87,7 +87,7 @@ Runtime: **${util.roundNumber(process.cpuUsage().user / (process.uptime() * 1000
 			.addField('Memory', `${memused}/${memtotal} used \`${util.progress(os.totalmem() - os.freemem(), os.totalmem())}\``)
 			.addField('Swap', `${swapused}/${swaptotal} used \`${util.progress(systemInfo.mem.swapused, systemInfo.mem.swaptotal)}\``)
 			.addField('CPU', `${systemInfo.cpu.manufacturer} ${systemInfo.cpu.brand} model ${systemInfo.cpu.model} @${systemInfo.cpu.speedmax}GHz (${systemInfo.cpu.cores} cores) \nUsage: ${cpuUsage}% \`${util.progress(cpuUsage, 100)}\``)
-			.addField('GPU', `${systemInfo.graphics.controllers[0].vendor} ${systemInfo.graphics.controllers[0].model} w/ ${systemInfo.graphics.controllers[0].vram}MB VRAM`)
+			.addField('GPU', `${(systemInfo.graphics.controllers[0] || {}).vendor} ${(systemInfo.graphics.controllers[0] || {}).model} w/ ${(systemInfo.graphics.controllers[0] || {}).vram}MB VRAM`)
 			.addField(`Disk(s) (${systemInfo.fsSize.length} mounted)`, systemInfo.diskLayout.filter(d => !(d.name === '' || d.device.startsWith('/dev/ram'))).map(d => `${d.vendor} ${d.type} - ${d.device || d.name}, ${format.formatFileSize(d.size)}`)));
 	})
 		.setCategory('core')
