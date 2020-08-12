@@ -1,35 +1,52 @@
 import * as Discord from 'discord.js';
 import * as format from './format';
 import * as util from './util';
+import * as youtubedl from 'youtube-dl';
+
+const maxVideoLength = 60 * 3; // 3 mins
+const wantedVideoHeight = 480; // 720, 1080, etc
 
 export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = [], disableSizeLimit = false) {
 	let attachments: Discord.MessageAttachment[] = [];
 
 	if (msg.attachments.size === 0) {
-		await msg.channel.messages.fetch({ limit: 20 }).then((msges) => {
-			msges.array().forEach((m: Discord.Message) => {
-				// checking attachments
-				if (m.attachments.size > 0) {
-					m.attachments.array().forEach((att) => {
-						if (disableSizeLimit || att.size <= 8000000) attachments.push(att);
-					});
-				}
+		let msges = await msg.channel.messages.fetch({ limit: 20 });
 
-				// checking embeds
-				if (m.embeds.length > 0) {
-					m.embeds.forEach(em => {
-						if (em.type !== 'rich' && em.title === undefined && em.provider === null) attachments.push(new Discord.MessageAttachment(em.url)); // not really a better way to test for this
+		for (let m of msges.array()) {
+			// checking attachments
+			if (m.attachments.size > 0) {
+				m.attachments.array().forEach((att) => {
+					if (disableSizeLimit || att.size <= 8000000) attachments.push(att);
+				});
+			}
+
+			// checking embeds
+			if (m.embeds.length > 0) {
+				for (let em of m.embeds) {
+					if (em.type !== 'rich' && em.title === undefined && em.provider === null) attachments.push(new Discord.MessageAttachment(em.url)); // not really a better way to test for this
 						
-						if (em.provider !== null && em.provider.name === 'Tenor') { // tenor compat
-							attachments.push(new Discord.MessageAttachment(em.video.url, 'tenor.mp4'));
-						}
+					if (em.provider && em.provider.name === 'Tenor') { // tenor compat
+						attachments.push(new Discord.MessageAttachment(em.video.url, 'tenor.mp4'));
+					}
+					
+					// youtube-dl compat
+					// okay, heres where i die
+					let url = em.url;
+					// eslint-disable-next-line no-unused-vars
+					let err, res = await require('util').promisify(youtubedl.getInfo)(url);
 
-						if (em.image) attachments.push(new Discord.MessageAttachment(em.image.url));
-						if (em.thumbnail) attachments.push(new Discord.MessageAttachment(em.thumbnail.url));
-					});
+					if (err || res._duration_raw > maxVideoLength) continue;
+
+					let formats = res.formats.filter(r => !r.format.includes('audio only')).sort((a, b) => Math.abs(a.height - wantedVideoHeight) - Math.abs(b.height - wantedVideoHeight)).reverse();
+					if (formats.size === 0) continue;
+
+					attachments.push(new Discord.MessageAttachment(formats[0].url, 'video.mp4'));
+
+					if (em.image) attachments.push(new Discord.MessageAttachment(em.image.url));
+					if (em.thumbnail) attachments.push(new Discord.MessageAttachment(em.thumbnail.url));
 				}
-			});
-		});
+			}
+		}
 	} else {
 		attachments.push(msg.attachments.first());
 	}

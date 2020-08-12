@@ -40,7 +40,8 @@
     "timeago.js": "^4.0.2",
     "typescript": "^3.9.6",
     "winston": "^3.3.3",
-    "yet-another-yandex-translate": "^1.2.3"
+    "yet-another-yandex-translate": "^1.2.3",
+    "youtube-dl": "^3.0.2"
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "^2.1.14",
