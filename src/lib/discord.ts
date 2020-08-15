@@ -32,8 +32,14 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 					// youtube-dl compat
 					// okay, heres where i die
 					let url = em.url;
-					// eslint-disable-next-line no-unused-vars
-					let err, res = await require('util').promisify(youtubedl.getInfo)(url);
+					let err, res;
+					try {
+						// eslint-disable-next-line no-unused-vars
+						let err2, res2 = await require('util').promisify(youtubedl.getInfo)(url);
+						err = err2; res = res2; // funny
+					} catch(err) {
+						continue;
+					}
 
 					if (err || res._duration_raw > maxVideoLength) continue;
 
