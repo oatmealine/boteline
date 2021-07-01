@@ -31,7 +31,7 @@ export function addCommands(cs: CommandSystem.System) {
 	userAgent = cs.get('userAgent');
 
 	cs.addCommand(new CommandSystem.Command('icon', (message) => {
-		message.channel.send({ files: [{ attachment: message.guild.iconURL, name: 'icon.png' }] });
+		message.channel.send({ files: [{ attachment: message.guild.iconURL(), name: 'icon.png' }] });
 	})
 		.setCategory('utilities')
 		.addAlias('servericon')

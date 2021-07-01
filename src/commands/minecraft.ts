@@ -3,7 +3,7 @@ import * as Discord from 'discord.js';
 import * as util from '../lib/util';
 import * as discordutil from '../lib/discord';
 import * as format from '../lib/format';
-import * as mcServer from 'minecraft-server-util';
+const mcServer = require('minecraft-server-util');
 
 export function addCommands(cs: CommandSystem.System) {
 	cs.addCommand(new CommandSystem.Command('achievement', (msg) => {
@@ -23,7 +23,7 @@ export function addCommands(cs: CommandSystem.System) {
 		const params = discordutil.getParams(msg);
 		msg.channel.startTyping();
 	
-		mcServer(params[0], params[1])
+		mcServer(params[0], Number(params[1]))
 			.then(res => {
 				msg.channel.stopTyping();
 

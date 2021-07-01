@@ -4,7 +4,7 @@
       "allowJs": true,
       "target": "esnext",
       "module": "commonjs",
-      "noImplicitReturns": true
+      "noImplicitReturns": true,
   },
   "include": [
       "src/*"

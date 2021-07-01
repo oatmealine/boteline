@@ -1,6 +1,6 @@
 import * as CommandSystem from 'cumsystem';
 import * as Discord from 'discord.js';
-import * as ffmpeg from 'fluent-ffmpeg';
+import * as Ffmpeg from 'fluent-ffmpeg';
 import * as fs from 'fs';
 import * as discordutil from '../lib/discord';
 import * as bufferSplit from 'buffer-split';
@@ -55,7 +55,7 @@ class FFMpegCommand extends CommandSystem.Command {
 					let log = '';
 					let tempFile = temp + '/' + genName() + '.' + format;
 
-					let command = ffmpeg()
+					let command = Ffmpeg()
 						.input(videoAttach.url)
 						//.input(this.addInput(msg))
 						.on('start', (commandLine) => {
@@ -72,7 +72,7 @@ class FFMpegCommand extends CommandSystem.Command {
 								lastEdit = Date.now();
 								progMessage.edit(`processing: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\`
 \`\`\`
-${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
+${log.split('\n').slice(Math.max(-4, -log.split('\n').length)).join('\n')}
 \`\`\``);
 							}
 						})
@@ -224,7 +224,7 @@ export function addCommands(cs: CommandSystem.System) {
 						return new Promise(resolve => {
 							let log = '';
 
-							ffmpeg(videoAttach.url)
+							Ffmpeg(videoAttach.url)
 								.on('start', (commandLine) => {
 									logger.debug('started ffmpeg with command: ' + commandLine);
 								})
@@ -236,12 +236,12 @@ export function addCommands(cs: CommandSystem.System) {
 										lastEdit = Date.now();
 										progMessage.edit(`converting to avi: **${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%** \`(${progress.timemark})\`
 \`\`\`
-${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
+${log.split('\n').slice(Math.max(-4, -log.split('\n').length)).join('\n')}
 \`\`\``);
 									}
 								})
 								.on('end', () => {
-									resolve();
+									resolve('why do you need me to send in an argument typescript???? here you go i guess');
 								})
 								.save(tempFileIn);
 						});
@@ -329,7 +329,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 
 				let tempFileOutput = temp + '/' + genName() + '.mp4';
 
-				ffmpeg(tempFileAvi)
+				Ffmpeg(tempFileAvi)
 					.on('start', (commandLine) => {
 						logger.debug('started ffmpeg with command: ' + commandLine);
 					})
@@ -356,7 +356,7 @@ ${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
 							lastEdit = Date.now();
 							progMessage.edit(`converting to mp4: **about ${progress.percent !== undefined ? Math.floor(progress.percent * 100) / 100 : '0.00'}%??** (very inaccurate due to header corruption) \`(${progress.timemark})\` ${warnings} :warning:
 \`\`\`
-${log.split('\n').slice(Math.max(-4, -log.split('\n').length))}
+${log.split('\n').slice(Math.max(-4, -log.split('\n').length)).join('\n')}
 \`\`\``);
 						}
 					})

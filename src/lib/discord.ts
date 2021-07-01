@@ -43,10 +43,12 @@ export async function fetchAttachment(msg: Discord.Message, acceptedFiletypes = 
 
 					if (err || res._duration_raw > maxVideoLength) continue;
 
-					let formats = res.formats.filter(r => !r.format.includes('audio only')).sort((a, b) => Math.abs(a.height - wantedVideoHeight) - Math.abs(b.height - wantedVideoHeight)).reverse();
-					if (formats.size === 0) continue;
+					if (res.formats) {
+						let formats = res.formats.filter(r => !r.format.includes('audio only')).sort((a, b) => Math.abs(a.height - wantedVideoHeight) - Math.abs(b.height - wantedVideoHeight)).reverse();
+						if (formats.size === 0) continue;
 
-					attachments.push(new Discord.MessageAttachment(formats[0].url, 'video.mp4'));
+						attachments.push(new Discord.MessageAttachment(formats[0].url, 'video.mp4'));
+					}
 
 					if (em.image) attachments.push(new Discord.MessageAttachment(em.image.url));
 					if (em.thumbnail) attachments.push(new Discord.MessageAttachment(em.thumbnail.url));
